@@ -1,0 +1,40 @@
+Version 0.6
+    o Major modification (and *not* backwards compatible!) relative to
+      denoting negations. Using upper and lower case letters for presence and
+      absence is no longer supported, a tilde being the only and the default
+      method to signal a negation (thanks to Charles Ragin for making the point)
+    o Removed deprecated argument "use.tilde" from all related functions
+    o All functions treating a DNF/SOP expression now obey this major
+      (and not backwards compatible) change denoting a negation. Upper
+      and lower case conditions are now longer supported
+    o New function invert() to convert a SOP expression to a POS expression
+    o New function expand() to perform a full or a partial Quine expansion
+      to a SOP expression
+
+Version 0.5
+    o Functions compute(), factorize(), intersection(), negate()
+      and simplify(), moved here from package QCA
+    o New function replaceText()
+    o Minor changes to internal functions getInfo() and getLevels()
+    o Improved function translate() using replaceText(), now better
+      suited in dealing with set names of variable number of
+      characters, including space
+    o As a result, argument "snames" from function venn() can deal with
+      spaces in set names (thanks to Andre Gohr for the suggestion) 
+
+Version 0.4
+    o Fixed small printing bug in possibleNumeric()
+    o Function translate() is now more robust against non-printable
+      characters
+
+Version 0.3
+    o Function combinations() renamed to combnk()
+    o Improved function possibleNumeric() to deal with objects of
+      class "haven_labelled"
+
+Version 0.2
+    o Function combinations() renamed to combnk()
+
+Version 0.1
+    o Start of the package
+
