@@ -1,6 +1,5 @@
 `translate` <-
 function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
-    
     other.args <- list(...)
 
     enter <- ifelse (is.element("enter", names(other.args)), "",  "\n") # internal
@@ -98,7 +97,7 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
     replaced <- FALSE
     
     if (!identical(snames, "") & length(snames) > 0) {
-        if (any(nchar(snames) > 1)) {
+        if (any(nchar(snames) > 1) & !is.element("validate", names(other.args))) {
             
             snameso <- snames
             if (length(snames) < 27) {
@@ -177,7 +176,6 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
             aftermessage <- "not found in the data"
         }
     }
-    
     
     if (multivalue) {
         expression <- gsub("[*]", "", expression)
@@ -276,13 +274,17 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
         }
     }
     else {
-        
+
+        sl <- ifelse(replaced | identical(snames, ""), TRUE, all(nchar(snames) == 1))
         # parse plus
         pp <- unlist(strsplit(expression, split = "[+]"))
-        splitchar <- ifelse(any(grepl("[*]", expression)), "[*]", "")
+        
+        if (replaced) {
+            pp <- gsub("[*]", "", pp)
+        }
+        splitchar <- ifelse(any(grepl("[*]", pp)) | !sl, "[*]", "")
         conds <- setdiff(sort(unique(notilde(unlist(strsplit(pp, split = splitchar))))), "")
         
-
         if (!identical(snames, "")) {
             
             if (!is.null(data)) {
@@ -311,6 +313,11 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
                     beforemessage <- paste(beforemessage, "s", sep = "")
                     aftermessage <- gsub("does", "do", aftermessage)
                 }
+                
+                if (replaced) {
+                    conds <- replaceText(conds, snames, snameso)
+                }
+
                 cat(enter)
                 stop(simpleError(sprintf("%s '%s' %s.\n\n", beforemessage, paste(conds, collapse = ","), aftermessage)))
             }
@@ -377,6 +384,6 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
         attr(retmat, "retlist") <- retlist
     }
     
-    class(retmat) <- c("matrix", "translate")
+    class(retmat) <- c("matrix", "admisc_translate")
     return(retmat)
 }

@@ -8,7 +8,11 @@
     scollapse <- ifelse(is.element("scollapse", names(other.args)), other.args$scollapse, FALSE) # internal collapse method
     scollapse <- scollapse | grepl("[*]", expression)
 
-
+    if (!is.null(noflevels)) {
+        if (is.character(noflevels) & length(noflevels) == 1) {
+            noflevels <- splitstr(noflevels)
+        }
+    }
     # there is a dedicated function removeRedundants() in package QCA
     # written in C, just too much circular dependency
     `remred` <- function(x) {
@@ -148,7 +152,7 @@
         }
         
         if (identical(bl, "")) {
-            return(classify(""))
+            return(classify("", "admisc_simplify"))
         }
 
         tlist <- list(expression = bl, snames = snames)
@@ -160,7 +164,7 @@
         bl <- tryCatch(do.call(translate, tlist), error = function(e) e)
 
         if (is.list(bl)) {
-            return(classify(""))
+            return(classify("", "admisc_simplify"))
         }
 
         expression <- matrix(nrow = 0, ncol = ncol(bl))
@@ -184,6 +188,9 @@
     expression <- dnf(remred(expression), noflevels = noflevels, partial = partial)
 
     if (implicants) {
+        for (i in seq(ncol(expression), 1)) {
+            expression <- expression[order(expression[, i]), , drop = FALSE]
+        }
         return(expression)
     }
 
@@ -196,5 +203,5 @@
     expression <- writePrimeimp(expression, multivalue, collapse = ifelse(scollapse, "*", ""))
     expression <- paste(expression, collapse = " + ")
 
-    return(classify(expression))
+    return(classify(expression, "admisc_simplify"))
 }

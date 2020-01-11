@@ -20,7 +20,6 @@
     multivalue <- any(grepl("[{|}]", expression))
 # return(list(expression = expression, snames = snames, noflevels = noflevels,
 #                         enter = enter, implicants = TRUE))
-
     implicants <- expand(expression, snames = snames, noflevels = noflevels,
                         enter = enter, implicants = TRUE)
     
@@ -37,10 +36,8 @@
         stop("Package \"QCA\" is needed to make this work, please install it.", call. = FALSE)
     }
     
-    
     sols <- QCA::minimize(cbind(implicants - 1, 1), simplify = TRUE, all.sol = all.sol)
     scollapse <- scollapse | any(nchar(colnames(implicants)) > 1) | any(grepl("[{]", unlist(sols$solution))) # | any(grepl("[*]", unlist(sols$solution)))
-    
     expression <- unlist(lapply(sols$solution, function(x) {
         if (!scollapse) x <- gsub("\\*", "", x)
         return(paste(x, collapse = " + "))  
@@ -54,7 +51,7 @@
         attr(expression, "snames") <- snames
     }
 
-    return(classify(expression))
+    return(classify(expression, "admisc_simplify"))
 }
 
 

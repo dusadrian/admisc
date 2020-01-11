@@ -18,7 +18,7 @@
     
     isol <- NULL
 
-    minimized <- methods::is(input, "qca")
+    minimized <- methods::is(input, "QCA_min")
     
     if (minimized) {
         snames <- input$tt$options$conditions
@@ -54,7 +54,7 @@
         
     }
 
-    if (methods::is(input, "deMorgan")) {
+    if (methods::is(input, "admisc_deMorgan")) {
         input <- unlist(input)
     }
     
@@ -90,13 +90,12 @@
         
         trexp <- do.call(translate, callist)
         snames <- colnames(trexp)
-        
         if (is.null(noflevels)) {
             noflevels <- rep(2, ncol(trexp))
         }
         
         snoflevels <- lapply(noflevels, function(x) seq(x) - 1)
-        
+        sr <- nrow(trexp) == 1 # single row
         negated <- paste(apply(trexp, 1, function(x) {
             wx <- which(x != -1) # more acurate than >= 0, now we also have multiple levels like 1,2
             x <- x[wx]
@@ -111,18 +110,16 @@
             }
             else {
                 nms[x == 0] <- paste0("~", nms[x == 0])
-                return(paste("(", paste(nms, collapse = " + ", sep = ""), ")", sep = ""))
+                return(paste(ifelse(sr, "", "("), paste(nms, collapse = " + ", sep = ""), ifelse(sr, "", ")"), sep = ""))
             }
             
         }), collapse = "")
         
-        
         negated <- expandBrackets(negated, snames = snames, noflevels = noflevels, collapse = collapse)
         
         callist$expression <- negated
-        callist$scollapse <- scollapse
+        callist$scollapse <- identical(collapse, "*")
         callist$snames <- snames
-        
         if (simplify) {
             return(unclass(do.call("simplify", callist)))
         }
@@ -133,7 +130,6 @@
     # return(list(input = input, snames = snames, noflevels = noflevels, simplify = simplify))
 
     result <- lapply(input, negateit, snames = snames, noflevels = noflevels, simplify = simplify, collapse = collapse)
-    
     names(result) <- unname(input)
     
     
@@ -152,8 +148,7 @@
     
     attr(result, "minimized") <- minimized
     
-    class(result) <- c("character", "deMorgan")
-    return(result)
+    return(classify(result, "admisc_deMorgan"))
 }
 
 

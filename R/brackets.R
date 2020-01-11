@@ -60,14 +60,21 @@
 
 
 `expandBrackets` <- function(expression, snames = "", noflevels = NULL, collapse = "*") {
-    
     snames <- splitstr(snames)
     multivalue <- any(grepl("[{|}]", expression))
     sl <- ifelse(identical(snames, ""), FALSE, ifelse(all(nchar(snames) == 1), TRUE, FALSE))
 
-    getbl <- function(expression) {
+    getbl <- function(expression, snames = "", noflevels = NULL) {
         bl <- splitMainComponents(gsub("[[:space:]]", "", expression))
         bl <- splitBrackets(bl)
+        # detect something like ~(A + B)
+        bl <- lapply(bl, function(x) {
+            if (tilde1st(x[[1]]) & nchar(x[[1]]) == 1) {
+                x <- x[-1]
+                x[[1]] <- as.character(negate(x[[1]], snames = snames, noflevels = noflevels))
+            }
+            return(x)
+        })
         bl <- removeSingleStars(bl)
         bl <- splitPluses(bl)
         blu <- unlist(bl)
@@ -79,8 +86,7 @@
     }
 
     
-    bl <- getbl(expression)
-
+    bl <- getbl(expression, snames = snames, noflevels = noflevels)
     if (length(bl) == 0) return("")
 
     expressions <- translate(paste(unlist(lapply(bl, paste, collapse = collapse)), collapse = " + "), snames = snames, noflevels = noflevels)

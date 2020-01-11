@@ -11,7 +11,7 @@
     
     # remove everything except snames' names and the brackets
     tempexpr <- gsub("[*|,|;|(|)]", "", expression)
-    pp <- unlist(strsplit(tempexpr, split = "[+]"))
+    pp <- trimstr(unlist(strsplit(tempexpr, split = "[+]")))
     
     insb <- curlyBrackets(gsub("[*|(|)]", "", expression))
     tempexpr <- curlyBrackets(tempexpr, outside = TRUE)
@@ -19,7 +19,7 @@
     
     if (length(insb) != length(tempexpr)) {
         cat("\n")
-        stop(simpleError("Incorrect expression, some snames don't have brackets.\n\n"))
+        stop(simpleError("Incorrect expression, some set names do not have brackets.\n\n"))
     }
     
     if (any(grepl("[a-zA-Z]", gsub("[,|;]", "", insb)))) {

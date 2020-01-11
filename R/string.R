@@ -77,25 +77,6 @@
 }
 
 
-
-`getBigList` <- function(expression, prod.split = "") {
-    
-    expression <- gsub("[[:space:]]", "", expression)
-    
-    big.list <- splitMainComponents(expression)
-    big.list <- splitBrackets(big.list)
-    big.list <- removeSingleStars(big.list)
-    big.list <- splitPluses(big.list)
-    big.list <- splitStars(big.list, prod.split)
-    big.list <- splitTildas(big.list)
-    big.list <- solveBrackets(big.list)
-    big.list <- simplifyList(big.list)
-    
-    return(big.list)
-}
-
-
-
 `splitMainComponents` <- function(expression) {
     
     expression <- gsub("[[:space:]]", "", expression)
@@ -279,7 +260,7 @@
                 star.split <- unlist(strsplit(z, ifelse(prod.split == "", "", paste("\\", prod.split, sep=""))))
                 star.split <- star.split[star.split != ""]
                 if (prod.split == "") {
-                    tilda <- hastilde(star.split)
+                    tilda <- hastilde(star.split) & length(star.split) > 1
                     if (any(tilda)) {
                         tilda.pos <- which(tilda)
                         if (max(tilda.pos) == length(star.split)) {
@@ -377,7 +358,19 @@
     
     for (i in seq(length(big.list))) {
         for (j in seq(lengths[i])) {
-            bl[[pos]] <- unique(unlist(big.list[[i]][[1]][[j]]))
+            blj <- unlist(big.list[[i]][[1]][[j]])
+            if (hastilde(blj[1]) & nchar(blj[1]) == 1) {
+                blj <- blj[-1]
+                for (b in seq(length(blj))) {
+                    if (tilde1st(blj[b])) {
+                        blj[b] <- notilde(blj[b])
+                    }
+                    else {
+                        blj[b] <- paste0("~", blj[b])
+                    }
+                }
+            }
+            bl[[pos]] <- unique(blj)
             pos <- pos + 1
         }
     }

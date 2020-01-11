@@ -1,5 +1,5 @@
 `factorize` <- 
-function(input, snames = "", noflevels = NULL, pos = FALSE, ...) {
+function(input, snames = "", noflevels, pos = FALSE, ...) {
     
     # if a string, input should be DNF
     # no "()" brackets should be allowed
@@ -226,7 +226,6 @@ function(input, snames = "", noflevels = NULL, pos = FALSE, ...) {
                     if (length(y) == 1) {
                         return(y)
                     }
-                    
                     res <- simplify(y[2], snames = snames, noflevels = noflevels, scollapse = identical(collapse, "*"))
                     if (res == "") {
                         return(y[1])
@@ -253,7 +252,6 @@ function(input, snames = "", noflevels = NULL, pos = FALSE, ...) {
         trexp <- translate(x, snames = snames, noflevels = noflevels)
         snames <- colnames(trexp)
         
-
         collapse <- ifelse(any(nchar(snames) > 1) | mv | scollapse | grepl("[*]", x), "*", "")
         
         facts <- names(unlist(getFacts(mat = trexp, snames = snames, mv = mv, collapse = collapse)))
@@ -268,7 +266,7 @@ function(input, snames = "", noflevels = NULL, pos = FALSE, ...) {
     
     isol <- NULL
 
-    if (methods::is(input, "qca")) {
+    if (methods::is(input, "QCA_min")) {
         
         noflevels <- input$tt$noflevels
         snames <- input$tt$options$conditions
@@ -294,7 +292,7 @@ function(input, snames = "", noflevels = NULL, pos = FALSE, ...) {
             
         }
     }
-    else if (methods::is(input, "deMorgan")) {
+    else if (methods::is(input, "admisc_deMorgan")) {
         
         if (any(names(attributes(input)) == "snames")) {
             snames <- attr(input, "snames")
@@ -305,7 +303,7 @@ function(input, snames = "", noflevels = NULL, pos = FALSE, ...) {
         }
         
     }
-    else if (methods::is(input, "simplify")) {
+    else if (methods::is(input, "admisc_simplify")) {
         if (any(names(attributes(input)) == "snames")) {
             snames <- attr(input, "snames")
         }
@@ -336,8 +334,7 @@ function(input, snames = "", noflevels = NULL, pos = FALSE, ...) {
             attr(result, "isol") <- isol
         }
         
-        class(result) <- c("character", "factorize")
-        return(result)
+        return(classify(result, "admisc_factorize"))
     }
     
 }

@@ -16,7 +16,7 @@
     for (i in seq(length(allargs))) {
         x <- allargs[[i]]
 
-        if (methods::is(allargs[[i]], "qca")) {
+        if (methods::is(allargs[[i]], "QCA_min")) {
             
             if (identical(snames, "")) {
                 snames <- allargs[[i]]$tt$options$conditions
@@ -37,7 +37,7 @@
                 allargs[[i]] <- as.vector(unlist(lapply(allargs[[i]]$solution, paste, collapse = " + ")))
             }
         }
-        else if (methods::is(allargs[[i]], "deMorgan")) {
+        else if (methods::is(allargs[[i]], "admisc_deMorgan")) {
 
             isol <- attr(x, "isol")
             
@@ -121,7 +121,7 @@
         attr(result, "isol") <- isol
     }
     
-    class(result) <- c("character", "intersection")
+    class(result) <- c("character", "admisc_intersection")
     return(result)
 }
 

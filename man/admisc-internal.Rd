@@ -4,7 +4,6 @@
 \alias{classify}
 \alias{dashes}
 \alias{expandBrackets}
-\alias{getBigList}
 \alias{getInfo}
 \alias{getLevels}
 \alias{getMatrix}
@@ -14,8 +13,6 @@
 \alias{negateLoop}
 \alias{prettyString}
 \alias{prettyTable}
-\alias{print.deMorgan}
-\alias{print.factorize}
 \alias{removeSingleStars}
 \alias{splitMainComponents}
 \alias{splitstr}
@@ -29,6 +26,8 @@
 \alias{simplifyList}
 \alias{tildae}
 \alias{trimstr}
+\alias{uninstall}
+\alias{unload}
 \alias{validateNames}
 \alias{verify}
 \alias{writePrimeimp}

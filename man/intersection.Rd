@@ -10,12 +10,12 @@ disjunctions) or even entire minimization objects, and finds their intersection.
 }
 
 \usage{
-intersection(..., snames = "", noflevels = NULL)
+intersection(..., snames = "", noflevels)
 }
 
 \arguments{
   \item{...}{One or more expressions, combined with / or minimization objects
-  of class \code{"qca"}.}
+  of class \code{"QCA_min"}.}
   \item{snames}{A string containing the sets' names, separated by commas.}
   \item{noflevels}{Numerical vector containing the number of levels for each set.}
   
@@ -24,13 +24,14 @@ intersection(..., snames = "", noflevels = NULL)
 \details{
 The initial aim of this function was to provide a software implementation of the
 intersection examples presented by Ragin (1987: 144-147). That type of example can also
-be performed with the function \bold{\code{\link{simplify}()}}, while this function is now
-mainly used in conjunction with the \bold{\code{\link[QCA]{modelFit}()}} function from
-package \bold{\pkg{QCA}}, to assess the intersection between theory and a QCA model.
+be performed with the function \bold{\code{\link[admisc]{simplify}()}}, while this
+function is now mainly used in conjunction with the \bold{\code{\link[QCA]{modelFit}()}}
+function from package \bold{\pkg{QCA}}, to assess the intersection between theory and a
+QCA model.
 
-Irrespective of the input type (character expressions and / or minimiation objects), this
-function is now a wrapper to the main \bold{\code{\link{simplify}()}} function (which only
-accepts character expressions).
+Irrespective of the input type (character expressions and / or minimiation objects),
+this function is now a wrapper to the main \bold{\code{\link[admisc]{simplify}()}}
+function (which only accepts character expressions).
 
 It can deal with any kind of expressions, but multivalent crisp conditions need additional
 information about their number of levels, via the argument \bold{\code{noflevels}}.
@@ -44,7 +45,7 @@ If the \bold{\code{snames}} argument is provided, the result is sorted according
 of the causal conditions (set names) in the original dataset, otherwise it sorts the causal
 conditions in alphabetical order.
 
-For minimzation objects of class \code{"qca"}, the number of levels, and the set names are
+For minimzation objects of class \code{"QCA_min"}, the number of levels, and the set names are
 automatically detected.
 }
 

@@ -1,4 +1,4 @@
-importFrom("utils", "read.csv", "write.csv", "write.table", "capture.output")
+importFrom("utils", "read.csv", "write.csv", "write.table", "capture.output", "installed.packages", "packageDescription", "remove.packages")
 importFrom("stats", "na.omit", "dist")
 importFrom("methods", "is")
 
@@ -43,6 +43,8 @@ export(
     translate,
     trimstr,
     tryCatchWEM,
+    uninstall,
+    unload,
     validateNames,
     verify,
     wholeNumeric,
@@ -60,8 +62,8 @@ export(
 )
 
 
-S3method(print, "factorize")
-S3method(print, "intersection")
-S3method(print, "translate")
-S3method(print, "deMorgan")
-S3method(print, "simplify")
+S3method(print, "admisc_factorize")
+S3method(print, "admisc_intersection")
+S3method(print, "admisc_translate")
+S3method(print, "admisc_deMorgan")
+S3method(print, "admisc_simplify")

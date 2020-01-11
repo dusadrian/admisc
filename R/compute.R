@@ -20,8 +20,8 @@ function(expression = "", data = NULL, separate = FALSE) { # na.rm = FALSE
             data <- get(unlist(strsplit(gsub("with\\(", "", syscalls[withdata]), split = ","))[1], envir = length(syscalls) - withdata)
         }
         else {
-        
-            colnms <- colnames(validateNames(notilde(expression), sort(toupper(eval.parent(parse(text = "ls()", n = 1))))))
+            
+            colnms <- colnames(validateNames(notilde(expression), sort(eval.parent(parse(text = "ls()", n = 1)))))
             
             data <- vector(mode = "list", length = length(colnms))
             for (i in seq(length(data))) {

@@ -1,5 +1,5 @@
 
-`print.deMorgan` <- function(x, ...) {
+`print.admisc_deMorgan` <- function(x, ...) {
     
     prettyNums <- formatC(seq(length(x)), digits = nchar(length(x)) - 1, flag = 0)
     pM <- paste("M", prettyNums, sep = "")
@@ -52,7 +52,7 @@
     }
 }
 
-`print.intersection` <- function(x, ...) {
+`print.admisc_intersection` <- function(x, ...) {
     
     prettyNums <- formatC(seq(length(x)), digits = nchar(length(x)) - 1, flag = 0)
     
@@ -85,7 +85,7 @@
     cat("\n")
 }
 
-`print.simplify` <- function(x, ...) {
+`print.admisc_simplify` <- function(x, ...) {
     prettyNums <- formatC(seq(length(x)), digits = nchar(length(x)) - 1, flag = 0)
     
     cat("\n")
@@ -105,7 +105,7 @@
     cat("\n")
 }
 
-`print.factorize` <- function(x, ...) {
+`print.admisc_factorize` <- function(x, ...) {
     
     prettyNums <- formatC(seq(length(x)), digits = nchar(length(x)) - 1, flag = 0)
     pM <- paste("M", prettyNums, sep = "")
@@ -158,7 +158,7 @@
     }
 }
 
-`print.translate` <- function(x, ...) {
+`print.admisc_translate` <- function(x, ...) {
     other.args <- list(...)
     
     cat("\n")

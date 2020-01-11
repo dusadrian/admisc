@@ -11,14 +11,14 @@ Functions to negate a DNF/SOP expression, or to invert SOP to POS or POS to SOP.
 }
 
 \usage{
-negate(input, snames = "", noflevels = NULL, simplify = TRUE, ...)
+negate(input, snames = "", noflevels, simplify = TRUE, ...)
 
-invert(input, snames = "", noflevels = NULL)
+invert(input, snames = "", noflevels)
 }
 
 \arguments{
   \item{input}{A string representing a SOP expression, or a minimization
-        object of class \code{"qca"}.}
+        object of class \code{"QCA_min"}.}
   \item{snames}{A string containing the sets' names, separated by commas.}
   \item{noflevels}{Numerical vector containing the number of levels for each set.}
   \item{simplify}{Logical, allow users to choose between the raw negation or

@@ -6,7 +6,7 @@
     
     isol <- NULL
 
-    minimized <- methods::is(input, "qca")
+    minimized <- methods::is(input, "QCA_min")
     
     if (minimized) {
         snames <- input$tt$options$conditions
@@ -42,7 +42,7 @@
         
     }
 
-    if (methods::is(input, "deMorgan")) {
+    if (methods::is(input, "admisc_deMorgan")) {
         input <- unlist(input)
     }
     
@@ -64,7 +64,7 @@
     if (mv) start <- FALSE
     
     
-    negateit <- function(x, snames = "", noflevels = NULL, pos = TRUE) {
+    negateit <- function(x, snames = "", noflevels = NULL) {
 
         callist <- list(expression = x)
         if (!identical(snames, "")) callist$snames <- snames
@@ -98,8 +98,8 @@
             }
             else {
                 nms[x == 0] <- paste("~", nms[x == 0], sep = "")
-                result <- paste(nms, collapse = ifelse(pos, " + ", "*"), sep = "")
-                if (length(nms) > 1 & pos) {
+                result <- paste(nms, collapse = " + ", sep = "")
+                if (length(nms) > 1) {
                     result <- paste("(", result, ")", sep = "")
                 }
                 return(result)
@@ -110,17 +110,20 @@
         return(negated)
     }
 
-    # return(list(input = input, snames = snames, noflevels = noflevels, simplify = simplify))
+    # return(list(input = input, snames = snames, noflevels = noflevels))
 
     result <- lapply(input, function(x) {
-        pos <- grepl("\\(", x)
-        if (pos) {
-            postar <- grepl("\\*\\(", x)
-            x <- unlist(strsplit(x, split = ifelse(postar, "\\*\\(", "\\(")))
-            x <- gsub("\\(|\\)", "", x)
+        if (grepl("\\(", x)) {
+            xexp <- expandBrackets(x, snames = snames, noflevels = noflevels)
+            # to deal with a single pair of brackets, something like "(a + ~c)"
+            # which technically does not qualify as a POS
+            if (!identical(xexp, gsub("\\(|\\)", "", x))) {
+                return(xexp)
+            }
+            x <- xexp
         }
         
-        return(paste(unlist(lapply(x, negateit, snames = snames, noflevels = noflevels, pos = !pos)), collapse = " + "))
+        return(paste(unlist(lapply(x, negateit, snames = snames, noflevels = noflevels)), collapse = " + "))
         
     })
 
@@ -141,8 +144,7 @@
     
     attr(result, "minimized") <- minimized
     
-    class(result) <- c("character", "deMorgan")
-    return(result)
+    return(classify(result, "deMorgan"))
     
 }
 
