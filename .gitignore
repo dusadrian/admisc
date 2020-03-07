@@ -4,3 +4,4 @@
 *.history
 *.o
 *.so
+*.DS_Store
