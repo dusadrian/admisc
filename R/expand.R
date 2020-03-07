@@ -191,6 +191,7 @@
         for (i in seq(ncol(expression), 1)) {
             expression <- expression[order(expression[, i]), , drop = FALSE]
         }
+        rownames(expression) <- NULL
         return(expression)
     }
 

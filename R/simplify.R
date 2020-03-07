@@ -36,7 +36,10 @@
         stop("Package \"QCA\" is needed to make this work, please install it.", call. = FALSE)
     }
     
-    sols <- QCA::minimize(cbind(implicants - 1, 1), simplify = TRUE, all.sol = all.sol)
+    # loadNamespace("QCA")
+    # env <- environment("package:QCA")
+    # library("QCA", quietly = TRUE)
+    sols <- QCA::minimize(cbind(implicants - 1, 1), all.sol = all.sol, simplify = TRUE)
     scollapse <- scollapse | any(nchar(colnames(implicants)) > 1) | any(grepl("[{]", unlist(sols$solution))) # | any(grepl("[*]", unlist(sols$solution)))
     expression <- unlist(lapply(sols$solution, function(x) {
         if (!scollapse) x <- gsub("\\*", "", x)

@@ -1,5 +1,5 @@
 `factorize` <- 
-function(input, snames = "", noflevels, pos = FALSE, ...) {
+function(input, snames = "", noflevels = NULL, pos = FALSE, ...) {
     
     # if a string, input should be DNF
     # no "()" brackets should be allowed
@@ -248,7 +248,7 @@ function(input, snames = "", noflevels, pos = FALSE, ...) {
         if (grepl("[(|)]", x)) {
             x <- expandBrackets(x, snames = snames, noflevels = noflevels)
         }
-
+        
         trexp <- translate(x, snames = snames, noflevels = noflevels)
         snames <- colnames(trexp)
         

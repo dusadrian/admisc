@@ -1,4 +1,5 @@
 `tildae` <- function() {
+    # integer raw vector
     irv <- c(126, 226, 136, 188, 194, 172, 226, 136, 189)
     unlist(strsplit(rawToChar(as.raw(irv)), split = ""))
 }
