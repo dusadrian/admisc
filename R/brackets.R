@@ -1,4 +1,5 @@
-`insideBrackets` <- function(x, type = "{", invert = FALSE) {
+`insideBrackets` <- function(x, type = "[", invert = FALSE) {
+    x <- recreate(substitute(x))
     typematrix <- matrix(c("{", "[", "(", "}", "]", ")", "{}", "[]", "()"), nrow = 3)
     
     tml <- which(typematrix == type, arr.ind = TRUE)[1]
@@ -15,7 +16,8 @@
 }
 
 
-`outsideBrackets` <- function(x, type = "{") {
+`outsideBrackets` <- function(x, type = "[") {
+    x <- recreate(substitute(x))
     typematrix <- matrix(c("{", "[", "(", "}", "]", ")", "{}", "[]", "()"), nrow = 3)
     tml <- which(typematrix == type, arr.ind = TRUE)[1]
     if (is.na(tml)) {
@@ -29,6 +31,7 @@
 
 
 `curlyBrackets` <- function(x, outside = FALSE) {
+    x <- recreate(substitute(x))
     # just in case it was previously split
     x <- paste(x, collapse = "+")
     
@@ -45,7 +48,25 @@
 }
 
 
+`squareBrackets` <- function(x, outside = FALSE) {
+    x <- recreate(substitute(x))
+    # just in case it was previously split
+    x <- paste(x, collapse = "+")
+    regexp <- "\\[[[:alnum:]|,|;]+\\]"
+    x <- gsub("[[:space:]]", "", x)
+    res <- regmatches(x, gregexpr(regexp, x), invert = outside)[[1]]
+    if (outside) {
+        res <- gsub("\\*", "", unlist(strsplit(res, split="\\+")))
+        return(res[res != ""])
+    }
+    else {
+        return(gsub("\\[|\\]|\\*", "", res))
+    }
+}
+
+
 `roundBrackets` <- function(x, outside = FALSE) {
+    x <- recreate(substitute(x))
     regexp <- "\\(([^)]+)\\)"
     x <- gsub("[[:space:]]", "", x)
     res <- regmatches(x, gregexpr(regexp, x), invert = outside)[[1]]
@@ -60,10 +81,11 @@
 
 
 `expandBrackets` <- function(expression, snames = "", noflevels = NULL, collapse = "*") {
+    expression <- recreate(substitute(expression))
     snames <- splitstr(snames)
-    multivalue <- any(grepl("[{|}]", expression))
+    multivalue <- any(grepl("\\[|\\]|\\{|\\}", expression))
+    curly <- grepl("[{]", expression)
     sl <- ifelse(identical(snames, ""), FALSE, ifelse(all(nchar(snames) == 1), TRUE, FALSE))
-
     getbl <- function(expression, snames = "", noflevels = NULL) {
         bl <- splitMainComponents(gsub("[[:space:]]", "", expression))
         bl <- splitBrackets(bl)
@@ -89,7 +111,8 @@
     bl <- getbl(expression, snames = snames, noflevels = noflevels)
     if (length(bl) == 0) return("")
 
-    expressions <- translate(paste(unlist(lapply(bl, paste, collapse = collapse)), collapse = " + "), snames = snames, noflevels = noflevels)
+    bl <- paste(unlist(lapply(bl, paste, collapse = collapse)), collapse = " + ")
+    expressions <- translate(bl, snames = snames, noflevels = noflevels)
     snames <- colnames(expressions)
 
     redundant <- logical(nrow(expressions))
@@ -130,7 +153,7 @@
         for (i in seq(length(snames))) {
             if (x[i] != -1) {
                 if (multivalue) {
-                    result <- c(result, paste(snames[i], "{", x[i], "}", sep = ""))
+                    result <- c(result, paste(snames[i], ifelse(curly, "{", "["), x[i], ifelse(curly, "}", "]"), sep = ""))
                 }
                 else {
                     if (x[i] == 0) {

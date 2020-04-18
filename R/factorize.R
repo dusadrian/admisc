@@ -5,21 +5,30 @@ function(input, snames = "", noflevels = NULL, pos = FALSE, ...) {
     # no "()" brackets should be allowed
     
     # TO TEST: relation between mv and tilde
+
+    input <- recreate(substitute(input))
+    if (identical(input, character(0))) {
+        return(invisible(input))
+    }
+    
+    snames <- recreate(substitute(snames))
     
     other.args <- list(...)
+    
+    
     scollapse <- ifelse(is.element("scollapse", names(other.args)), other.args$scollapse, FALSE) # internal collapse method
     
-    `pasteit` <- function(mat, comrows, cols, comvals, snames = "", mv = FALSE, collapse = "*") {
+    `pasteit` <- function(mat, comrows, cols, comvals, snames = "", mv = FALSE, collapse = "*", curly = FALSE) {
         
         if (!missing(cols)) {
             temp <- mat[comrows, -cols, drop = FALSE]
             
             if (mv) {
-                cf <- paste(colnames(mat)[cols], "{", comvals, "}", sep = "")
+                cf <- paste(colnames(mat)[cols], ifelse(curly, "{", "["), comvals, ifelse(curly, "}", "]"), sep = "")
                 rowsf <- lapply(seq(nrow(temp)), function(x) {
                     fname <- colnames(temp)
                     x <- temp[x, ]
-                    return(paste(fname, "{", x, "}", sep = "")[x >= 0])
+                    return(paste(fname, ifelse(curly, "{", "["), x, ifelse(curly, "}", "]"), sep = "")[x >= 0])
                 })
             }
             else {
@@ -85,7 +94,7 @@ function(input, snames = "", noflevels = NULL, pos = FALSE, ...) {
             if (mv) {
                 pasted <- paste(sapply(seq(nrow(mat)), function(x) {
                     x <- mat[x, ]
-                    paste(paste(names(x), "{", x, "}", sep = "")[x >= 0], collapse = "*")
+                    paste(paste(names(x), ifelse(curly, "{", "["), x, ifelse(curly, "}", "]"), sep = "")[x >= 0], collapse = "*")
                 }), collapse = " + ")
             }
             else {
@@ -101,7 +110,7 @@ function(input, snames = "", noflevels = NULL, pos = FALSE, ...) {
     }
     
     
-    `getFacts` <- function(mat, snames = "", mv = FALSE, collapse = "*") {
+    `getFacts` <- function(mat, snames = "", mv = FALSE, collapse = "*", curly = FALSE) {
         
         cfound <- FALSE
         result <- list()
@@ -136,7 +145,8 @@ function(input, snames = "", noflevels = NULL, pos = FALSE, ...) {
                                                 comvals = unname(uniq[i, ]),
                                                 snames = snames,
                                                 mv = mv,
-                                                collapse = collapse)
+                                                collapse = collapse,
+                                                curly = curly)
                             
                             if (sum(rows) < nrow(mat)) {
                                 result[[length(result) + 1]] <- Recall(mat[!rows, , drop = FALSE], snames = snames, mv = mv, collapse = collapse)
@@ -154,14 +164,14 @@ function(input, snames = "", noflevels = NULL, pos = FALSE, ...) {
 
         if (!cfound) {
             result <- list(NA)
-            names(result) <- pasteit(mat = mat, snames = snames, mv = mv, collapse = collapse)
+            names(result) <- pasteit(mat = mat, snames = snames, mv = mv, collapse = collapse, curly = curly)
         }
         
         return(result)
     }
     
     
-    `getSol` <- function(sol, pos = FALSE, noflevels = NULL, snames = "", mv = FALSE, collapse = "*") {
+    `getSol` <- function(sol, pos = FALSE, noflevels = NULL, snames = "", mv = FALSE, collapse = "*", curly = FALSE) {
         pospos <- FALSE
         
         sol <- lapply(unique(lapply(sol, sort)), function(x) {
@@ -172,7 +182,7 @@ function(input, snames = "", noflevels = NULL, pos = FALSE, ...) {
                     xi <- unlist(strsplit(x[i], split = " \\+ "))
                     
                     for (j in seq(length(xi))) {
-                        xi[j] <- pasteit(translate(xi[j], snames = snames), snames = snames, mv = mv, collapse = collapse)
+                        xi[j] <- pasteit(translate(xi[j], snames = snames), snames = snames, mv = mv, collapse = collapse, curly = curly)
                     }
                     x[i] <- paste(xi, collapse = " + ")
                 }
@@ -222,19 +232,41 @@ function(input, snames = "", noflevels = NULL, pos = FALSE, ...) {
                 }
             }
             else {
-                x <- sort(sapply(x, function(y) {
+                x <- sapply(x, function(y) {
                     if (length(y) == 1) {
                         return(y)
                     }
                     res <- simplify(y[2], snames = snames, noflevels = noflevels, scollapse = identical(collapse, "*"))
+                    
+                    ### probably unnecessary hack to allow package admisc being checked without package QCA
+                    if (identical(res, character(0))) {
+                        # it means package QCA is not present, or not the right version
+                        return(res)
+                    }
+                    ###
+                    
                     if (res == "") {
                         return(y[1])
                     }
                     paste(y[1], collapse, "(", res, ")", sep = "")
-                }))
+                })
+
+                ### continuing the hack above until the end of getSol()
+                if (any(unlist(lapply(x, length)) == 0)) {
+                    return(character(0))
+                }
+                ### 
+
+                x <- sort(x)
             }
             return(x)
         })
+
+        ### continuing the hack above until the end of getSol()
+        if (any(unlist(lapply(sol, length)) == 0)) {
+            return(character(0))
+        }
+        ###
         
         sol <- unlist(lapply(unique(sol), function(x) {
             paste(x, collapse = " + ")
@@ -244,7 +276,7 @@ function(input, snames = "", noflevels = NULL, pos = FALSE, ...) {
     }
     
     
-    `factorizeit` <- function(x, pos = FALSE, noflevels = NULL, snames = "", mv = FALSE) {
+    `factorizeit` <- function(x, pos = FALSE, noflevels = NULL, snames = "", mv = FALSE, curly = FALSE) {
         if (grepl("[(|)]", x)) {
             x <- expandBrackets(x, snames = snames, noflevels = noflevels)
         }
@@ -254,12 +286,12 @@ function(input, snames = "", noflevels = NULL, pos = FALSE, ...) {
         
         collapse <- ifelse(any(nchar(snames) > 1) | mv | scollapse | grepl("[*]", x), "*", "")
         
-        facts <- names(unlist(getFacts(mat = trexp, snames = snames, mv = mv, collapse = collapse)))
+        facts <- names(unlist(getFacts(mat = trexp, snames = snames, mv = mv, collapse = collapse, curly = curly)))
         facts <- lapply(facts, function(x) unlist(strsplit(x, split = "[.]")))
         facts <- unique(lapply(facts, sort))
         
         # return(list(facts = facts, pos = pos, noflevels = noflevels, snames = snames, mv = mv, collapse = collapse))
-        getSol(facts, pos = pos, noflevels = noflevels, snames = snames, mv = mv, collapse = collapse)
+        getSol(facts, pos = pos, noflevels = noflevels, snames = snames, mv = mv, collapse = collapse, curly = curly)
         
     }
     
@@ -316,11 +348,12 @@ function(input, snames = "", noflevels = NULL, pos = FALSE, ...) {
             snames <- splitstr(snames)
         }
         
-        mv <- any(grepl("[{]", unlist(input)))
+        mv <- any(grepl("\\[|\\{", unlist(input)))
+        curly <- any(grepl("\\{", unlist(input)))
         
         
         result <- lapply(input, function(x) {
-            factorizeit(x, pos = pos, snames = snames, noflevels = noflevels, mv = mv)
+            factorizeit(x, pos = pos, snames = snames, noflevels = noflevels, mv = mv, curly = curly)
         })
         
         names(result) <- unname(input)

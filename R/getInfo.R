@@ -15,7 +15,7 @@
     
     if (length(dc.code) > 1) {
         cat("\n")
-        stop(simpleError("Multiple \"Don't care\" codes found.\n\n"))
+        stop(simpleError("Multiple \"don't care\" codes found.\n\n"))
     }
 
     if (length(dc.code) > 0) {

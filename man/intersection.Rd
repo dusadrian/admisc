@@ -24,13 +24,13 @@ intersection(..., snames = "", noflevels)
 \details{
 The initial aim of this function was to provide a software implementation of the
 intersection examples presented by Ragin (1987: 144-147). That type of example can also
-be performed with the function \bold{\code{\link[admisc]{simplify}()}}, while this
+be performed with the function \bold{\code{simplify()}}, while this
 function is now mainly used in conjunction with the \bold{\code{\link[QCA]{modelFit}()}}
 function from package \bold{\pkg{QCA}}, to assess the intersection between theory and a
 QCA model.
 
 Irrespective of the input type (character expressions and / or minimiation objects),
-this function is now a wrapper to the main \bold{\code{\link[admisc]{simplify}()}}
+this function is now a wrapper to the main \bold{\code{simplify()}}
 function (which only accepts character expressions).
 
 It can deal with any kind of expressions, but multivalent crisp conditions need additional
@@ -70,11 +70,11 @@ pLF <- minimize(ttLF, include = "?")
 
 # for example the intersection between the parsimonious model and
 # a theoretical expectation
-intersection(pLF, "DEV*STB")
+intersection(pLF, DEV*STB)
 
 
 # negating the model
-intersection(negate(pLF), "DEV*STB")
+intersection(negate(pLF), DEV*STB)
 }
 
 
@@ -84,25 +84,25 @@ intersection(negate(pLF), "DEV*STB")
 
 # intersecting the reactive ethnicity perspective (R = lw)
 # with the equation E (page 144)
-intersection("~L~W", "SG + LW", snames = "S, L, W, G")
+intersection(~L~W, SG + LW, snames = c(S, L, W, G))
 
 
 # resources for size and wealth (C = SW) with E (page 145)
-intersection("SW", "SG + LW", snames = "S, L, W, G")
+intersection(SW, SG + LW, snames = c(S, L, W, G))
 
 
 # and factorized
-factorize(intersection("SW", "SG + LW", snames = "S, L, W, G"))
+factorize(intersection(SW, SG + LW, snames = c(S, L, W, G)))
 
 
 # developmental perspective (D = L~G) and E (page 146)
-intersection("L~G", "SG + LW", snames = "S, L, W, G")
+intersection(L~G, SG + LW, snames = c(S, L, W, G))
 
 
 # subnations that exhibit ethic political mobilization (E) but were
 # not hypothesized by any of the three theories (page 147)
 # ~H = ~(~L~W + SW + L~G)
-intersection(negate("~L~W + SW + L~G"), "SG + LW", snames = "S, L, W, G")
+intersection(negate(~L~W + SW + L~G), SG + LW, snames = c(S, L, W, G))
 }
 
 \keyword{functions}

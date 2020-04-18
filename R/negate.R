@@ -2,6 +2,9 @@
     
     # TO DO: capture and error the usage of both "cD" and "D*E" in the same expression 
     
+    # return(substitute(input))
+    input <- recreate(substitute(input))
+    snames <- recreate(substitute(snames))
     other.args <- list(...)
     scollapse <- ifelse(is.element("scollapse", names(other.args)), other.args$scollapse, FALSE) # internal collapse method
 
@@ -15,6 +18,7 @@
             stop(simpleError("Invalid number of levels.\n\n"))
         }
     }
+    
     
     isol <- NULL
 
@@ -73,7 +77,7 @@
         }
     }
     
-    mv <- any(grepl("[{|}]", input))
+    mv <- any(grepl("\\[|\\]", input))
     if (mv) start <- FALSE
     scollapse <- scollapse | any(nchar(snames) > 1) | mv | star
     collapse <- ifelse(scollapse, "*", "")
@@ -106,7 +110,7 @@
             })
             
             if (mv) {
-                return(paste("(", paste(nms, "{", x, "}", sep = "", collapse = " + "), ")", sep = ""))
+                return(paste("(", paste(nms, "[", x, "]", sep = "", collapse = " + "), ")", sep = ""))
             }
             else {
                 nms[x == 0] <- paste0("~", nms[x == 0])
@@ -130,8 +134,15 @@
     # return(list(input = input, snames = snames, noflevels = noflevels, simplify = simplify))
 
     result <- lapply(input, negateit, snames = snames, noflevels = noflevels, simplify = simplify, collapse = collapse)
-    names(result) <- unname(input)
     
+    ### probably unnecessary hack to allow package admisc being checked without package QCA
+    # e.g. via simplify()
+    if (any(unlist(lapply(result, length)) == 0)) {
+        return(invisible(character(0)))
+    }
+    ###
+
+    names(result) <- unname(input)
     
     if (!minimized) {
         # result <- unlist(result)

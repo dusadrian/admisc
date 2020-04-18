@@ -1,10 +1,21 @@
-`expand` <- function(expression, snames = "", noflevels = NULL,
+`expand` <- function(expression = "", snames = "", noflevels = NULL,
     partial = FALSE, implicants = FALSE, ...) {
 # `expand` <- function(x, noflevels = NULL) {
 
+    # expression <- recreate(substitute(expression))
+    # if (!identical(expression, "")) {
+    #     expression <- tryCatch(eval(parse(text = expression), envir = parent.frame()),
+    #         error = function(e) expression)
+    # }
+
+    expression <- recreate(substitute(expression))
+    snames <- recreate(substitute(snames))
+
     other.args <- list(...)
     enter <- ifelse(is.element("enter", names(other.args)), "",  "\n") # internal
+    
     multivalue <- FALSE
+    
     scollapse <- ifelse(is.element("scollapse", names(other.args)), other.args$scollapse, FALSE) # internal collapse method
     scollapse <- scollapse | grepl("[*]", expression)
 
@@ -115,7 +126,7 @@
         }
 
         snames <- splitstr(snames)
-        multivalue <- any(grepl("[{|}]", expression))
+        multivalue <- any(grepl("\\[|\\]|\\{|\\}", expression))
         
         if (multivalue) {
             expression <- gsub("[*]", "", expression)
@@ -126,7 +137,7 @@
         if (!grepl("[+]", expression) & grepl("[,]", expression)) {
             
             if (multivalue) {
-                values <- curlyBrackets(expression)
+                values <- squareBrackets(expression)
                 atvalues <- paste("@", seq(length(values)), sep = "")
                 for (i in seq(length(values))) {
                     expression <- gsub(values[i], atvalues[i], expression)
@@ -192,6 +203,7 @@
             expression <- expression[order(expression[, i]), , drop = FALSE]
         }
         rownames(expression) <- NULL
+        
         return(expression)
     }
 

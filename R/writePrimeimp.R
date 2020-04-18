@@ -6,6 +6,8 @@ function(mymat, mv = FALSE, collapse = "*", snames = "", ...) {
         mv <- TRUE
     }
     
+    other.args <- list(...)
+
     if (identical(snames, "")) {
         snames <- colnames(mymat)
     }
@@ -16,8 +18,11 @@ function(mymat, mv = FALSE, collapse = "*", snames = "", ...) {
     
     chars <- snames[col(mymat)]
     
+    curly <- other.args$curly
+    if (is.null(curly)) curly <- FALSE
+
     if (mv) {
-        chars <- matrix(paste(chars, "{", mymat - 1, "}", sep = ""), nrow = nrow(mymat))
+        chars <- matrix(paste(chars, ifelse(curly, "{", "["), mymat - 1, ifelse(curly, "}", "]"), sep = ""), nrow = nrow(mymat))
     }
     else {
         chars <- ifelse(mymat == 1L, paste0("~", chars), chars)

@@ -72,22 +72,21 @@ and quantitative strategies}, Berkeley: University of California Press
 }
 
 # typical example with redundant conditions
-factorize("a~b~cd + a~bc~d + a~bcd + abc~d")
+factorize(a~b~cd + a~bc~d + a~bcd + abc~d)
 
 # results presented in alphabetical order
-factorize("~one*two*~four + ~one*three + three*~four")
+factorize(~one*two*~four + ~one*three + three*~four)
 
 # to preserve a certain order of the set names
-factorize("~one*two*~four + ~one*three + three*~four",
-          snames = "one, two, three, four")
+factorize(~one*two*~four + ~one*three + three*~four,
+          snames = c(one, two, three, four))
 
 # using pos - products of sums
-factorize("~a~c + ~ad + ~b~c + ~bd", pos = TRUE)
+factorize(~a~c + ~ad + ~b~c + ~bd, pos = TRUE)
 
 \dontrun{
 # using an object of class "qca" produced with function minimize()
 # in package QCA
-library(QCA)
 
 pCVF <- minimize(CVF, outcome = "PROTEST", incl.cut = 0.8,
                  include = "?", use.letters = TRUE)

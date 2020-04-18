@@ -1,5 +1,8 @@
 `translate` <-
 function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
+    
+    expression <- recreate(substitute(expression))
+    snames <- recreate(substitute(snames))
     other.args <- list(...)
 
     enter <- ifelse (is.element("enter", names(other.args)), "",  "\n") # internal
@@ -9,9 +12,7 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
         stop(simpleError(paste0("Empty expression.", enter, enter)))
     }
     
-    if (any(grepl("<=>", expression)) |
-        any(grepl("=>", expression))  | 
-        any(grepl("<=", expression))) {
+    if (any(grepl("<=>|<->|=>|->|<=|<-", expression))) {
         cat(enter)
         stop(simpleError(paste0("Incorrect expression.", enter, enter)))
     }
@@ -159,7 +160,7 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
     
     
     pporig <- trimstr(unlist(strsplit(expression, split="[+]")))
-    multivalue <- any(grepl("[{|}]", expression))
+    multivalue <- any(grepl("\\[|\\]|\\{|\\}", expression))
     expression <- gsub("[[:space:]]", "", expression)
     
     
@@ -178,15 +179,21 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
     }
     
     if (multivalue) {
+        curly <- any(grepl("[{]", expression))
         expression <- gsub("[*]", "", expression)
         # return(list(expression = expression, snames = snames, noflevels = noflevels, data = data))
         checkMV(expression, snames = snames, noflevels = noflevels, data = data)
         
         # parse plus
-        pp <- unlist(strsplit(expression, split="[+]"))
+        pp <- unlist(strsplit(expression, split = "[+]"))
         
-        conds <- sort(unique(notilde(curlyBrackets(pp, outside=TRUE))))
-        
+        if (curly) {
+            conds <- sort(unique(notilde(curlyBrackets(pp, outside=TRUE))))
+        }
+        else {
+            conds <- sort(unique(notilde(squareBrackets(pp, outside=TRUE))))
+        }
+
         if (identical(snames, "")) {
             if (!is.null(data)) {
                 conds <- intersect(colnames(data), conds)
@@ -221,9 +228,15 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
         
         retlist <- lapply(pp, function(x) {
             
-            outx <- curlyBrackets(x, outside = TRUE)
-            inx <- lapply(curlyBrackets(x), splitstr)
-            
+            if (curly) {
+                outx <- curlyBrackets(x, outside = TRUE)
+                inx <- lapply(curlyBrackets(x), splitstr)
+            }
+            else {
+                outx <- squareBrackets(x, outside = TRUE)
+                inx <- lapply(squareBrackets(x), splitstr)
+            }
+
             remtilde <- notilde(outx)
             dupnot <- duplicated(remtilde)
             

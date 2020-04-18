@@ -1,7 +1,8 @@
 `checkMV` <- function(expression, snames = "", noflevels = NULL, data = NULL) {
     
+    curly <- any(grepl("[{]", expression))
     # check to see if opened brackets have closing brackets
-    if (length(unlist(gregexpr("[{]+", expression))) != length(unlist(gregexpr("[}]+", expression)))) {
+    if (length(unlist(gregexpr(ifelse(curly, "[{]+", "\\[+"), expression))) != length(unlist(gregexpr(ifelse(curly, "[}]+", "\\]+"), expression)))) {
         cat("\n")
         stop(simpleError("Incorrect expression, opened and closed brackets don't match.\n\n"))
     }
@@ -9,13 +10,18 @@
     # whatever it is outside the curly brackets must have the same length
     # as the information inside the curly brackets
     
-    # remove everything except snames' names and the brackets
+    # remove everything except snames' names and the round brackets
     tempexpr <- gsub("[*|,|;|(|)]", "", expression)
     pp <- trimstr(unlist(strsplit(tempexpr, split = "[+]")))
-    
-    insb <- curlyBrackets(gsub("[*|(|)]", "", expression))
-    tempexpr <- curlyBrackets(tempexpr, outside = TRUE)
-    
+
+    if (curly) {
+        insb <- curlyBrackets(gsub("[*|(|)]", "", expression))
+        tempexpr <- curlyBrackets(tempexpr, outside = TRUE)
+    }
+    else {
+        insb <- squareBrackets(gsub("[*|(|)]", "", expression))
+        tempexpr <- squareBrackets(tempexpr, outside = TRUE)
+    }
     
     if (length(insb) != length(tempexpr)) {
         cat("\n")
@@ -27,7 +33,12 @@
         stop(simpleError("Invalid {multi}values, levels should be numeric.\n\n"))
     }
     
-    conds <- sort(unique(notilde(curlyBrackets(pp, outside = TRUE))))
+    if (curly) {
+        conds <- sort(unique(notilde(curlyBrackets(pp, outside = TRUE))))
+    }
+    else {
+        conds <- sort(unique(notilde(squareBrackets(pp, outside = TRUE))))
+    }
     
     if (is.null(data)) {
         if (is.null(noflevels)) {

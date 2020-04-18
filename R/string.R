@@ -78,7 +78,7 @@
 
 
 `splitMainComponents` <- function(expression) {
-    
+
     expression <- gsub("[[:space:]]", "", expression)
     
     ind.char <- unlist(strsplit(expression, split = ""))
@@ -135,7 +135,7 @@
         }
                     
         # create an empty list with at least 3 times as many components as number of open brackets (just to make sure I have enough)
-        big.list <- vector(mode="list", length = length(open.brackets) + 2)
+        big.list <- vector(mode = "list", length = length(open.brackets) + 2)
         
         if (length(open.brackets) == 1) {
             # there is only one open bracket

@@ -1,7 +1,7 @@
 `compute` <-
 function(expression = "", data = NULL, separate = FALSE) { # na.rm = FALSE
     
-    expression <- gsub("[[:space:]]", "", expression)
+    expression <- recreate(substitute(expression))
     
     enchar <- nchar(expression)
     if (identical(substring(expression, 1, 2), "~(") & identical(substring(expression, enchar, enchar), ")")) {

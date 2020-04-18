@@ -1,11 +1,21 @@
 `intersection` <- function(..., snames = "", noflevels = NULL) {
     
-    allargs <- list(...)
+    
+    allargs <- lapply(as.list(substitute(list(...))[-1]), recreate)
+    snames <- recreate(substitute(snames))
+
     
     if (length(allargs) == 0) {
         cat("\n")
         stop(simpleError("Nothing to intersect.\n\n"))
     }
+
+    ### probably unnecessary hack to allow package admisc being checked without package QCA
+    # e.g. via negate()
+    if (length(allargs[[1]]) == 0) {
+        return(invisible(character(0)))
+    }
+    ###
     
     snames <- splitstr(snames)
     sl <- ifelse(identical(snames, ""), FALSE, ifelse(all(nchar(snames) == 1), TRUE, FALSE))
@@ -71,6 +81,7 @@
     } else {
         combs <- getMatrix(unlist(lapply(allargs, length)))
     }
+
 
     expressions <- result <- character(nrow(combs))
     

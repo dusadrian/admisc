@@ -14,9 +14,9 @@ function(x, rules, cuts, values, ...) {
         stop(simpleError("Argument \"x\" is missing.\n\n"))
     }
     
-    if (!is.vector(x) & !is.factor(x)) {
+    if (!is.atomic(x))   {
         cat("\n")
-        stop(simpleError("x is not a vector.\n\n"))
+        stop(simpleError("The input \"x\" should be an atomic vector / factor.\n\n"))
     }
     
     if (all(is.na(x))) {
@@ -24,14 +24,14 @@ function(x, rules, cuts, values, ...) {
         stop(simpleError("All values are missing in x.\n\n"))
     }
     
-    other.args <- list(...)
-    as.factor.result <- ifelse("as.factor.result" %in% names(other.args), other.args$as.factor.result, FALSE)
-    as.numeric.result <- ifelse("as.numeric.result" %in% names(other.args), other.args$as.numeric.result, TRUE)
-    factor.ordered <- ifelse("ordered" %in% names(other.args), other.args$ordered, FALSE)
-    factor.ordered <- ifelse("ordered_result" %in% names(other.args), other.args$ordered_result, FALSE)
+    dots <- recreate(list(...))
+    as.factor.result  <- if (is.element("as.factor.result",  names(dots))) dots$as.factor.result  else FALSE
+    as.numeric.result <- if (is.element("as.numeric.result", names(dots))) dots$as.numeric.result else TRUE
+    factor.ordered    <- if (is.element("ordered",           names(dots))) dots$ordered           else FALSE
+    factor.ordered    <- if (is.element("ordered_result",    names(dots))) dots$ordered_result    else FALSE
+    factor.levels     <- if (is.element("levels",            names(dots))) dots$levels            else c()
+    factor.labels     <- if (is.element("labels",            names(dots))) dots$labels            else c()
     
-    factor.levels <- if ("levels" %in% names(other.args)) other.args$levels else c()
-    factor.labels <- if ("labels" %in% names(other.args)) other.args$labels else c()
     if (is.logical(factor.labels)) {
         factor.labels <- c()
     }

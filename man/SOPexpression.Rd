@@ -31,13 +31,13 @@ partial expansion to a SOP expression with equally complex terms.
 }
 
 \usage{
-compute(expression = "", data, separate = FALSE)
+compute(expression = "", data = NULL, separate = FALSE)
 
-simplify(expression = "", snames = "", noflevels, ...)
+simplify(expression = "", snames = "", noflevels = NULL, ...)
 
-translate(expression = "", snames = "", noflevels, data, ...)
+translate(expression = "", snames = "", noflevels = NULL, data = NULL, ...)
 
-expand(expression, snames = "", noflevels, partial = FALSE,
+expand(expression = "", snames = "", noflevels = NULL, partial = FALSE,
       implicants = FALSE, ...)
 }
 
@@ -58,10 +58,10 @@ An expression written in sum of products (SOP), is a "union of intersections", f
 restriction that each product has to contain all literals. The equivalent DNF expression is:
 \bold{\code{A*B*~C + A*B*C + ~A*B*~C}}
 
-The same expression can be written in multivalue notation: \bold{\code{A{1}*B{1} + B{1}*C{0}}}.
+The same expression can be written in multivalue notation: \bold{\code{A[1]*B[1] + B[1]*C[0]}}.
 
 Expressions can contain multiple values for the same condition, separated by a comma. If B was
-a multivalue causal condition, an expression could be: \bold{\code{A{1} + B{1,2}*C{0}}}.
+a multivalue causal condition, an expression could be: \bold{\code{A[1] + B[1,2]*C[0]}}.
 
 Whether crisp or multivalue, expressions are treated as Boolean. In this last example, all values
 in B equal to either 1 or 2 will be converted to 1, and the rest of the (multi)values will be
@@ -69,8 +69,8 @@ converted to 0.
 
 Negating a multivalue condition requires a known number of levels (see examples below). Improvements
 from version 2.5 allow for intersections between multiple levels of the same condition. For a causal
-condition with 3 levels (0, 1 and 2) the following expression \bold{\code{~A{0,2}*A{1,2}}} is
-equivalent with \bold{\code{A{1}}}, while \bold{\code{A{0}*A{1}}} results in the empty set.
+condition with 3 levels (0, 1 and 2) the following expression \bold{\code{~A[0,2]*A[1,2]}} is
+equivalent with \bold{\code{A[1]}}, while \bold{\code{A[0]*A[1]}} results in the empty set.
 
 The number of levels, as well as the set names can be automatically detected from a dataset via
 the argument \bold{\code{data}}. When specified, arguments \bold{\code{snames}} and
@@ -124,11 +124,10 @@ Lewandowski, J. (2015) QCAtools: Helper functions for QCA in R. R package versio
 \dontrun{
 # make sure the package QCA is loaded
 library(QCA)
-data(LF)
-compute("DEV*~IND + URB*STB", data = LF)
+compute(DEV*~IND + URB*STB, data = LF)
 
 # calculating individual paths
-compute("DEV*~IND + URB*STB", data = LF, separate = TRUE)
+compute(DEV*~IND + URB*STB, data = LF, separate = TRUE)
 }
 
 
@@ -136,11 +135,15 @@ compute("DEV*~IND + URB*STB", data = LF, separate = TRUE)
 # for simplify(), also make sure the package QCA is loaded
 simplify("(A + B)(A + ~B)") # result is "A"
 
+# works even without the quotes
+simplify((A + B)(A + ~B)) # result is "A"
+
+# but to avoid confusion POS expressions are more clear when quoted
 # to force a certain order of the set names
-simplify("(URB + LIT*~DEV)(~LIT + ~DEV)", snames = "DEV, URB, LIT")
+simplify("(URB + LIT*~DEV)(~LIT + ~DEV)", snames = c(DEV, URB, LIT))
 
 # multilevel conditions can also be specified (and negated)
-simplify("(A{1} + ~B{0})(B{1} + C{0})", snames = "A, B, C", noflevels = c(2, 3, 2))
+simplify("(A[1] + ~B[0])(B[1] + C[0])", snames = c(A, B, C), noflevels = c(2, 3, 2))
 
 
 # Ragin's (1987) book presents the equation E = SG + LW as the result
@@ -149,25 +152,25 @@ simplify("(A{1} + ~B{0})(B{1} + C{0})", snames = "A, B, C", noflevels = c(2, 3, 
 # intersecting the reactive ethnicity perspective (R = ~L~W)
 # with the equation E (page 144)
 
-simplify("~L~W(SG + LW)", snames = "S, L, W, G")
+simplify("~L~W(SG + LW)", snames = c(S, L, W, G))
 
 # [1] "S~L~WG"
 
 
 # resources for size and wealth (C = SW) with E (page 145)
-simplify("SW(SG + LW)", snames = "S, L, W, G")
+simplify("SW(SG + LW)", snames = c(S, L, W, G))
 
 # [1] "SWG + SLW"
 
 
 # and factorized
-factorize(simplify("SW(SG + LW)", snames = "S, L, W, G"))
+factorize(simplify("SW(SG + LW)", snames = c(S, L, W, G)))
 
 # F1: SW(G + L)
 
 
 # developmental perspective (D = Lg) and E (page 146)
-simplify("L~G(SG + LW)", snames = "S, L, W, G")
+simplify("L~G(SG + LW)", snames = c(S, L, W, G))
 
 # [1] "LW~G"
 
@@ -175,53 +178,53 @@ simplify("L~G(SG + LW)", snames = "S, L, W, G")
 # not hypothesized by any of the three theories (page 147)
 # ~H = ~(~L~W + SW + L~G) = GL~S + GL~W + G~SW + ~L~SW
 
-simplify("(GL~S + GL~W + G~SW + ~L~SW)(SG + LW)", snames = "S, L, W, G")
+simplify("(GL~S + GL~W + G~SW + ~L~SW)(SG + LW)", snames = c(S, L, W, G))
 
 
 # -----
 # for translate()
-translate("A + B*C")
+translate(A + B*C)
 
 # same thing in multivalue notation
-translate("A{1} + B{1}*C{1}")
+translate(A[1] + B[1]*C[1])
 
 # tilde as a standard negation (note the condition "b"!)
-translate("~A + b*C")
+translate(~A + b*C)
 
 # and even for multivalue variables
 # in multivalue notation, the product sign * is redundant
-translate("C{1} + T{2} + T{1}V{0} + C{0}")
+translate(C[1] + T[2] + T[1]*V[0] + C[0])
 
 # negation of multivalue sets requires the number of levels
-translate("~A{1} + ~B{0}*C{1}", snames = "A, B, C", noflevels = c(2, 2, 2))
+translate(~A[1] + ~B[0]*C[1], snames = c(A, B, C), noflevels = c(2, 2, 2))
 
 # multiple values can be specified
-translate("C{1} + T{1,2} + T{1}V{0} + C{0}")
+translate(C[1] + T[1,2] + T[1]*V[0] + C[0])
 
 # or even negated
-translate("C{1} + ~T{1,2} + T{1}V{0} + C{0}", snames = "C, T, V", noflevels = c(2,3,2))
+translate(C[1] + ~T[1,2] + T[1]*V[0] + C[0], snames = c(C, T, V), noflevels = c(2,3,2))
 
 # if the expression does not contain the product sign *
 # snames are required to complete the translation 
-translate("AaBb + ~CcDd", snames = "Aa, Bb, Cc, Dd")
+translate(AaBb + ~CcDd, snames = c(Aa, Bb, Cc, Dd))
 
 # to print _all_ codes from the standard output matrix
-(obj <- translate("A + ~B*C"))
+(obj <- translate(A + ~B*C))
 print(obj, original = TRUE) # also prints the -1 code
 
 
 # -----
 # for expand()
-expand("~AB + B~C")
+expand(~AB + B~C)
 
 # S1: ~AB~C + ~ABC + AB~C 
 
-expand("~AB + B~C", snames = "A,B,C,D")
+expand(~AB + B~C, snames = c(A, B, C, D))
 
 # S1: ~AB~C~D + ~AB~CD + ~ABC~D + ~ABCD + AB~C~D + AB~CD 
 
 # In implicants form:
-expand("~AB + B~C", snames = "A,B,C,D", implicants = TRUE)
+expand(~AB + B~C, snames = c(A, B, C, D), implicants = TRUE)
 
 #      A B C D
 # [1,] 1 2 1 1    ~AB~C~D

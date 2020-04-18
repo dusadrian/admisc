@@ -80,28 +80,28 @@ and Quantitative Strategies}. Berkeley: University of California Press.
 \examples{
 
 # example from Ragin (1987, p.99)
-negate("AC + B~C", simplify = FALSE)
+negate(AC + B~C, simplify = FALSE)
 
 # the simplified, logically equivalent negation
-negate("AC + B~C")
+negate(AC + B~C)
 
 # with different intersection operators
-negate("AB*EF + ~CD*EF")
+negate(AB*EF + ~CD*EF)
 
 # invert to POS
-invert("a*b + ~c*d")
+invert(a*b + ~c*d)
 
 \dontrun{
 # using an object of class "qca" produced with minimize()
 # from package QCA
 library(QCA)
-cLC <- minimize(LC, outcome = "SURV")
+cLC <- minimize(LC, outcome = SURV)
 
 negate(cLC)
 
 
 # parsimonious solution
-pLC <- minimize(LC, outcome = "SURV", include = "?")
+pLC <- minimize(LC, outcome = SURV, include = "?")
 
 negate(pLC)
 }
