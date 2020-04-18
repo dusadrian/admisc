@@ -159,14 +159,16 @@
 }
 
 `print.admisc_translate` <- function(x, ...) {
-    other.args <- list(...)
     
+    dots <- list(...)
     cat("\n")
     original <- FALSE
-    y <- matrix(as.vector(x), nrow=nrow(x))
-    if (is.element("original", names(other.args))) {
-        if (is.logical(other.args$original)) {
-            original <- other.args$original[1]
+    
+    y <- matrix(as.vector(x), nrow = nrow(x))
+
+    if (is.element("original", names(dots))) {
+        if (is.logical(dots$original)) {
+            original <- dots$original[1]
         }
     }
     

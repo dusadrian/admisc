@@ -11,12 +11,12 @@
     expression <- recreate(substitute(expression))
     snames <- recreate(substitute(snames))
 
-    other.args <- list(...)
-    enter <- ifelse(is.element("enter", names(other.args)), "",  "\n") # internal
+    dots <- list(...)
+    enter <- ifelse(is.element("enter", names(dots)), "",  "\n") # internal
     
     multivalue <- FALSE
     
-    scollapse <- ifelse(is.element("scollapse", names(other.args)), other.args$scollapse, FALSE) # internal collapse method
+    scollapse <- ifelse(is.element("scollapse", names(dots)), dots$scollapse, FALSE) # internal collapse method
     scollapse <- scollapse | grepl("[*]", expression)
 
     if (!is.null(noflevels)) {

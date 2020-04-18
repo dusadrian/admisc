@@ -5,8 +5,8 @@
     # return(substitute(input))
     input <- recreate(substitute(input))
     snames <- recreate(substitute(snames))
-    other.args <- list(...)
-    scollapse <- ifelse(is.element("scollapse", names(other.args)), other.args$scollapse, FALSE) # internal collapse method
+    dots <- list(...)
+    scollapse <- ifelse(is.element("scollapse", names(dots)), dots$scollapse, FALSE) # internal collapse method
 
     if (!is.null(noflevels)) {
         noflevels <- splitstr(noflevels)

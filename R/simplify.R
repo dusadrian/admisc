@@ -2,12 +2,12 @@
     
     expression <- recreate(substitute(expression))
     snames <- recreate(substitute(snames))
-    other.args <- list(...)
+    dots <- list(...)
     mvregexp <- "\\[|\\]|\\{|\\}"
 
-    enter     <- if (is.element("enter",     names(other.args))) ""                   else "\n" # internal
-    all.sol   <- if (is.element("all.sol",   names(other.args))) other.args$all.sol   else FALSE
-    scollapse <- if (is.element("scollapse", names(other.args))) other.args$scollapse else FALSE # internal collapse method
+    enter     <- if (is.element("enter",     names(dots))) ""                   else "\n" # internal
+    all.sol   <- if (is.element("all.sol",   names(dots))) dots$all.sol   else FALSE
+    scollapse <- if (is.element("scollapse", names(dots))) dots$scollapse else FALSE # internal collapse method
 
     if (identical(snames, "")) {
         syscalls <- unlist(lapply(sys.calls(), deparse))

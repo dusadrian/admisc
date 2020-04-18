@@ -3,9 +3,9 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
     
     expression <- recreate(substitute(expression))
     snames <- recreate(substitute(snames))
-    other.args <- list(...)
+    dots <- list(...)
 
-    enter <- ifelse (is.element("enter", names(other.args)), "",  "\n") # internal
+    enter <- ifelse (is.element("enter", names(dots)), "",  "\n") # internal
     
     if (identical(expression, "")) {
         cat(enter)
@@ -98,7 +98,7 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
     replaced <- FALSE
     
     if (!identical(snames, "") & length(snames) > 0) {
-        if (any(nchar(snames) > 1) & !is.element("validate", names(other.args))) {
+        if (any(nchar(snames) > 1) & !is.element("validate", names(dots))) {
             
             snameso <- snames
             if (length(snames) < 27) {
@@ -168,7 +168,7 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
     aftermessage <- "does not match the set names from \"snames\" argument"
     
     
-    if (is.element("validate", names(other.args))) {
+    if (is.element("validate", names(dots))) {
         if (is.null(data)) {
             beforemessage <- "Object"
             aftermessage <- "not found"
@@ -393,7 +393,7 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
         stop(simpleError(paste0("Impossible to translate an empty set.", enter, enter)))
     }
     
-    if (is.element("retlist", names(other.args))) {
+    if (is.element("retlist", names(dots))) {
         attr(retmat, "retlist") <- retlist
     }
     

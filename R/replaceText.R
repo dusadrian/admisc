@@ -1,8 +1,8 @@
 
     replaceText <- function(expression, target = "", replacement = "", boolean = FALSE, ...) {
 
-        other.args <- list(...)
-        enter <- ifelse (is.element("enter", names(other.args)), "",  "\n")
+        dots <- list(...)
+        enter <- ifelse (is.element("enter", names(dots)), "",  "\n")
 
         if (!is.character(target)) {
             cat("\n")

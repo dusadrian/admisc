@@ -6,7 +6,7 @@ function(mymat, mv = FALSE, collapse = "*", snames = "", ...) {
         mv <- TRUE
     }
     
-    other.args <- list(...)
+    dots <- list(...)
 
     if (identical(snames, "")) {
         snames <- colnames(mymat)
@@ -17,8 +17,8 @@ function(mymat, mv = FALSE, collapse = "*", snames = "", ...) {
     }
     
     chars <- snames[col(mymat)]
+    curly <- dots$curly
     
-    curly <- other.args$curly
     if (is.null(curly)) curly <- FALSE
 
     if (mv) {

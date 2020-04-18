@@ -13,10 +13,10 @@ function(input, snames = "", noflevels = NULL, pos = FALSE, ...) {
     
     snames <- recreate(substitute(snames))
     
-    other.args <- list(...)
+    dots <- list(...)
     
     
-    scollapse <- ifelse(is.element("scollapse", names(other.args)), other.args$scollapse, FALSE) # internal collapse method
+    scollapse <- ifelse(is.element("scollapse", names(dots)), dots$scollapse, FALSE) # internal collapse method
     
     `pasteit` <- function(mat, comrows, cols, comvals, snames = "", mv = FALSE, collapse = "*", curly = FALSE) {
         
