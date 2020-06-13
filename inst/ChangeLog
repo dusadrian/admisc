@@ -1,3 +1,8 @@
+Version 0.9
+    o Solved bug in translate() recognizing column names for datasets with more
+      than 27 columns (thanks to Sophia Birchinger for the report)
+    o New function export(), moved here from package QCA
+      
 Version 0.8
     o Extended functionality to other types of vectors, such as having the 
       class "haven_labelled"

@@ -14,7 +14,7 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
     
     if (any(grepl("<=>|<->|=>|->|<=|<-", expression))) {
         cat(enter)
-        stop(simpleError(paste0("Incorrect expression.", enter, enter)))
+        stop(simpleError(paste0("Incorrect expression, contains outcome and relation.", enter, enter)))
     }
     
     if (!is.vector(snames)) {
@@ -59,7 +59,6 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
     }
     
     if (identical(snames, "")) {
-        
         if (!is.null(data)) {
             snames <- colnames(data)
         }
@@ -162,7 +161,6 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
     pporig <- trimstr(unlist(strsplit(expression, split="[+]")))
     multivalue <- any(grepl("\\[|\\]|\\{|\\}", expression))
     expression <- gsub("[[:space:]]", "", expression)
-    
     
     beforemessage <- "Condition"
     aftermessage <- "does not match the set names from \"snames\" argument"
@@ -288,13 +286,14 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
     }
     else {
 
-        sl <- ifelse(replaced | identical(snames, ""), TRUE, all(nchar(snames) == 1))
+        sl <- ifelse((replaced & length(snames) < 27) | identical(snames, ""), TRUE, all(nchar(snames) == 1))
         # parse plus
         pp <- unlist(strsplit(expression, split = "[+]"))
         
         if (replaced) {
             pp <- gsub("[*]", "", pp)
         }
+
         splitchar <- ifelse(any(grepl("[*]", pp)) | !sl, "[*]", "")
         conds <- setdiff(sort(unique(notilde(unlist(strsplit(pp, split = splitchar))))), "")
         

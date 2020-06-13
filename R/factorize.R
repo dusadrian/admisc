@@ -87,7 +87,7 @@ function(input, snames = "", noflevels = NULL, pos = FALSE, ...) {
             rowsf <- paste(rowsf, collapse = " + ")
             
             cf <- paste(cf[order(match(gsub("[^A-Za-z]", "", cf), snames))], collapse = collapse)
-            pasted <- paste(cf, rowsf, sep="@")
+            pasted <- paste(cf, rowsf, sep = "@")
             
         }
         else {
