@@ -40,8 +40,8 @@
 
     version <- NULL
     if (requireNamespace("QCA", quietly = TRUE)) {
-        version <- substring(packageDescription("QCA")$Version, 1, 3)
-        version <- unlist(strsplit(version, split = "\\."))
+        version <- packageDescription("QCA")$Version
+        version <- as.numeric(unlist(strsplit(version, split = "\\.")))
         if (version[1] < 3 | (version[1] >= 3 & version[2] < 7)) {
             version <- NULL
         }

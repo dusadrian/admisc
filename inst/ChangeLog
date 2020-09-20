@@ -1,3 +1,6 @@
+Version 0.10
+    o Minor, internal functionality changes
+      
 Version 0.9
     o Solved bug in translate() recognizing column names for datasets with more
       than 27 columns (thanks to Sophia Birchinger for the report)
@@ -14,16 +17,16 @@ Version 0.7
       from the CRAN servers for the OS X platform
 
 Version 0.6
-    o Major modification (and *not* backwards compatible!) relative to
+    o Major modification (and *not* backwards compatible!) with respect to
       denoting negations. Using upper and lower case letters for presence and
       absence is no longer supported, a tilde being the only and the default
       method to signal a negation (thanks to Charles Ragin for making the point)
     o Removed deprecated argument "use.tilde" from all related functions
     o All functions treating a DNF/SOP expression now obey this major
       (and not backwards compatible) change denoting a negation. Upper
-      and lower case conditions are now longer supported
-    o All printing classes are now prefixed with "admisc", to avoid possible namespace
-      collisions with (previous) versions of package QCA
+      and lower case conditions are no longer supported
+    o All printing classes are now prefixed with "admisc", to avoid possible
+      namespace collisions with (previous) versions of package QCA
     o New function invert() to convert a SOP expression to a POS expression
       (thanks to Charles Ragin for the suggestion)
     o New function expand() to perform a full or a partial Quine expansion

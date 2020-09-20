@@ -1,5 +1,25 @@
 `intersection` <- function(..., snames = "", noflevels = NULL) {
     
+    # (function(...)substitute(...()))(x = A, y = B)
+    # $x
+    # A
+
+    # $y
+    # B
+
+    # (function(...)substitute(list(...)))(x = A, y = B)
+    # list(x = A, y = B)
+
+    # is.list(aa)
+    # [1] TRUE
+    # names(aa)
+    # [1] "x" "y"
+    # is.list(bb)
+    # [1] FALSE
+    # bb[[2]] # si totusi se comporta ca o lista
+    # A
+    # names(bb)
+    # [1] ""  "x" "y"
     
     dots <- substitute(list(...))
     
