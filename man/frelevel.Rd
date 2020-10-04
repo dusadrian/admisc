@@ -20,7 +20,7 @@ frelevel(variable, levels)
 
 \author{Adrian Dusa}
 
-\seealso{relevel}
+\seealso{\code{\link[stats]{relevel}}}
 
 \examples{
 words <- c("ini", "mini", "miny", "moe")

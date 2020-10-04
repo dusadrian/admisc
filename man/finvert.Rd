@@ -18,8 +18,6 @@ finvert(variable, levels = FALSE)
 
 \author{Adrian Dusa}
 
-\seealso[stats]{relevel}
-
 \examples{
 words <- c("ini", "mini", "miny", "moe")
 variable <- factor(words, levels = words)
