@@ -1,3 +1,10 @@
+Version 0.11
+    o New function frelevel(), an improved version of the base relevel()
+    o New function permutations()
+    o New function invertf(), to invert a factor's values (and optional
+      its levels)
+    o Improved version of combnk(), to cover input vectors of any type
+      
 Version 0.10
     o Minor, internal functionality changes
       

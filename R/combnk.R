@@ -14,14 +14,35 @@
         cat("\n")
         stop(simpleError("Argument k should be positive.\n\n"))
     }
-    
-    if (n < k) {
-        cat("\n")
-        stop(simpleError("Argument n should be greater than or equal to k.\n\n"))
+
+    len <- length(n)
+    lngt1 <- len > 1
+
+    if (lngt1) {
+        if (len < k) {
+            cat("\n")
+            stop(simpleError("Argument k cannot be greater than the length of n.\n\n"))
+        }
+    }
+    else {
+        if (!is.numeric(n)) {
+            cat("\n")
+            stop(simpleError("When scalar, argument n should be numeric.\n\n"))
+        }
+
+        if (n < k) {
+            cat("\n")
+            stop(simpleError("Argument n should be greater than or equal to k.\n\n"))
+        }
+    }
+
+    copyn <- n
+    if (lngt1) {
+        n <- len
     }
     
     if (requireNamespace("QCA", quietly = TRUE)) {
-        QCA::combint(n = n, k = k, ogte = ogte, zerobased = zerobased)
+        resmat <- QCA::combint(n = n, k = k, ogte = ogte, zerobased = zerobased)
     }
     else {
         e <- 0L
@@ -69,7 +90,13 @@
             i <- i + 1
         }
         
-        return(do.call("cbind", out[!unlist(lapply(out, is.null))]))
+        resmat <- do.call("cbind", out[!unlist(lapply(out, is.null))])
     }
+
+    if (lngt1) {
+        resmat <- matrix(copyn[resmat], nrow = nrow(resmat))
+    }
+
+    return(resmat)
 }
 
