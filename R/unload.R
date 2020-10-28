@@ -1,8 +1,8 @@
 `unload` <- function(package) {
-    package <- gsub("\\\"", "", deparse(substitute(package)))
+    package <- recreate(substitute(package))
     
     if (is.element(package, .packages())) { # equivalent of isNamespaceLoaded(package) but better
-        detach(paste("package", package, sep = ":"), character.only = TRUE, unload = TRUE)
+        detach(paste("package", package, sep = ":"), character.only = TRUE, unload = TRUE, force = TRUE)
         unloadNamespace(package)
     }
     

@@ -1,12 +1,12 @@
 Package: admisc
-Version: 0.10-1
+Version: 0.11
 Date: 2020-10-04
 Title: Adrian Dusa's Miscellaneous
 Authors@R: person(given = "Adrian", family = "Dusa",
                   role = c("aut", "cre", "cph"),
                   email = "dusa.adrian@unibuc.ro",
                   comment = c(ORCID = "0000-0002-3525-9253"))
-Depends: R (>= 3.5.0)
+Depends: R (>= 3.6.0)
 Imports: methods
 Suggests: QCA (>= 3.7)
 Description: Contains functions used across packages 'QCA', 'DDIwR', and 'venn'.

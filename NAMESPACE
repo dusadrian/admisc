@@ -41,6 +41,7 @@ export(
         tildae,
         tilde1st,
     recreate,
+    reload,
     replaceText,
     simplify,
     sop,

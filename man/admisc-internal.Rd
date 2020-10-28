@@ -13,6 +13,7 @@
 \alias{negateLoop}
 \alias{prettyString}
 \alias{prettyTable}
+\alias{reload}
 \alias{removeSingleStars}
 \alias{splitMainComponents}
 \alias{splitstr}
