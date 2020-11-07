@@ -9,13 +9,15 @@
     scollapse <- ifelse(is.element("scollapse", names(dots)), dots$scollapse, FALSE) # internal collapse method
 
     if (!is.null(noflevels)) {
-        noflevels <- splitstr(noflevels)
-        if (possibleNumeric(noflevels)) {
-            noflevels <- asNumeric(noflevels)
-        }
-        else {
-            cat("\n")
-            stop(simpleError("Invalid number of levels.\n\n"))
+        if (is.character(noflevels)) {
+            noflevels <- splitstr(noflevels)
+            if (possibleNumeric(noflevels)) {
+                noflevels <- asNumeric(noflevels)
+            }
+            else {
+                cat("\n")
+                stop(simpleError("Invalid number of levels.\n\n"))
+            }
         }
     }
     
@@ -77,9 +79,15 @@
         }
     }
     
-    mv <- any(grepl("\\[|\\]", input))
-    if (mv) start <- FALSE
-    scollapse <- scollapse | any(nchar(snames) > 1) | mv | star
+    multivalue <- any(grepl("\\[|\\]|\\{|\\}", input))
+    if (multivalue) {
+        start <- FALSE
+        if (is.null(noflevels) | identical(snames, "")) {
+            cat("\n")
+            stop(simpleError("Set names and their number of levels are required to negate multivalue expressions.\n\n"))
+        }
+    }
+    scollapse <- scollapse | any(nchar(snames) > 1) | multivalue | star
     collapse <- ifelse(scollapse, "*", "")
     
     negateit <- function(x, snames = "", noflevels = NULL, simplify = TRUE, collapse = "*") {
@@ -109,7 +117,7 @@
                 paste(setdiff(snoflevels[wx][[i]], splitstr(x[i])), collapse = ",")
             })
             
-            if (mv) {
+            if (multivalue) {
                 return(paste("(", paste(nms, "[", x, "]", sep = "", collapse = " + "), ")", sep = ""))
             }
             else {
@@ -131,7 +139,7 @@
         return(negated)
     }
 
-    # return(list(input = input, snames = snames, noflevels = noflevels, simplify = simplify))
+    # return(list(input = input, snames = snames, noflevels = noflevels, simplify = simplify, collapse = collapse))
 
     result <- lapply(input, negateit, snames = snames, noflevels = noflevels, simplify = simplify, collapse = collapse)
     

@@ -6,9 +6,9 @@
 
 \description{
 Recodes a vector (numeric, character or factor) according to a set of rules.
-Similar to the \bold{\code{\link[car]{recode}()}} function in package \bold{\pkg{car}},
-but more flexible. It is also similar to function \bold{\code{\link[base]{findInterval}()}}
-from package \bold{\pkg{base}}.
+It is similar to the function \bold{\code{recode}()} from package \bold{\pkg{car}},
+but more flexible. It also has similarities with the function
+\bold{\code{\link[base]{findInterval}()}} from package \bold{\pkg{base}}.
 }
 
 \usage{

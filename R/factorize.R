@@ -351,7 +351,7 @@ function(input, snames = "", noflevels = NULL, pos = FALSE, ...) {
         mv <- any(grepl("\\[|\\{", unlist(input)))
         curly <- any(grepl("\\{", unlist(input)))
         
-        
+        # return(factorizeit(input, pos = pos, snames = snames, noflevels = noflevels, mv = mv, curly = curly))
         result <- lapply(input, function(x) {
             factorizeit(x, pos = pos, snames = snames, noflevels = noflevels, mv = mv, curly = curly)
         })

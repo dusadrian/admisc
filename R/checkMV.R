@@ -30,7 +30,7 @@
     
     if (any(grepl("[a-zA-Z]", gsub("[,|;]", "", insb)))) {
         cat("\n")
-        stop(simpleError("Invalid {multi}values, levels should be numeric.\n\n"))
+        stop(simpleError("Invalid [multi]values, levels should be numeric.\n\n"))
     }
     
     if (curly) {

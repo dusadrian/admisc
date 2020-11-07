@@ -6,11 +6,11 @@
   Useful function to invert the values from a categorical variable, for instance
   a Likert response scale.}
 \usage{
-finvert(variable, levels = FALSE)
+finvert(x, levels = FALSE)
 }
 
 \arguments{
-  \item{variable}{A categorical variable (a factor)}
+  \item{x}{A categorical variable (a factor)}
   \item{levels}{Logical, invert the levels as well}
 }
 

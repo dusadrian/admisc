@@ -7,4 +7,3 @@
     flist <- list(levels(x), rev(levels(x)))
     return(factor(x, levels = flist[[1 + !levels]], labels = flist[[1 + levels]]))
 }
-

@@ -7,7 +7,7 @@
             eval(parse(text = paste("suppressMessages(library(", package, "))")))
         }
         else {
-            library(package)
+            eval(parse(text = paste("library(", package, ")")))
         }
     }
 }
