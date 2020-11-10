@@ -6,7 +6,7 @@
 
 \description{
 Recodes a vector (numeric, character or factor) according to a set of rules.
-It is similar to the function \bold{\code{recode}()} from package \bold{\pkg{car}},
+It is similar to the function \bold{\code{recode}()} from package \pkg{car},
 but more flexible. It also has similarities with the function
 \bold{\code{\link[base]{findInterval}()}} from package \bold{\pkg{base}}.
 }
@@ -22,12 +22,12 @@ recode(x, rules, cuts, values, ...)
     \item{cuts}{A vector of one or more unique cut points.}
     \item{values}{A vector of output values.}
     \item{...}{Other parameters, for compatibility with other functions such as
-               \bold{\code{\link[car]{recode}()}} in package \bold{\pkg{car}} but also
+               \bold{\code{recode}()} in package \pkg{car} but also
          \bold{\code{\link[base]{factor}()}} in package \bold{\pkg{base}}}
 }
 
 \details{
-Similar to the \bold{\code{recode()}} function in package \bold{\pkg{car}}, the
+Similar to the \bold{\code{recode()}} function in package \pkg{car}, the
 recoding rules are separated by semicolons, of the form \bold{\code{input = output}},
 and allow for:
 
@@ -39,7 +39,7 @@ and allow for:
     \bold{\code{else}} \tab everything that is not covered by the previously specified rules
 }
 
-Contrary to the \bold{\code{\link[car]{recode}()}} function in package \bold{\pkg{car}}, this
+Contrary to the \bold{\code{recode}()} function in package \pkg{car}, this
 function allows the \bold{\code{:}} sequence operator (even for factors), so that a rule
 such as \bold{\code{c(1,3,5:7)}}, or \bold{\code{c(a,d,f:h)}} would be valid.
 
@@ -56,12 +56,12 @@ like \bold{\code{"1:2='A'"}} but that is not mandatory in this function, \bold{\
 would do just as well. Output values such as \bold{\code{"NA"}} or \bold{\code{"missing"}}
 are converted to \bold{\code{NA}}.
 
-Another difference from the \bold{\pkg{car}} package: the output is \bold{not} automatically
+Another difference from the \pkg{car} package: the output is \bold{not} automatically
 converted to a factor even if the original variable is a factor. That option is left to the
 user's decision to specify \bold{\code{as.factor.result}}, defaulted to \bold{\code{FALSE}}.
 
 A capital difference is the treatment of the values not present in the recoding rules. By
-default, package \bold{\pkg{car}} copies all those values in the new object, whereas in this
+default, package \pkg{car} copies all those values in the new object, whereas in this
 package the default values are \bold{\code{NA}} and new values are added only if they are
 found in the rules. Users can choose to copy all other values not present in the recoding
 rules, by specifically adding \bold{\code{else=copy}} in the rules.
@@ -69,8 +69,8 @@ rules, by specifically adding \bold{\code{else=copy}} in the rules.
 Since the two functions have the same name, it is possible that users loading both
 packages to use one instead of the other (depending which package is loaded first).
 In order to preserve functionality and minimize possible namespace collisions with package
-\bold{\pkg{car}}, special efforts have been invested to ensure perfect compatibility with
-the other \bold{\code{\link[car]{recode}()}} function (plus more).
+\pkg{car}, special efforts have been invested to ensure perfect compatibility with
+the other \bold{\code{recode}()} function (plus more).
 
 The argument \bold{\code{...}} allows for more arguments specific to the \pkg{car} package,
 such as \bold{\code{as.factor.result}}, \bold{\code{as.numeric.result}} and \bold{\code{levels}}.

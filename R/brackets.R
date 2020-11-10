@@ -80,10 +80,13 @@
 }
 
 
-`expandBrackets` <- function(expression, snames = "", noflevels = NULL, collapse = "*") {
+`expandBrackets` <- function(expression, snames = "", noflevels = NULL) {
     expression <- recreate(substitute(expression))
     snames <- splitstr(snames)
+    star <- any(grepl("[*]", expression))
     multivalue <- any(grepl("\\[|\\]|\\{|\\}", expression))
+    collapse <- ifelse(any(nchar(snames) > 1) | multivalue | star, "*", "")
+
     curly <- grepl("[{]", expression)
     sl <- ifelse(identical(snames, ""), FALSE, ifelse(all(nchar(snames) == 1), TRUE, FALSE))
     getbl <- function(expression, snames = "", noflevels = NULL) {

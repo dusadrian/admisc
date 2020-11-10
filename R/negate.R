@@ -127,7 +127,7 @@
             
         }), collapse = "")
         
-        negated <- expandBrackets(negated, snames = snames, noflevels = noflevels, collapse = collapse)
+        negated <- expandBrackets(negated, snames = snames, noflevels = noflevels)
         
         callist$expression <- negated
         callist$scollapse <- identical(collapse, "*")

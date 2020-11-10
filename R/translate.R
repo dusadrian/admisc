@@ -146,6 +146,7 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
     }
     
     arglist <- list(snames = snames)
+
     if (!is.null(noflevels)) {
         arglist$noflevels <- noflevels
     }
