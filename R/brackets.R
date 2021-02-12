@@ -7,6 +7,7 @@
     if (is.na(tml)) {
         tml <- 1
     }
+    
     tml <- typematrix[tml, 1:2]
     result <- gsub(paste("\\", tml, sep = "", collapse = "|"), "",
         regmatches(x, gregexpr(paste("\\", tml, sep = "", collapse = "[[:alnum:]|,]*"), x), invert = invert)[[1]])
