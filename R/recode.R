@@ -29,8 +29,8 @@ function(x, rules, cuts, values, ...) {
     as.numeric.result <- if (is.element("as.numeric.result", names(dots))) dots$as.numeric.result else TRUE
     factor.ordered    <- if (is.element("ordered",           names(dots))) dots$ordered           else FALSE
     factor.ordered    <- if (is.element("ordered_result",    names(dots))) dots$ordered_result    else FALSE
-    factor.levels     <- if (is.element("levels",            names(dots))) dots$levels            else c()
-    factor.labels     <- if (is.element("labels",            names(dots))) dots$labels            else c()
+    factor.levels     <- if (is.element("levels",            names(dots))) splitstr(dots$levels)  else c()
+    factor.labels     <- if (is.element("labels",            names(dots))) splitstr(dots$labels)  else c()
     
     if (is.logical(factor.labels)) {
         factor.labels <- c()

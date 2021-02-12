@@ -6,7 +6,7 @@
 
 \description{
 This function finds all combinations of common factors in a Boolean expression
-written in SOP - sum of products. It makes use of the function,
+written in SOP - sum of products. It makes use of the function
 \bold{\code{\link{simplify}()}}, which uses the function
 \bold{\code{\link[QCA]{minimize}()}} from package \bold{\pkg{QCA}}). Users are
 highly encouraged to install and load that package, despite not being present
