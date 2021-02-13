@@ -263,7 +263,7 @@ function(x, rules, cuts, values, ...) {
             }
         }
 
-        if (identical(factor.labels, c())) {
+        if (identical(factor.labels, c()) & is.numeric(cuts)) {
             factor.labels <- values
         }
     }
@@ -272,7 +272,7 @@ function(x, rules, cuts, values, ...) {
         if (identical(factor.levels, c())) {
             factor.levels <- sort(unique(na.omit(temp)))
         }
-        
+
         if (identical(factor.labels, c())) {
             factor.labels <- factor.levels
         }
