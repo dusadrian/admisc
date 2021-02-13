@@ -35,6 +35,10 @@ function(x, rules, cuts, values, ...) {
     if (is.logical(factor.labels)) {
         factor.labels <- c()
     }
+
+    if (!identical(factor.levels, c()) || !identical(factor.labels, c())) {
+        as.factor.result  <- TRUE
+    }
     
     getFromRange <- function(a, b) {
         
@@ -258,17 +262,22 @@ function(x, rules, cuts, values, ...) {
                 temp[x > cuts[i]] = values[i + 1]
             }
         }
+
+        if (identical(factor.labels, c())) {
+            factor.labels <- values
+        }
     }
     
     if (as.factor.result) {
         if (identical(factor.levels, c())) {
             factor.levels <- sort(unique(na.omit(temp)))
         }
+        
         if (identical(factor.labels, c())) {
             factor.labels <- factor.levels
         }
         
-        temp <- factor(temp, levels=factor.levels, labels=factor.labels, ordered=factor.ordered)
+        temp <- factor(temp, levels = factor.levels, labels = factor.labels, ordered = factor.ordered)
     }
     else if (as.numeric.result) {
         if (possibleNumeric(temp)) {

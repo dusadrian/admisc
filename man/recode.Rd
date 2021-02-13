@@ -73,9 +73,11 @@ In order to preserve functionality and minimize possible namespace collisions wi
 the other \bold{\code{recode}()} function (plus more).
 
 The argument \bold{\code{...}} allows for more arguments specific to the \pkg{car} package,
-such as \bold{\code{as.factor.result}}, \bold{\code{as.numeric.result}} and \bold{\code{levels}}.
-In addition, it also accepts \bold{\code{labels}} and \bold{\code{ordered}} specific to function
-\bold{\code{\link[base]{factor}()}} in package \bold{\pkg{base}}.
+such as \bold{\code{as.factor.result}}, \bold{\code{as.numeric.result}}. In addition, it also
+accepts \bold{\code{levels}}, \bold{\code{labels}} and \bold{\code{ordered}} specific to function
+\bold{\code{\link[base]{factor}()}} in package \bold{\pkg{base}}. When using the arguments
+\bold{\code{levels}} and / or \bold{\code{labels}}, the output will automatically be coerced
+to a factor.
 
 Blank spaces outside category labels are ignored, see the last example.
 
