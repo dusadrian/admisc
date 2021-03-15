@@ -13,7 +13,7 @@ function(expression = "", data = NULL, separate = FALSE) { # na.rm = FALSE
     
     if (is.null(data)) {
         
-        syscalls <- parse(text = paste(unlist(lapply(sys.calls(), deparse)), collapse = "\n"))
+        syscalls <- as.character(sys.calls())
         if (any(withdata <- grepl("with\\(", syscalls))) {
             withdata <- which(withdata)
             withdata <- withdata[length(withdata)]
@@ -115,5 +115,3 @@ function(expression = "", data = NULL, separate = FALSE) { # na.rm = FALSE
     
     return(res)
 }
-    
-

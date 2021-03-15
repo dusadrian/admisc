@@ -47,7 +47,8 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
         # if (length(wth) > 0) {
         #     data <- get(unlist(lapply(lapply(sc[wth], as.character), "[[", 2)), envir = length(syscalls) - wth)
         # }
-        syscalls <- parse(text = paste(unlist(lapply(sys.calls(), deparse)), collapse = "\n"))
+        
+        syscalls <- as.character(sys.calls())
         if (length(withdata <- grep("with\\(", syscalls)) > 0) {
             withdata <- withdata[length(withdata)]
             data <- get(unlist(strsplit(gsub("with\\(", "", syscalls[withdata]), split = ","))[1], envir = length(syscalls) - withdata)

@@ -3,7 +3,6 @@ importFrom("stats", "na.omit", "dist", "relevel")
 importFrom("methods", "is")
 
 export(
-    foo,
     alteb,
     agteb,
     aeqb,
