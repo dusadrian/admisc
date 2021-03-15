@@ -1,4 +1,6 @@
 Version 0.12
+    o Solved bug in function translate() when called from plumber or
+      callr (thanks to Trevor Strobel for the report)
     o Solved bug in dealing with expressions containing brackets with
       single letter conditions and no star signs to indicate conjunctions
     o New functions list.rda() and names.rda()
