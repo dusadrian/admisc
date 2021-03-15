@@ -1,4 +1,5 @@
 \name{admisc-internal}
+\alias{foo}
 \alias{checkMV}
 \alias{checkSubset}
 \alias{classify}

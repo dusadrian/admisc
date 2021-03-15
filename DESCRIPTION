@@ -17,3 +17,5 @@ Description: Contains functions used across packages 'QCA', 'DDIwR', and 'venn'.
     and coerce to numeric, or check if the numbers are whole. It also offers, among
     many others, a highly flexible recoding routine.
 License: GPL (>= 3)
+URL: https://github.com/dusadrian/admisc
+BugReports: https://github.com/dusadrian/admisc/issues
