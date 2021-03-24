@@ -1,7 +1,6 @@
 `obj.rda` <- function(.filename) {
-    attach(.filename)
     attached_filename <- paste0("file:", .filename, "")
-    nms <- ls(envir = as.environment(attached_filename))
-    eval(substitute(detach(name), list(name = attached_filename)))
-    return(nms)
+    do.call("attach", list(what = .filename, name = attached_filename))
+    on.exit(eval(substitute(detach(name), list(name = attached_filename))))
+    return(ls(envir = as.environment(attached_filename)))
 }
