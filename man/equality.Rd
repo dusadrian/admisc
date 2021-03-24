@@ -38,8 +38,7 @@ Adrian Dusa
 
 \references{
 Goldberg, David (1991) "What Every Computer Scientist Should Know About Floating-point Arithmetic",
-ACM Computing Surveys vol.23, no.1, pp.5-48, DOI:
-\href{http://dx.doi.org/10.1145/103162.103163}{10.1145/103162.103163}
+ACM Computing Surveys vol.23, no.1, pp.5-48, \doi{10.1145/103162.103163}
 }
 
 
