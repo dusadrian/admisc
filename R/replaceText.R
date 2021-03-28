@@ -82,7 +82,23 @@
             }
         }
 
-        if (pos > 0) {
+        covered <- logical(length(positions))
+        for (i in seq(length(positions) - 1)) {
+            if (!covered[i]) {
+                for (j in seq(2, length(positions))) {
+                    if (!covered[j]) {
+                        if (all(is.element(seq(positions[[j]][1], positions[[j]][2]), seq(positions[[i]][1], positions[[i]][2])))) {
+                            covered[j] <- TRUE
+                        }
+                    }
+                }
+            }
+        }
+
+        positions <- positions[!covered]
+
+
+        if (length(positions) > 0) {
 
             # sort the positions in descending order of the first character location
             # such that, if replacing from tail to start, the other positions
