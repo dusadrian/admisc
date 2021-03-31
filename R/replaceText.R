@@ -83,12 +83,13 @@
         }
 
         covered <- logical(length(positions))
+        pos2 <- positions
         if (pos > 1) {
-            for (i in seq(length(positions) - 1)) {
+            for (i in seq(length(pos2) - 1)) {
                 if (!covered[i]) {
-                    for (j in seq(2, length(positions))) {
+                    for (j in seq(i + 1, length(pos2))) {
                         if (!covered[j]) {
-                            if (all(is.element(seq(positions[[j]][1], positions[[j]][2]), seq(positions[[i]][1], positions[[i]][2])))) {
+                            if (all(is.element(seq(pos2[[j]][1], pos2[[j]][length(pos2[[j]])]), seq(pos2[[i]][1], pos2[[i]][length(pos2[[i]])])))) {
                                 covered[j] <- TRUE
                             }
                         }
