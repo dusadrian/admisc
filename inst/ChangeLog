@@ -1,3 +1,10 @@
+Version 0.15
+    o new function isElement()
+    o function recode() now recognises labelled vectors and tagged NAs
+    o argument "cuts" renamed to "cut" in function recode()
+    o solved bug in function recode() that prevented creating ordered
+      factors
+      
 Version 0.12
     o Solved bug in function translate() when called from plumber or
       callr (thanks to Trevor Strobel for the report)
@@ -5,7 +12,7 @@ Version 0.12
       single letter conditions and no star signs to indicate conjunctions
     o New functions list.rda() and names.rda()
     o Small improvement of the recode() function
-      
+
 Version 0.11
     o New function finvert(), to invert a factor's values (and optional
       its levels)

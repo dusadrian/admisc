@@ -12,14 +12,14 @@ but more flexible. It also has similarities with the function
 }
 
 \usage{
-recode(x, rules, cuts, values, ...)
+recode(x, rules, cut, values, ...)
 }
 
 \arguments{
     \item{x}{A vector of mode numeric, character or factor.}
     \item{rules}{Character string or a vector of character strings
                  for recoding specifications.}
-    \item{cuts}{A vector of one or more unique cut points.}
+    \item{cut}{A vector of one or more unique cut points.}
     \item{values}{A vector of output values.}
     \item{...}{Other parameters, for compatibility with other functions such as
                \bold{\code{recode}()} in package \pkg{car} but also
@@ -82,9 +82,9 @@ to a factor.
 Blank spaces outside category labels are ignored, see the last example.
 
 It is possible to use \bold{\code{recode()}} in a similar way to function \bold{\code{cut()}},
-by specifying a vector of cuts which work for both numeric and character/factor objects. 
-For any number of \bold{\code{c}} cuts, there should be \bold{\code{c + 1}} values, and if
-not otherwise specified the argument \bold{\code{values}} is automatically constructed as a
+by specifying a vector of cut values which work for both numeric and character/factor objects. 
+For any number of \bold{\code{c}} cut values, there should be \bold{\code{c + 1}} values, and
+if not otherwise specified the argument \bold{\code{values}} is automatically constructed as a
 sequence of numbers from \bold{\code{1}} to \bold{\code{c + 1}}.
 
 Unlike the function \bold{\code{cut()}}, arguments such as \bold{\code{include.lowest}} or
@@ -98,7 +98,6 @@ Adrian Dusa
 
 \examples{
 x <- rep(1:3, 3)
-x
 #  [1] 1 2 3 1 2 3 1 2 3
 
 recode(x, "1:2 = A; else = B")
@@ -107,24 +106,31 @@ recode(x, "1:2 = A; else = B")
 recode(x, "1:2 = 0; else = copy")
 #  [1] 0 0 3 0 0 3 0 0 3
 
+
+set.seed(1234)
+x <- sample(18:90, 20, replace = TRUE)
+#  [1] 45 39 26 22 55 33 21 87 31 73 79 21 21 38 57 73 84 22 83 64
+
+recode(x, cut = "35, 55")
+#  [1] 2 2 1 1 2 1 1 3 1 3 3 1 1 2 3 3 3 1 3 3
+
 set.seed(1234)
 x <- factor(sample(letters[1:10], 20, replace = TRUE),
           levels = letters[1:10])
-x
-#  [1] b g g g i g a c g f g f c j c i c c b c
+#  [1] j f e i e f d b g f j f d h d d e h d h
 # Levels: a b c d e f g h i j
 
 recode(x, "b:d = 1; g:hi = 2; else = NA") # note the "hi" special value
-#  [1]  1  2  2  2  2  2 NA  1  2 NA  2 NA  1  2  1  2  1  1  1  1
+#  [1]  2 NA NA  2 NA NA  1  1  2 NA  2 NA  1  2  1  1 NA  2  1  2
 
-recode(x, "a, c:f = A; g:hi = B; else = C", as.factor.result = TRUE)
-#  [1] C B B B B B A A B A B A A B A B A A C A
+recode(x, "a, c:f = A; g:hi = B; else = C", labels = "A, B, C")
+#  [1] B A A B A A A C B A B A A B A A A B A B
 # Levels: A B C
 
-recode(x, "a, c:f = 1; g:hi = 2; else = 3", as.factor.result = TRUE,
+recode(x, "a, c:f = 1; g:hi = 2; else = 3",
        labels = c("one", "two", "three"), ordered = TRUE)
-#  [1] three two   two   two   two   two   one   one   two   one  
-# [11] two   one   one   two   one   two   one   one   three one  
+#  [1] two   one   one   two   one   one   one   three two   one  
+# [11] two   one   one   two   one   one   one   two   one   two  
 # Levels: one < two < three  
 
 set.seed(1234)
@@ -132,35 +138,37 @@ categories <- c("An", "example", "that has", "spaces")
 x <- factor(sample(categories, 20, replace = TRUE),
             levels = categories, ordered = TRUE)
 sort(x)
-#  [1] An       An       An       An       An       example 
-#  [7] example  example  example  that has that has that has
-# [13] that has that has that has that has that has spaces  
-# [19] spaces   spaces  
+#  [1] An       An       An       example  example  example  example 
+#  [8] example  example  example  example  that has that has that has
+# [15] spaces   spaces   spaces   spaces   spaces   spaces  
 # Levels: An < example < that has < spaces
 
 recode(sort(x), "An : that has = 1; spaces = 2")
-#  [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 2 2
+#  [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2
 
 # single quotes work, but are not necessary
 recode(sort(x), "An : 'that has' = 1; spaces = 2")
-#  [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 2 2
+#  [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2
 
 # same using cut values
-recode(sort(x), cuts = "that has")
-#  [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 2 2
+recode(sort(x), cut = "that has")
+#  [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2
 
 # modifying the output values
-recode(sort(x), cuts = "that has", values = 0:1)
-#  [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1
+recode(sort(x), cut = "that has", values = 0:1)
+#  [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1
 
 # more treatment of "else" values
 x <- 10:20
 
 # recoding rules don't overlap all existing values, the rest are empty
 recode(x, "8:15=1")
+#  [1]  1  1  1  1  1  1 NA NA NA NA NA
 
-# all other values are copied
+# all other values copied
 recode(x, "8:15=1; else=copy")
+#  [1]  1  1  1  1  1  1 16 17 18 19 20
+
 }
 
 \keyword{functions}

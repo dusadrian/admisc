@@ -2,6 +2,8 @@ importFrom("utils", "read.csv", "write.csv", "write.table", "capture.output", "i
 importFrom("stats", "na.omit", "dist", "relevel")
 importFrom("methods", "is")
 
+useDynLib(admisc, .registration = TRUE)
+
 export(
     alteb,
     agteb,
@@ -29,6 +31,7 @@ export(
     getMatrix,
     intersection,
     invert,
+    isElement,
     list.rda,
     permutations,
     possibleNumeric,
@@ -54,6 +57,7 @@ export(
     tryCatchWEM,
     uninstall,
     unload,
+    unlockEnvironment,
     validateNames,
     verify,
     wholeNumeric,
@@ -67,8 +71,20 @@ export(
         splitTildas,
         solveBrackets,
         simplifyList,
-        getNonChars
+        getNonChars,
+
+    unique_labelled,
+    sort_labelled,
+    names_values,
+    to_labels,
+    tagged_na_value,
+    get_na_tag,
+    make_tagged_na,
+    tag_from_string,
+    tagged_string
 )
+
+useDynLib(admisc, .registration = TRUE)
 
 
 S3method(print, "admisc_factorize")

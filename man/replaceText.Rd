@@ -6,7 +6,7 @@
 
 \description{
 Provides an improved method to replace strings, compared to function
-\bold{\code{\link[base]{gsub}()}} in package \bold{\pkg{base}}.
+\bold{\code{gsub}()} in package \bold{\pkg{base}}.
 }
 
 \usage{
@@ -23,7 +23,7 @@ replaceText(expression = "", target = "", replacement = "", boolean = FALSE, ...
 
 \details{
 If the input expression is "J*JSR", and the task is to replace "J" with "A" and "JSR" with
-"B", function \bold{\code{\link[base]{gsub}()}} is not very useful since the letter "J" is
+"B", function \bold{\code{gsub}()} is not very useful since the letter "J" is
 found in multiple places, including the second target.
 
 This function finds the exact location(s) of each target in the input string, starting with

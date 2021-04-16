@@ -22,7 +22,7 @@ wholeNumeric(x)
 
 
 \details{
-Unlike the function \bold{\code{\link[base]{as.numeric}()}} from the \bold{\pkg{base}}
+Unlike the function \bold{\code{as.numeric}()} from the \bold{\pkg{base}}
 package, the function \bold{\code{asNumeric()}} coerces to numeric without a warning if
 any values are not numeric. All such values are considered NA missing.
 
@@ -31,7 +31,7 @@ numeric, irrespective of their storing as character or numbers.
 
 Function \bold{\code{wholeNumeric()}} tests if numbers in a vector are whole (round) numbers.
 Whole numbers are different from \dQuote{integer} numbers (which have special memory
-representation), and consequently the function \bold{\code{\link[base]{is.integer}()}} tests
+representation), and consequently the function \bold{\code{is.integer}()} tests
 something different, how numbers are stored in memory (see the description of function
 \bold{\code{\link[base]{double}()}} for more details).
 }
