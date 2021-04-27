@@ -34,15 +34,10 @@
 \alias{verify}
 \alias{writePrimeimp}
 
-\alias{names_values}
-\alias{sort_labelled}
-\alias{unique_labelled}
-\alias{to_labels}
-\alias{tagged_na_value}
-\alias{get_na_tag}
+\alias{has_tag}
+\alias{get_tag}
 \alias{make_tagged_na}
-\alias{tag_from_string}
-\alias{tagged_string}
+\alias{is_tagged_string}
 
 
 \title{Internal Functions}

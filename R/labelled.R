@@ -9,12 +9,17 @@
     na_values <- attr(x, "na_values", exact = TRUE)
     na_range <- attr(x, "na_range", exact = TRUE)
 
+    attrx <- attributes(x)
+
+    if (inherits(x, "mixed_labelled")) {
+        x <- unmix(x)
+    }
+
     indexes <- seq(length(x))
 
-    attrx <- attributes(x)
     attributes(x) <- NULL
 
-    tagged <- tagged_na_value(x)
+    tagged <- has_tag(x)
 
     xmis <- isElement(x, na_values)
 
@@ -38,13 +43,13 @@
 
     y <- x
 
-    tagged_labels <- tagged_na_value(labels)
+    tagged_labels <- has_tag(labels)
     if (any(tagged_labels)) {
-        labels[tagged_labels] <- get_na_tag(labels[tagged_labels])
+        labels[tagged_labels] <- get_tag(labels[tagged_labels])
     }
 
     if (any(tagged)) {
-        y[tagged] <- get_na_tag(x[tagged])
+        y[tagged] <- get_tag(x[tagged])
     }
 
     if (according_to == "labels") {
@@ -102,8 +107,8 @@
     result <- c(result, na_indexes)
     return(result)
 
-    attributes(result) <- attrx
-    return(result)
+    # attributes(result) <- attrx
+    # return(result)
 }
 
 
@@ -121,7 +126,7 @@
 
 `unique_labelled` <- function(x, sort = FALSE, ...) {
 
-    tagged <- tagged_na_value(x)
+    tagged <- has_tag(x)
     attrx <- NULL
 
     if (inherits(x, "haven_labelled")) {
@@ -130,7 +135,7 @@
     }
 
     if (any(tagged)) {
-        x[tagged] <- get_na_tag(x[tagged])
+        x[tagged] <- get_tag(x[tagged])
     }
 
     dupx <- duplicated(x)
@@ -163,31 +168,42 @@
         cat("\n")
         stop("The input should be a labelled vector.\n\n", call. = FALSE)
     }
+
+    if (inherits(x, "mixed_labelled")) {
+        tagged <- has_tag(x)
+        tagged_values <- attr(x, "tagged_values", exact = TRUE)
+        nms <- names(tagged_values)
+        if (!is.null(tagged_values) && any(tagged)) {
+            tags <- get_tag(x[tagged])
+            x[which(tagged)[is.element(tags, nms)]] <- unname(tagged_values[match(tags[is.element(tags, nms)], nms)])
+        }
+
+        if (sum(has_tag(x)) > 0) {
+            cat("\n")
+            stop("There should not be undeclared missing values into a mixed labelled object.\n\n", call. = FALSE)
+        }
+    }
     
     labels <- attr(x, "labels", exact = TRUE)
-    ltagged <- tagged_na_value(labels)
+    ltagged <- has_tag(labels)
 
     tagged_labels <- labels[ltagged]
     labels <- labels[!ltagged]
     
-
-    tagged <- tagged_na_value(x)
     utag <- c()
-    
+    tagged <- has_tag(x)
     if (any(tagged)) {
-        utag <- sort(unique(get_na_tag(x[tagged])))
+        utag <- sort(unique(get_tag(x[tagged])))
         x <- x[!tagged]
     }
-    
 
     numtag <- c()
-
     if (length(utag) > 0) {
         numtag <- make_tagged_na(utag)
         labtag <- c()
 
         if (length(tagged_labels) > 0) {
-            labtag <- get_na_tag(tagged_labels)
+            labtag <- get_tag(tagged_labels)
         }
 
         # names(numtag) <- paste0("NA(", utag, ")")
@@ -219,7 +235,7 @@
     }
 
     # TO DO: sort_labelled()...?!
-    attr(x, "labels") <- NULL
+    
     xnotmis <- sort(x[!xmis])
     xmis <- sort(x[xmis])
     
@@ -257,20 +273,35 @@
         stop("The input should be a labelled vector.\n\n", call. = FALSE)
     }
 
-    tagged <- tagged_na_value(x)
+    if (inherits(x, "mixed_labelled")) {
+        tagged <- has_tag(x)
+        tagged_values <- attr(x, "tagged_values", exact = TRUE)
+        nms <- names(tagged_values)
+        if (!is.null(tagged_values) && any(tagged)) {
+            tags <- get_tag(x[tagged])
+            x[which(tagged)[is.element(tags, nms)]] <- unname(tagged_values[match(tags[is.element(tags, nms)], nms)])
+        }
+
+        if (sum(has_tag(x)) > 0) {
+            cat("\n")
+            stop("There should not be undeclared missing values into a mixed labelled object.\n\n", call. = FALSE)
+        }
+    }
+
+    tagged <- has_tag(x)
     
     labels <- names_values(x)
     
     attributes(x) <- NULL
     result <- x
 
-    tagged_labels <- tagged_na_value(labels)
+    tagged_labels <- has_tag(labels)
     if (any(tagged_labels)) {
-        labels[tagged_labels] <- get_na_tag(labels[tagged_labels])
+        labels[tagged_labels] <- get_tag(labels[tagged_labels])
     }
 
     if (any(tagged)) {
-        result[tagged] <- get_na_tag(x[tagged])
+        result[tagged] <- get_tag(x[tagged])
     }
     
     result[is.element(result, labels)] <- names(labels)[match(result[is.element(result, labels)], labels)]

@@ -73,15 +73,10 @@ export(
         simplifyList,
         getNonChars,
 
-    unique_labelled,
-    sort_labelled,
-    names_values,
-    to_labels,
-    tagged_na_value,
-    get_na_tag,
+    has_tag,
+    get_tag,
     make_tagged_na,
-    tag_from_string,
-    tagged_string
+    is_tagged_string
 )
 
 useDynLib(admisc, .registration = TRUE)

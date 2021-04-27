@@ -31,12 +31,13 @@ typedef union {
 
 
 #ifdef WORDS_BIGENDIAN
-// First two bytes are sign & expoonent
+// First two bytes are sign & exponent
 // Last four bytes are 1954
 const int TAG_BYTE = 3;
 #else
 const int TAG_BYTE = 4;
 #endif
+
 
 SEXP C_tagged_na(SEXP x) {
     int n = Rf_length(x);
@@ -53,10 +54,10 @@ SEXP C_tagged_na(SEXP x) {
     }
 
     UNPROTECT(1);
-    return out;
+    return(out);
 }
 
-SEXP C_is_tagged_na(SEXP x) {
+SEXP C_has_tagged_na(SEXP x, SEXP tag_) {
     int n = Rf_length(x);
     SEXP out = PROTECT(Rf_allocVector(LGLSXP, n));
 
@@ -64,7 +65,6 @@ SEXP C_is_tagged_na(SEXP x) {
         for (int i = 0; i < n; ++i) {
             LOGICAL(out)[i] = 0;
         }
-        return out;
     }
     else {    
 
@@ -81,7 +81,13 @@ SEXP C_is_tagged_na(SEXP x) {
                 if (tag == '\0') {
                     LOGICAL(out)[i] = false;
                 } else {
-                    LOGICAL(out)[i] = true;
+                    if (TYPEOF(tag_) != NILSXP) {
+                        // necessary checks in R
+                        LOGICAL(out)[i] = tag == CHAR(STRING_ELT(tag_, 0))[0];
+                    }
+                    else {
+                        LOGICAL(out)[i] = true;
+                    }
                 }
             }
         }

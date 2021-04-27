@@ -1,36 +1,34 @@
 `isElement` <- function(x, y) {
-    taggedx <- tagged_string(x) | tagged_na_value(x)
-    taggedy <- tagged_string(y) | tagged_na_value(y)
+    taggedx <- is_tagged_string(x) | has_tag(x)
+    taggedy <- is_tagged_string(y) | has_tag(y)
 
     if (any(c(taggedx, taggedy))) {
+        attributes(x) <- NULL
+        attributes(y) <- NULL
+        
         if (any(taggedx)) {
             attributes(x) <- NULL
-            if (any(tagged_na_value(x))) {
-                x[taggedx] <- paste0("__", get_na_tag(x[taggedx]))
+            if (any(has_tag(x))) {
+                x[taggedx] <- paste0("__", get_tag(x[taggedx]))
             }
             else {
-                x[taggedx] <- paste0("__", tag_from_string(x[taggedx]))
+                x[taggedx] <- paste0("__", get_tag(x[taggedx]))
             }
         }
 
         if (any(taggedy)) {
             attributes(y) <- NULL
-            if (any(tagged_na_value(y))) {
-                y[taggedy] <- paste0("__", get_na_tag(y[taggedy]))
+            if (any(has_tag(y))) {
+                y[taggedy] <- paste0("__", get_tag(y[taggedy]))
             }
             else {
-                y[taggedy] <- paste0("__", tag_from_string(y[taggedy]))
+                y[taggedy] <- paste0("__", get_tag(y[taggedy]))
             }
         }
-
         
-        attributes(x) <- NULL
-        attributes(y) <- NULL
         
-        # as.character just to make sure that both are character if only one is tagged
-        return(is.element(as.character(x), as.character(y)))
     }
-    else {
-        return(is.element(x, y))
-    }
+    
+    return(is.element(x, y))
+    
 }
