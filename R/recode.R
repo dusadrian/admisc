@@ -25,7 +25,39 @@ function(x, rules, cut, values, ...) {
     }
 
     if (inherits(x, "mixed_labelled")) {
-        x <- unmix(x)
+        # x <- unmix(x)
+        attrx <- attributes(x)
+        attributes(x) <- NULL
+
+        tagged <- logical(length(x))
+        if (is.double(x)) {
+            tagged <- has_tag(x)
+        }
+
+        tagged_values <- attrx[["tagged_values"]]
+        nms <- names(tagged_values)
+        
+        if (any(tagged)) {
+            tags <- lapply(as.list(get_tag(x[tagged])), function(x) {
+                if (!is.na(suppressWarnings(as.numeric(x)))) {
+                    x <- as.numeric(x)
+                }
+                return(x)
+            })
+            
+
+            numtags <- unlist(lapply(tags, is.numeric))
+            if (sum(numtags) > 0) {
+                x[which(tagged)[numtags]] <- unlist(tags[numtags])
+                tagged[which(tagged)[numtags]] <- FALSE
+                tags <- unlist(tags[!numtags])
+            }
+            
+            if (!is.null(tags) && !is.null(tagged_values)) {
+                x[which(tagged)[is.element(tags, nms)]] <- unname(tagged_values[match(tags[is.element(tags, nms)], nms)])
+                tagged[which(tagged)[is.element(tags, nms)]] <- FALSE
+            }
+        }
     }
 
     `getUniques` <- function(x) {
@@ -33,7 +65,10 @@ function(x, rules, cut, values, ...) {
             return(levels(x))
         }
         else {
-            tagged <- has_tag(x)
+            tagged <- logical(length(x))
+            if (is.double(x)) {
+                tagged <- has_tag(x)
+            }
             return(sort_labelled(unique_labelled(x[!is.na(x) | tagged])))
         }
     }
@@ -103,11 +138,11 @@ function(x, rules, cut, values, ...) {
         
         utagged <- has_tag(uniques)
         if (atagged & any(utagged)) {
-            a <- make_tagged_na(get_tag(a))
+            a <- tag_na(get_tag(a))
         }
 
         if (btagged & any(utagged)) {
-            b <- make_tagged_na(get_tag(b))
+            b <- tag_na(get_tag(b))
         }
 
         seqfrom <- which(isElement(uniques, a))
@@ -400,7 +435,7 @@ function(x, rules, cut, values, ...) {
         if (possibleNumeric(temp)) {
             temp <- asNumeric(temp)
             if (any(tagged)) {
-                temp[tagged] <- make_tagged_na(get_tag(tags))
+                temp[tagged] <- tag_na(get_tag(tags))
                 class(temp) <- c("haven_labelled", "vctrs_vctr", "double")
             }
         }

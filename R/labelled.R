@@ -1,22 +1,104 @@
+
+
+`unmix_labelled` <- function(x) {
+    # `unmx` <- function(x) {
+    attrx <- attributes(x)
+    attributes(x) <- NULL
+
+    tagged <- has_tag(x)
+
+    tagged_values <- attrx[["tagged_values"]]
+    nms <- names(tagged_values)
+    
+    if (any(tagged)) {
+        tags <- lapply(as.list(get_tag(x[tagged])), function(x) {
+            if (!is.na(suppressWarnings(as.numeric(x)))) {
+                x <- as.numeric(x)
+            }
+            return(x)
+        })
+        
+
+        numtags <- unlist(lapply(tags, is.numeric))
+        if (sum(numtags) > 0) {
+            x[which(tagged)[numtags]] <- unlist(tags[numtags])
+            tagged[which(tagged)[numtags]] <- FALSE
+            tags <- unlist(tags[!numtags])
+        }
+        
+        if (!is.null(tags) && !is.null(tagged_values)) {
+            x[which(tagged)[is.element(tags, nms)]] <- unname(tagged_values[match(tags[is.element(tags, nms)], nms)])
+            tagged[which(tagged)[is.element(tags, nms)]] <- FALSE
+        }
+    }
+
+    if (sum(tagged) > 0) {
+        cat("\n")
+        stop("There should not be undeclared missing values into a mixed labelled object.\n\n", call. = FALSE)
+    }
+
+    # ------------------
+    # the unclass part is VERY important to stay here, BEFORE replacing the values in the labels
+    # because of my own choice of automatically transforming any (real) value into a tagged NA
+    # when adding (but the same happens when replacing) values into a mixed_labelled object
+    labels <- unclass(attrx$labels)
+    
+    # ------------------
+    if (!is.null(labels)) {
+        tagged <- has_tag(labels)
+        
+        if (any(tagged)) {
+            tags <- lapply(as.list(get_tag(labels[tagged])), function(x) {
+                if (!is.na(suppressWarnings(as.numeric(x)))) {
+                    x <- as.numeric(x)
+                }
+                return(x)
+            })
+            
+            numtags <- unlist(lapply(tags, is.numeric))
+            
+            if (sum(numtags) > 0) {
+                labels[which(tagged)[numtags]] <- unlist(tags[numtags])
+                tagged[numtags] <- FALSE
+                tags <- unlist(tags[!numtags])
+            }
+
+            if (!is.null(tags) && !is.null(tagged_values)) {
+                labels[which(tagged)[is.element(tags, nms)]] <- unname(tagged_values[match(tags[is.element(tags, nms)], nms)])
+            }
+
+        }
+
+        attr(labels, "tagged_values") <- NULL # just in case
+        attrx$labels <- labels
+    }
+
+    attrx$tagged_values <- NULL
+    attrx$class <- c("haven_labelled_spss", setdiff(attrx$class, "mixed_labelled"))
+    attributes(x) <- attrx
+    return(x)
+}
+
+
+
 `order_labelled` <- function(x, according_to = c("values", "labels"), decreasing = FALSE,
     user_na = c("last", "first", "ignore", "na"), na_value = c("last", "first", "na")) {
 
     according_to <- match.arg(according_to)
     user_na <- match.arg(user_na)
     na_value = match.arg(na_value)
+
+    if (inherits(x, "mixed_labelled")) {
+        x <- unmix_labelled(x)
+    }
     
     labels <- attr(x, "labels", exact = TRUE)
     na_values <- attr(x, "na_values", exact = TRUE)
     na_range <- attr(x, "na_range", exact = TRUE)
 
+    indexes <- seq_along(x)
+
     attrx <- attributes(x)
-
-    if (inherits(x, "mixed_labelled")) {
-        x <- unmix(x)
-    }
-
-    indexes <- seq(length(x))
-
     attributes(x) <- NULL
 
     tagged <- has_tag(x)
@@ -43,12 +125,15 @@
 
     y <- x
 
-    tagged_labels <- has_tag(labels)
-    if (any(tagged_labels)) {
-        labels[tagged_labels] <- get_tag(labels[tagged_labels])
+    ltagged <- has_tag(labels)
+    
+    if (any(ltagged)) {
+        labels <- unclass(labels)
+        labels[ltagged] <- get_tag(labels[ltagged])
     }
 
     if (any(tagged)) {
+        y <- unclass(y)
         y[tagged] <- get_tag(x[tagged])
     }
 
@@ -106,9 +191,6 @@
 
     result <- c(result, na_indexes)
     return(result)
-
-    # attributes(result) <- attrx
-    # return(result)
 }
 
 
@@ -124,44 +206,6 @@
 
 
 
-`unique_labelled` <- function(x, sort = FALSE, ...) {
-
-    tagged <- has_tag(x)
-    attrx <- NULL
-
-    if (inherits(x, "haven_labelled")) {
-        attrx <- attributes(x)
-        attributes(x) <- NULL
-    }
-
-    if (any(tagged)) {
-        x[tagged] <- get_tag(x[tagged])
-    }
-
-    dupx <- duplicated(x)
-    tagged <- tagged[!dupx]
-    x <- x[!dupx]
-
-    result <- rep(NA, length(unique(x)))
-
-    # for neither missing nor tagged values
-    result[!(is.na(x) | tagged)] <- as.numeric(x[!(is.na(x) | tagged)])
-
-    if (any(tagged)) {
-        result[tagged] <- make_tagged_na(x[tagged])
-    }
-    
-    attributes(result) <- attrx
-    
-    if (sort) {
-        return(sort_labelled(result, ... = ...))
-    }
-
-    return(result)
-}
-
-
-
 `names_values` <- function(x) {
 
     if (!inherits(x, "haven_labelled")) {
@@ -170,18 +214,7 @@
     }
 
     if (inherits(x, "mixed_labelled")) {
-        tagged <- has_tag(x)
-        tagged_values <- attr(x, "tagged_values", exact = TRUE)
-        nms <- names(tagged_values)
-        if (!is.null(tagged_values) && any(tagged)) {
-            tags <- get_tag(x[tagged])
-            x[which(tagged)[is.element(tags, nms)]] <- unname(tagged_values[match(tags[is.element(tags, nms)], nms)])
-        }
-
-        if (sum(has_tag(x)) > 0) {
-            cat("\n")
-            stop("There should not be undeclared missing values into a mixed labelled object.\n\n", call. = FALSE)
-        }
+        x <- unmix_labelled(x)
     }
     
     labels <- attr(x, "labels", exact = TRUE)
@@ -192,6 +225,7 @@
     
     utag <- c()
     tagged <- has_tag(x)
+
     if (any(tagged)) {
         utag <- sort(unique(get_tag(x[tagged])))
         x <- x[!tagged]
@@ -199,7 +233,7 @@
 
     numtag <- c()
     if (length(utag) > 0) {
-        numtag <- make_tagged_na(utag)
+        numtag <- tag_na(utag)
         labtag <- c()
 
         if (length(tagged_labels) > 0) {
@@ -207,7 +241,7 @@
         }
 
         # names(numtag) <- paste0("NA(", utag, ")")
-        names(numtag) <- paste0(".", utag)
+        names(numtag) <- paste0(".", utag) # TODO
     
         for (i in seq(length(utag))) {
             if (any(isel <- labtag == utag[i])) {
@@ -266,6 +300,30 @@
 
 
 
+`unique_labelled` <- function(x, sort = FALSE, ...) {
+
+    duplicates <- logical(length(x))
+    tagged <- has_tag(x)
+
+    ix <- seq_along(x)
+    if (any(tagged)) {
+        duplicates[ix[tagged][duplicated(get_tag(x[tagged]))]] <- TRUE
+    }
+
+    duplicates[ix[!tagged][duplicated(unclass(x[!tagged]))]] <- TRUE
+
+    x <- x[!duplicates]
+
+    oa <- list(...)
+    if (is.element("sort", names(oa)) && oa$sort) {
+        return(sort_labelled(x, ... = ...))
+    }
+
+    return(x)
+}
+
+
+
 `to_labels` <- function(x) {
 
     if (!inherits(x, "haven_labelled")) {
@@ -274,18 +332,7 @@
     }
 
     if (inherits(x, "mixed_labelled")) {
-        tagged <- has_tag(x)
-        tagged_values <- attr(x, "tagged_values", exact = TRUE)
-        nms <- names(tagged_values)
-        if (!is.null(tagged_values) && any(tagged)) {
-            tags <- get_tag(x[tagged])
-            x[which(tagged)[is.element(tags, nms)]] <- unname(tagged_values[match(tags[is.element(tags, nms)], nms)])
-        }
-
-        if (sum(has_tag(x)) > 0) {
-            cat("\n")
-            stop("There should not be undeclared missing values into a mixed labelled object.\n\n", call. = FALSE)
-        }
+        x <- unmix_labelled(x)
     }
 
     tagged <- has_tag(x)
@@ -295,9 +342,11 @@
     attributes(x) <- NULL
     result <- x
 
-    tagged_labels <- has_tag(labels)
-    if (any(tagged_labels)) {
-        labels[tagged_labels] <- get_tag(labels[tagged_labels])
+    ltagged <- has_tag(labels)
+
+    
+    if (any(ltagged)) {
+        labels[ltagged] <- get_tag(labels[ltagged])
     }
 
     if (any(tagged)) {

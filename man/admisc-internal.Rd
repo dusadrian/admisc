@@ -36,7 +36,7 @@
 
 \alias{has_tag}
 \alias{get_tag}
-\alias{make_tagged_na}
+\alias{tag_na}
 \alias{is_tagged_string}
 
 

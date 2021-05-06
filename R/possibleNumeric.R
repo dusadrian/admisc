@@ -4,7 +4,7 @@
     }
 
     if (inherits(x, "haven_labelled")) {
-        return(!any(is.na(suppressWarnings(as.numeric(names(attr(x, "labels")))))))
+        return(Recall(unclass(x)) && !any(is.na(suppressWarnings(as.numeric(names(attr(x, "labels")))))))
     }
 
     if (is.numeric(x)) {

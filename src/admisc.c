@@ -9,7 +9,7 @@
 #define FRAME_IS_LOCKED(e) (ENVFLAGS(e) & FRAME_LOCK_MASK)
 #define UNLOCK_FRAME(e) SET_ENVFLAGS(e, ENVFLAGS(e) & (~ FRAME_LOCK_MASK))
 
-SEXP C_unlockEnvironment(SEXP env) {
+SEXP _unlockEnvironment(SEXP env) {
     UNLOCK_FRAME(env);
     
     SEXP result = PROTECT( Rf_allocVector(LGLSXP, 1) );
@@ -19,37 +19,83 @@ SEXP C_unlockEnvironment(SEXP env) {
 }
 
 
+
 /*
-the following functions are adapted from package haven,
-to avoid unnecessary dependency chain
+
+https://stackoverflow.com/questions/51684861/how-does-r-represent-na-internally
+https://github.com/wch/r-source/blob/HEAD/src/include/R_ext/Arith.h#L41-L45
+https://github.com/wch/r-source/blob/HEAD/src/main/arithmetic.c#L112-L120
+http://www.cs.toronto.edu/~radford/ftp/fltcompress.pdf
+
+https://stackoverflow.com/questions/23212538/float-and-double-significand-numbers-mantissa-pov
+https://github.com/wch/r-source/blob/HEAD/src/main/arithmetic.c#L112-L120
+
+
+THE FOLLOWING FUNCTIONS ARE ADAPTED FROM PACKAGE HAVEN
+
+IEEE 754 defines binary64 as
+* 1  bit : sign
+* 11 bits: exponent
+* 52 bits: significand
+
+R stores the value "1954" in the last 32 bits: this payload marks
+the value as a NA, not a regular NaN.
+
+(Note that this discussion like most discussion of FP on the web, assumes
+a big-endian architecture - in little endian the sign bit is the last
+bit)
 */
+
+
 
 typedef union {
     double value;
-    char byte[8];
+    char byte[16];
 } ieee_double;
+
 
 
 #ifdef WORDS_BIGENDIAN
 // First two bytes are sign & exponent
-// Last four bytes are 1954
+// Last four bytes (that is, 32 bits) are 1954
 const int TAG_BYTE = 3;
 #else
 const int TAG_BYTE = 4;
 #endif
 
 
-SEXP C_tagged_na(SEXP x) {
+SEXP _tag_na(SEXP x) {
     int n = Rf_length(x);
     SEXP out = PROTECT(Rf_allocVector(REALSXP, n));
 
     for (int i = 0; i < n; ++i) {
-        char xi = CHAR(STRING_ELT(x, i))[0];
+
+        int nchars = Rf_length(STRING_ELT(x, i));
+        Rboolean firstminus = CHAR(STRING_ELT(x, i))[0] == CHAR(mkChar("-"))[0];
+
+        if (nchars > 2 + firstminus) {
+            nchars = 2 + firstminus;
+        }
+        
         ieee_double y;
-
         y.value = NA_REAL;
-        y.byte[TAG_BYTE] = xi;
 
+        if (firstminus) {
+            y.value = -1 * NA_REAL;
+        }
+
+        int bytepos = TAG_BYTE;
+
+        for (int c = firstminus; c < nchars; c++) {
+            y.byte[bytepos] = CHAR(STRING_ELT(x, i))[c];
+            if (TAG_BYTE == 3) {
+                bytepos -= 1;
+            }
+            else {
+                bytepos += 1;
+            }
+        }
+        
         REAL(out)[i] = y.value;
     }
 
@@ -57,7 +103,11 @@ SEXP C_tagged_na(SEXP x) {
     return(out);
 }
 
-SEXP C_has_tagged_na(SEXP x, SEXP tag_) {
+
+
+
+
+SEXP _has_tag(SEXP x, SEXP tag_) {
     int n = Rf_length(x);
     SEXP out = PROTECT(Rf_allocVector(LGLSXP, n));
 
@@ -78,12 +128,35 @@ SEXP C_has_tagged_na(SEXP x, SEXP tag_) {
                 y.value = xi;
                 char tag = y.byte[TAG_BYTE];
 
+                Rboolean test = true;
+                
                 if (tag == '\0') {
                     LOGICAL(out)[i] = false;
-                } else {
+                }
+                else {
                     if (TYPEOF(tag_) != NILSXP) {
-                        // necessary checks in R
-                        LOGICAL(out)[i] = tag == CHAR(STRING_ELT(tag_, 0))[0];
+
+                        int nchars = Rf_length(STRING_ELT(tag_, 0));
+                        Rboolean firstminus = CHAR(STRING_ELT(tag_, 0))[0] == CHAR(mkChar("-"))[0];
+                        
+                        if ((firstminus && !signbit(xi)) || (!firstminus && signbit(xi))) {
+                            LOGICAL(out)[i] = false;
+                        }
+                        else {
+                            
+                            if (nchars > 2 + firstminus) {
+                                nchars = 2 + firstminus;
+                            }
+
+                            test = test && tag == CHAR(STRING_ELT(tag_, 0))[firstminus];
+                            char tag = y.byte[(TAG_BYTE == 4) ? 5 : 2];
+                            
+                            if (Rf_length(STRING_ELT(tag_, 0)) > 1 && tag != '\0') {
+                                test = test && tag == CHAR(STRING_ELT(tag_, 0))[firstminus + 1];
+                            }
+                            
+                            LOGICAL(out)[i] = test;
+                        }
                     }
                     else {
                         LOGICAL(out)[i] = true;
@@ -97,7 +170,9 @@ SEXP C_has_tagged_na(SEXP x, SEXP tag_) {
     return out;
 }
 
-SEXP C_na_tag(SEXP x) {
+
+
+SEXP _get_tag(SEXP x) {
     
     int n = Rf_length(x);
     SEXP out = PROTECT(Rf_allocVector(STRSXP, n));
@@ -107,18 +182,34 @@ SEXP C_na_tag(SEXP x) {
 
         if (!isnan(xi)) {
             SET_STRING_ELT(out, i, NA_STRING);
-        } else {
+        }
+        else {
+            
             ieee_double y;
             y.value = xi;
-            char tag = y.byte[TAG_BYTE];
 
-            if (tag == '\0') {
+            Rboolean firstminus = signbit(xi);
+            
+            char test[16 + 8 * firstminus];
+            if (firstminus) {
+                test[0] = CHAR(mkChar("-"))[0];
+            }
+
+            test[firstminus] = y.byte[TAG_BYTE];
+
+            if (test[0] == '\0') {
                 SET_STRING_ELT(out, i, NA_STRING);
-            } else {
-                SET_STRING_ELT(out, i, Rf_mkCharLenCE(&tag, 1, CE_UTF8));
+            }
+            else {
+                char tag2 = y.byte[(TAG_BYTE == 4) ? 5 : 2];
+                int nchars = 1 + (strlen(&tag2) > 0) + firstminus;
+                
+                test[firstminus + 1] = tag2;
+                SET_STRING_ELT(out, i, Rf_mkCharLenCE(test, nchars, CE_UTF8));
             }
         }
     }
+
 
     UNPROTECT(1);
     return out;

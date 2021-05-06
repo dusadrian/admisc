@@ -1,3 +1,3 @@
 `unlockEnvironment` <- function(env) {
-    .Call("C_unlockEnvironment", env, PACKAGE = "admisc")
+    .Call("_unlockEnvironment", env, PACKAGE = "admisc")
 }

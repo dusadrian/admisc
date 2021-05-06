@@ -75,11 +75,9 @@ export(
 
     has_tag,
     get_tag,
-    make_tagged_na,
+    tag_na,
     is_tagged_string
 )
-
-useDynLib(admisc, .registration = TRUE)
 
 
 S3method(print, "admisc_factorize")

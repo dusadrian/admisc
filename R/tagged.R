@@ -8,17 +8,26 @@
 # }
 
 
+
+`tag_na` <- function(...) {
+    return(.Call("_tag_na", as.character(c(...)), PACKAGE = "admisc"))
+}
+
 `has_tag` <- function(x, tag = NULL) {
     if (!is.double(x)) {
         return(logical(length(x)))
     }
 
-    if (!is.null(tag) && (length(tag) > 1 || !is.character(tag) || is.na(tag))) {
+    if (!is.null(tag) && !is.atomic(tag) && (length(tag) > 1 || is.na(tag))) {
         cat("\n")
-        stop("The tag should be a character vector of length 1.\n\n", call. = FALSE)
+        stop("`tag` should be a vector of length 1.\n\n", call. = FALSE)
+    }
+    
+    if (!is.null(tag)) {
+        tag <- as.character(tag)
     }
 
-    .Call("C_has_tagged_na", x, tag, PACKAGE = "admisc")
+    return(.Call("_has_tag", x, tag, PACKAGE = "admisc"))
 }
 
 `get_tag` <- function(x) {
@@ -26,7 +35,11 @@
         return(gsub("N|A|\\(|\\)|\\.", "",  x))
     }
     else if (is.double(x)) {
-        return(.Call("C_na_tag", x, PACKAGE = "admisc"))
+        x <- .Call("_get_tag", x, PACKAGE = "admisc")
+        if (!any(is.na(suppressWarnings(as.numeric(na.omit(x)))))) {
+            x <- as.numeric(x)
+        }
+        return(x)
     }
     else {
         # cat("\n")
@@ -35,23 +48,16 @@
     }
 }
 
-`make_tagged_na` <- function(tag) {
-    if (length(tag) > 1 || !is.character(tag) || is.na(tag)) {
-        cat("\n")
-        stop("The tag should be a character vector of length 1.\n\n", call. = FALSE)
-    }
-    .Call("C_tagged_na", tag, PACKAGE = "admisc")
-}
-
 # is a string representing a tagged NA such as ".a" or "NA(a)"?
 `is_tagged_string` <- function(x) {
-    x <- as.character(x)
-    return(
-        is.element(get_tag(x), letters) && 
-        (
-            (nchar(x) == 2 & grepl("^\\.", x)) ||
-            (nchar(x) == 5 & grepl("^NA\\(", x) & grepl("\\)", x))
-        )
-    )
+    if (!is.character(x)) {
+        return(logical(length(x)))
+    }
 
+    ncharx <- nchar(x)
+
+    return(
+        ncharx > 1 &
+        ((ncharx < 4 & grepl("^\\.", x)) | (ncharx < 7 & grepl("^NA\\(", x) & grepl("\\)", x)))
+    )
 }
