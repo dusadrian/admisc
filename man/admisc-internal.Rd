@@ -34,9 +34,6 @@
 \alias{verify}
 \alias{writePrimeimp}
 
-\alias{has_tag}
-\alias{get_tag}
-\alias{tag_na}
 \alias{is_tagged_string}
 
 
