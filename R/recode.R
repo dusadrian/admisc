@@ -10,6 +10,7 @@ function(x, rules, cut, values, ...) {
     # "D" and "A" to 2
 
     labelled <- inherits(x, "haven_labelled")
+    x <- unclass(x)
     
     if (missing(x)) {
         cat("\n")
