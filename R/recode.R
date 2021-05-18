@@ -2,12 +2,14 @@
 function(x, rules, cut, values, ...) {
     
     # TO DO: detect usage of both ; and , as rules separator, and generate error
-    # TO DO: when input is a factor, cut values should be within the <order> of the ordered levels
+    # TO DO: when input is a factor, cut should be within the <order> of the ordered levels
     # and the output values should recode the <levels> in their exact <order>
     # ex. aa <- factor(rep(LETTERS[1:5], 20, replace = TRUE), levels = c("E", "C", "B", "D", "A"))
     # and recode(aa, cut = "B") should recode:
     # "E", "C" and "B" to 1
     # "D" and "A" to 2
+
+    labelled <- inherits(x, "haven_labelled")
     
     if (missing(x)) {
         cat("\n")
@@ -22,151 +24,6 @@ function(x, rules, cut, values, ...) {
     if (all(is.na(x))) {
         cat("\n")
         stop(simpleError("All values are missing in x.\n\n"))
-    }
-
-    if (inherits(x, "mixed_labelled")) {
-        # x <- unmix(x)
-        attrx <- attributes(x)
-        attributes(x) <- NULL
-
-        tagged <- logical(length(x))
-        if (is.double(x)) {
-            tagged <- has_tag(x)
-        }
-
-        tagged_values <- attrx[["tagged_values"]]
-        nms <- names(tagged_values)
-        
-        if (any(tagged)) {
-            tags <- lapply(as.list(get_tag(x[tagged])), function(x) {
-                if (!is.na(suppressWarnings(as.numeric(x)))) {
-                    x <- as.numeric(x)
-                }
-                return(x)
-            })
-            
-
-            numtags <- unlist(lapply(tags, is.numeric))
-            if (sum(numtags) > 0) {
-                x[which(tagged)[numtags]] <- unlist(tags[numtags])
-                tagged[which(tagged)[numtags]] <- FALSE
-                tags <- unlist(tags[!numtags])
-            }
-            
-            if (!is.null(tags) && !is.null(tagged_values)) {
-                x[which(tagged)[is.element(tags, nms)]] <- unname(tagged_values[match(tags[is.element(tags, nms)], nms)])
-                tagged[which(tagged)[is.element(tags, nms)]] <- FALSE
-            }
-        }
-    }
-
-    `getUniques` <- function(x) {
-        if (is.factor(x)) {
-            return(levels(x))
-        }
-        else {
-            tagged <- logical(length(x))
-            if (is.double(x)) {
-                tagged <- has_tag(x)
-            }
-            return(sort_labelled(unique_labelled(x[!is.na(x) | tagged])))
-        }
-    }
-
-    
-
-    
-    
-    `getFromRange` <- function(a, b, uniques, xisnumeric) {
-        alo <- identical(a, "lo")
-        ahi <- identical(a, "hi")
-        blo <- identical(b, "lo")
-        bhi <- identical(b, "hi")
-
-        atagged <- is_tagged_string(a)
-        btagged <- is_tagged_string(b)
-
-        if (sum(atagged, btagged) == 1) {
-            cat("\n")
-            stop(simpleError("Both numbers in a range have to be either tagged or not.\n\n"))
-        }
-
-        a <- ifelse(alo, uniques[1], a)
-        b <- ifelse(blo, uniques[1], b)
-
-        if (xisnumeric) {
-            a <- ifelse(ahi, uniques[which.max(uniques)], a)
-            b <- ifelse(bhi, uniques[which.max(uniques)], b)
-            
-            if (all(is.element(c(get_tag(a), get_tag(b)), letters))) {
-                posa <- which(is.element(letters, get_tag(a)))
-                posb <- which(is.element(letters, get_tag(b)))
-
-                if (posa > posb) {
-                    temp <- a
-                    a <- b
-                    b <- temp
-                }
-            }
-
-            if (possibleNumeric(a) & possibleNumeric(b)) {
-                # I could use this to check tagged NA strings like ".a"
-                # as possibly numeric but it is not necessary
-                a <- asNumeric(a)
-                b <- asNumeric(b)
-                if (a > b) {
-                    temp <- a
-                    a <- b
-                    b <- temp
-                }
-            }
-            
-        }
-        else {
-            a <- ifelse(ahi, uniques[length(uniques)], a)
-            b <- ifelse(bhi, uniques[length(uniques)], b)
-
-            posa <- which(isElement(uniques, a))
-            posb <- which(isElement(uniques, b))
-
-            if (posa > posb) {
-                temp <- a
-                a <- b
-                b <- temp
-            }      
-        }
-        
-        utagged <- has_tag(uniques)
-        if (atagged & any(utagged)) {
-            a <- tag_na(get_tag(a))
-        }
-
-        if (btagged & any(utagged)) {
-            b <- tag_na(get_tag(b))
-        }
-
-        seqfrom <- which(isElement(uniques, a))
-        seqto <- which(isElement(uniques, b))
-        
-        
-        if (any(c(utagged, atagged, btagged))) {
-            temp2 <- unique_labelled(c(uniques, a, b), sort = TRUE)
-        }
-        else {
-            temp2 <- sort(unique(c(uniques, a, b)))
-        }
-        
-        if (length(seqfrom) == 0) {
-            seqfrom <- which(isElement(uniques, temp2[which(isElement(temp2, a)) + 1]))
-        }
-        
-        if (length(seqto) == 0) {
-            seqto <- which(isElement(uniques, temp2[which(isElement(temp2, b)) - 1]))
-        }
-        
-        if (length(c(seqfrom, seqto)) < 2) return(NULL)
-        
-        return(seq(seqfrom, seqto))
     }
     
     dots <- recreate(list(...))
@@ -192,10 +49,44 @@ function(x, rules, cut, values, ...) {
     }
 
     if (!identical(factor.levels, c()) || !identical(factor.labels, c())) {
-        as.factor.result <- TRUE
+        as.factor.result  <- TRUE
     }
-
-    tagged <- has_tag(x)
+    
+    `getFromRange` <- function(a, b, uniques, xisnumeric) {
+        # alo <- identical(a, "lo")
+        # ahi <- identical(a, "hi")
+        # blo <- identical(b, "lo")
+        # bhi <- identical(b, "hi")
+        
+        copya <- a
+        copyb <- b
+        
+        a <- ifelse(a == "lo", uniques[1], a)
+        b <- ifelse(b == "hi", uniques[length(uniques)], b)
+        
+        if (xisnumeric) {
+            a <- asNumeric(a)
+            b <- asNumeric(b)
+            if (a > b & (copya == "lo" | copyb == "hi")) return(NULL)
+        }
+        
+        seqfrom <- which(uniques == a)
+        seqto <- which(uniques == b)
+        
+        temp2 <- sort(unique(c(uniques, a, b)))
+        
+        if (length(seqfrom) == 0) {
+            seqfrom <- which(uniques == temp2[which(temp2 == a) + 1])
+        }
+        
+        if (length(seqto) == 0) {
+            seqto <- which(uniques == temp2[which(temp2 == b) - 1])
+        }
+        
+        if (length(c(seqfrom, seqto)) < 2) return(NULL)
+        
+        return(seq(seqfrom, seqto))
+    }
     
     if (missing(cut)) {
         
@@ -218,17 +109,12 @@ function(x, rules, cut, values, ...) {
             }
             else {
                 temp <- x
-                
-                if (any(tagged)) {
-                    temp <- as.character(x)
-                    temp[tagged] <- get_tag(x[tagged])
-                }
             }
             
             newval <- newval[!elsecopy]
             oldval <- oldval[!elsecopy]
         }
-
+        
         newval[newval == "missing" | newval == "NA"] <- NA
         
         if (any(oldval == "else")) {
@@ -260,87 +146,70 @@ function(x, rules, cut, values, ...) {
         to <- unlist(lapply(oldval, function(y) lapply(y, "[", 2)))
         
         
-        uniques <- getUniques(x)
-        
+        uniques <- if(is.factor(x)) levels(x) else sort(unique(x[!is.na(x)]))
         
         recoded <- NULL
         xisnumeric <- possibleNumeric(uniques)
         
         if (xisnumeric) {
             x <- asNumeric(x) # to be safe
-            uniques <- getUniques(x)
+            uniques <- asNumeric(uniques)
         }
         
-
+        
         for (i in seq(length(from))) {
             if (!is.na(to[i])) { # a range
-                
                 torecode <- getFromRange(from[i], to[i], uniques, xisnumeric)
-                
                 if (!is.null(torecode)) {
                     vals <- uniques[torecode]
-                    temp[isElement(x, vals)] <- newval[i]
+                    temp[x %in% vals] <- newval[i]
                     recoded <- c(recoded, vals)
-                    tagged[isElement(x, vals)] <- is_tagged_string(newval[i])
                 }
                 
             }
             else { # a single value
-                if (is.element(from[i], c("missing", "NA"))) {
-                    tagged[is.na(x)] <- is_tagged_string(newval[i])
-                }
-                else {
-                    tagged[isElement(x, from[i])] <- is_tagged_string(newval[i])
-                }
-
+                
                 # "else" should (must?) be the last rule
                 if (from[i] == "else") {
-                    temp[!isElement(x, recoded)] <- newval[i]
+                    temp[!is.element(x, recoded)] <- newval[i]
                 }
                 else if (from[i] == "missing") {
                     temp[is.na(x)] <- newval[i]
                 }
                 else {
-                    
                     # if (!any(x == from[i])) {
                     #     cat("\n")
                     #     val <- ifelse(is.na(suppressWarnings(as.numeric(from[i]))), paste("\"", from[i], "\"", sep = ""), from[i])
                     #     stop(simpleError(paste("The value", val, "was not found.\n\n", sep="")))
                     # }
-                    
-                    
-                    if (is_tagged_string(newval[i])) {
-                        newval[i] <- get_tag(newval[i])
-                    }
-
-                    temp[isElement(x, from[i])] <- newval[i]
+                    temp[x == from[i]] <- newval[i]
                 }
+                
                 recoded <- c(recoded, from[i])
             }
         }
-        
     }
     else {
         
         if (length(cut) == 1 & is.character(cut)) {
-            cutvalues <- gsub("\n|\t", "", gsub("'", "", gsub(")", "", gsub("c(", "", cut, fixed = TRUE))))
-            cutvalues <- trimstr(unlist(strsplit(cutvalues, split = ",")))
-            if (length(cutvalues) == 1) {
-                cutvalues <- trimstr(unlist(strsplit(cutvalues, split = ";")))
+            cut <- gsub("\n|\t", "", gsub("'", "", gsub(")", "", gsub("c(", "", cut, fixed = TRUE))))
+            cut <- trimstr(unlist(strsplit(cut, split = ",")))
+            if (length(cut) == 1) {
+                cut <- trimstr(unlist(strsplit(cut, split = ";")))
             }
         }
         
-        if (possibleNumeric(cutvalues)) {
-            cutvalues <- asNumeric(cutvalues)
+        if (possibleNumeric(cut)) {
+            cut <- asNumeric(cut)
         }
         
-        if (any(duplicated(cutvalues))) {
+        if (any(duplicated(cut))) {
             cat("\n")
             stop(simpleError("Cut values should be unique.\n\n"))
         }
         
         if (missing(values)) {
-            values <- seq(length(cutvalues) + 1)
+            values <- seq(length(cut) + 1)
         }
         else {
             if (length(values) == 1 & is.character(values)) {
@@ -351,12 +220,12 @@ function(x, rules, cut, values, ...) {
                 }
             }
             
-            if (length(values) == length(cutvalues) + 1) {
+            if (length(values) == length(cut) + 1) {
                 as.numeric.result <- possibleNumeric(values)
             }
             else {
                 cat("\n")
-                stop(simpleError(paste("There should be", length(cutvalues) + 1, "values for", length(cutvalues), ifelse(length(cutvalues) == 1, "cut.", "cutvalues."), "\n\n")))
+                stop(simpleError(paste0("There should be ", length(cut) + 1, " values for ", length(cut), " cut value", ifelse(length(cut) == 1, "", "s"), ".\n\n")))
             }
         }
         
@@ -365,51 +234,56 @@ function(x, rules, cut, values, ...) {
             minx <- lx[1]
             maxx <- lx[length(lx)]
             
-            if (is.numeric(cutvalues)) {
+            if (is.numeric(cut)) {
                 insidex <- FALSE
             }
             else {
-                insidex <- all(is.element(cutvalues, lx))
+                insidex <- all(is.element(cut, lx))
             }
         }
         else {
             sx <- sort(x)
             minx <- sx[1]
-            maxx <- sx[length(sx)]
-
-            if (is.character(x) & is.numeric(cutvalues)) {
+            maxx <- sx[length(x)]
+            
+            if (is.character(x) & is.numeric(cut)) {
                 insidex <- FALSE
             }
             else {
-                insidex <- logical(length(cutvalues))
-                for (i in seq(length(cutvalues))) {
-                    insidex[i] <- cutvalues[i] >= minx & cutvalues[i] <= maxx
+                insidex <- logical(length(cut))
+                for (i in seq(length(cut))) {
+                    insidex[i] <- cut[i] >= minx & cut[i] <= maxx
                 }
             }
         }
+            
         
         if (!all(insidex)) {
+            message <- "Cut value(s) outside the input vector."
+            if (labelled) {
+                message <- paste(message, "Consider using untag(x) before recoding.")
+            }
             cat("\n")
-            stop(simpleError("Cut value(s) outside the input vector.\n\n"))
+            stop(simpleError(paste0(message, "\n\n")))
         }
         
         if (is.factor(x)) {
             nx <- as.numeric(x)
             nlx <- seq(length(lx))
-            nc <- match(cutvalues, lx)
+            nc <- match(cut, lx)
             temp <- rep(values[1], length(x))
-            for (i in seq(length(cutvalues))) {
+            for (i in seq(length(cut))) {
                 temp[nx > nc[i]] = values[i + 1]
             }
         }
         else {
             temp <- rep(values[1], length(x))
-            for (i in seq(length(cutvalues))) {
-                temp[x > cutvalues[i]] = values[i + 1]
+            for (i in seq(length(cut))) {
+                temp[x > cut[i]] = values[i + 1]
             }
         }
 
-        if (identical(factor.labels, c()) & is.numeric(cutvalues)) {
+        if (identical(factor.labels, c()) & is.numeric(cut)) {
             factor.labels <- values
         }
     }
@@ -426,18 +300,8 @@ function(x, rules, cut, values, ...) {
         temp <- factor(temp, levels = factor.levels, labels = factor.labels, ordered = factor.ordered)
     }
     else if (as.numeric.result) {
-        
-        if (any(tagged)) {
-            tags <- temp[tagged]
-            temp[tagged] <- NA
-        }
-
         if (possibleNumeric(temp)) {
             temp <- asNumeric(temp)
-            if (any(tagged)) {
-                temp[tagged] <- tag_na(get_tag(tags))
-                class(temp) <- c("haven_labelled", "vctrs_vctr", "double")
-            }
         }
     }
     

@@ -34,8 +34,6 @@
 \alias{verify}
 \alias{writePrimeimp}
 
-\alias{is_tagged_string}
-
 
 \title{Internal Functions}
 
