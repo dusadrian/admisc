@@ -1,6 +1,8 @@
 Version 0.15
-    o argument "cuts" renamed to "cut" in function recode()
-    o solved bug in function recode() that prevented creating ordered
+    o possibleNumeric() and asNumeric() are now more robust in situations
+      with invalid multibyte strings
+    o Argument "cuts" renamed to "cut" in function recode()
+    o Fixed bug in function recode() that prevented creating ordered
       factors
       
 Version 0.12
