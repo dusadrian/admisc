@@ -1,6 +1,7 @@
 importFrom("utils", "read.csv", "write.csv", "write.table", "capture.output", "installed.packages", "packageDescription", "remove.packages")
 importFrom("stats", "na.omit", "dist", "relevel")
 importFrom("methods", "is")
+useDynLib(admisc, .registration = TRUE)
 
 export(
     alteb,
@@ -58,6 +59,7 @@ export(
     verify,
     wholeNumeric,
     writePrimeimp,
+    unlockEnvironment,
     
         splitMainComponents,
         splitBrackets,

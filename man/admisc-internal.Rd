@@ -33,6 +33,7 @@
 \alias{validateNames}
 \alias{verify}
 \alias{writePrimeimp}
+\alias{unlockEnvironment}
 
 
 \title{Internal Functions}
