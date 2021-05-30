@@ -14,6 +14,10 @@
     if (is.factor(x)) {
         return(!any(is.na(suppressWarnings(as.numeric(levels(x))))))
     }
+    
+    if (any(grepl("[^!-~]", x))) {
+        return(FALSE)
+    }
 
     # as.character converts everything (especially factors)
     return(!any(is.na(suppressWarnings(as.numeric(na.omit(x))))))
