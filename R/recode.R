@@ -1,5 +1,29 @@
-`recode` <-
-function(x, rules, cut, values, ...) {
+`recode` <- function(x, rules, cut, values, ...) {
+    UseMethod("recode")
+}
+
+
+`recode.declared` <- function(x, rules, cut, values, ...) {
+    na_index <- attr(x, "na_index")
+
+    if (!is.null(na_index)) {
+        nms <- names(na_index)
+        if (possibleNumeric(nms) || all(is.na(nms))) {
+            nms <- asNumeric(nms)
+            if (wholeNumeric(nms)) {
+                nms <- as.integer(nms)
+            }
+        }
+        
+        x <- unclass(x)
+        x[na_index] <- nms
+    }
+    
+    recode(x, rules, cut, values, ...)
+}
+
+
+`recode.default` <- function(x, rules, cut, values, ...) {
     
     # TO DO: detect usage of both ; and , as rules separator, and generate error
     # TO DO: when input is a factor, cut should be within the <order> of the ordered levels
@@ -9,8 +33,10 @@ function(x, rules, cut, values, ...) {
     # "E", "C" and "B" to 1
     # "D" and "A" to 2
 
-    labelled <- inherits(x, "haven_labelled")
-    x <- unclass(x)
+    declared <- inherits(x, "declared")
+    if (declared) {
+        x <- unclass(x)
+    }
     
     if (missing(x)) {
         cat("\n")
@@ -54,11 +80,6 @@ function(x, rules, cut, values, ...) {
     }
     
     `getFromRange` <- function(a, b, uniques, xisnumeric) {
-        # alo <- identical(a, "lo")
-        # ahi <- identical(a, "hi")
-        # blo <- identical(b, "lo")
-        # bhi <- identical(b, "hi")
-        
         copya <- a
         copyb <- b
         
@@ -146,7 +167,6 @@ function(x, rules, cut, values, ...) {
         from <- unlist(lapply(oldval, function(y) lapply(y, "[", 1)))
         to <- unlist(lapply(oldval, function(y) lapply(y, "[", 2)))
         
-        
         uniques <- if(is.factor(x)) levels(x) else sort(unique(x[!is.na(x)]))
         
         recoded <- NULL
@@ -174,7 +194,7 @@ function(x, rules, cut, values, ...) {
                 if (from[i] == "else") {
                     temp[!is.element(x, recoded)] <- newval[i]
                 }
-                else if (from[i] == "missing") {
+                else if (from[i] == "missing" | from[i] == "NA") {
                     temp[is.na(x)] <- newval[i]
                 }
                 else {
@@ -261,8 +281,8 @@ function(x, rules, cut, values, ...) {
         
         if (!all(insidex)) {
             message <- "Cut value(s) outside the input vector."
-            if (labelled) {
-                message <- paste(message, "Consider using untag(x) before recoding.")
+            if (declared) {
+                message <- paste(message, "Consider using undeclare() before recoding.")
             }
             cat("\n")
             stop(simpleError(paste0(message, "\n\n")))

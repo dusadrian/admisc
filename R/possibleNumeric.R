@@ -3,7 +3,7 @@
         return(FALSE)
     }
 
-    if (inherits(x, "haven_labelled")) {
+    if (inherits(x, "haven_labelled") || inherits(x, "declared")) {
         return(Recall(unclass(x)) && !any(is.na(suppressWarnings(as.numeric(names(attr(x, "labels")))))))
     }
 
