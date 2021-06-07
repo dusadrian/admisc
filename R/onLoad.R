@@ -1,7 +1,8 @@
 .onLoad <- function(libname, pkgname) {
-  options(admisc.tol = .Machine$double.eps^0.5)
+    options(admisc.tol = .Machine$double.eps^0.5)
 }
 
-.onUnload <- function(libname, pkgname) {
-  options(admisc.tol = NULL)
+.onUnload <- function(libpath) {
+    options(admisc.tol = NULL)
+    library.dynam.unload("admisc", libpath)
 }
