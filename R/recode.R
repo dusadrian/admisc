@@ -19,7 +19,7 @@
         x[na_index] <- nms
     }
     
-    recode(x, rules, cut, values, ...)
+    recode(unclass(x), rules, cut, values, ...)
 }
 
 
