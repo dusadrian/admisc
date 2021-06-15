@@ -1,5 +1,9 @@
 Version 0.25
-    o new functions agtb(), altb() and aneqb() to test (in)equality of floats
+    o New functions agtb(), altb() and aneqb() to test (in)equality of floats
+    o New utility function getName() to return the name of the object being
+      used in a function call
+    o Fixed bug when recoding objects of class 'declared'
+    o Fixed bug detecting multibyte strings
       
 Version 0.15
     o possibleNumeric() and asNumeric() are now more robust in situations

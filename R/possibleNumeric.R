@@ -15,7 +15,7 @@
         return(!any(is.na(suppressWarnings(as.numeric(levels(x))))))
     }
     
-    if (any(grepl("[^!-~]", x))) {
+    if (any(grepl("[^!-~ ]", x))) {
         return(FALSE)
     }
 

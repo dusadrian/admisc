@@ -8,7 +8,8 @@
     }
 
     result <- rep(NA, length(x))
-    multibyte <- grepl("[^!-~]", x)
+    multibyte <- grepl("[^!-~ ]", x)
     result[!multibyte] <- suppressWarnings(as.numeric(x[!multibyte]))
+    
     return(result)
 }

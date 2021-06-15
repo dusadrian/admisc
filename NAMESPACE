@@ -28,6 +28,7 @@ export(
     getInfo,
     getLevels,
     getMatrix,
+    getName,
     intersection,
     invert,
     list.rda,

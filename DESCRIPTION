@@ -1,5 +1,5 @@
 Package: admisc
-Version: 0.25
+Version: 0.16
 Date: 2021-05-31
 Title: Adrian Dusa's Miscellaneous
 Authors@R: person(given = "Adrian", family = "Dusa",
@@ -9,8 +9,8 @@ Authors@R: person(given = "Adrian", family = "Dusa",
 Depends: R (>= 3.5.0)
 Imports: methods
 Suggests: QCA (>= 3.7)
-Description: Contains functions used across packages 'QCA', 'DDIwR', 'mixed' and 'venn'.
-    Interprets and translates, factorizes and negates SOP - Sum of Products
+Description: Contains functions used across packages 'declared', 'DDIwR', 'mixed', 'QCA'
+    and 'venn'. Interprets and translates, factorizes and negates SOP - Sum of Products
     expressions, for both binary and multi-value crisp sets, and extracts information
     (set names, set values) from those expressions. Other functions perform various
     other checks if possibly numeric (even if all numbers reside in a character vector)
