@@ -1,4 +1,8 @@
-Version 0.25
+Version 0.17
+    o More robust support for multi-byte locales when detecting tilde and
+      dash operators
+    
+Version 0.16
     o New functions agtb(), altb() and aneqb() to test (in)equality of floats
     o New utility function getName() to return the name of the object being
       used in a function call
