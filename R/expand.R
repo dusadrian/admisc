@@ -189,8 +189,7 @@
         
     }
     else if (!is.matrix(expression)) {
-        cat(enter)
-        stop(simpleError(paste0("The input should be either a character expression or a matrix.", enter, enter)))
+        stopError("The input should be either a character expression or a matrix.")
     }
 
     if (is.null(noflevels)) noflevels <- rep(2, ncol(expression))
@@ -208,8 +207,7 @@
     }
 
     if (is.null(colnames(expression))) {
-        cat(enter)
-        stop(simpleError(paste0("The input matrix should have column names.", enter, enter)))
+        stopError("The input matrix should have column names.")
     }
 
     scollapse <- scollapse | any(nchar(snames) > 1)

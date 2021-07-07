@@ -26,8 +26,7 @@
 
     if (multivalue) {
         if (is.null(noflevels) | identical(snames, "")) {
-            cat("\n")
-            stop(simpleError("Set names and their number of levels are required to simplify multivalue expressions.\n\n"))
+            stopError("Set names and their number of levels are required to simplify multivalue expressions.")
         }
     }
 
@@ -65,8 +64,16 @@
 
 
     # return(list(input = dataset, outcome = outcome, all.sol = all.sol, simplify = TRUE))
-    sols <- QCA::minimize(dataset, outcome = outcome, all.sol = all.sol, simplify = TRUE)
+    test <- tryCatchWEM(sols <- QCA::minimize(dataset, outcome = outcome, all.sol = all.sol, simplify = TRUE))
     
+    if (!is.null(test)) {
+        if (!is.null(test$error)) {
+            if (grepl("All truth table", test$error)) {
+                return("")
+            }
+        }
+    }
+
     scollapse <- scollapse | any(nchar(colnames(implicants)) > 1) | any(grepl(mvregexp, unlist(sols$solution))) # | any(grepl("[*]", unlist(sols$solution)))
     expression <- unlist(lapply(sols$solution, function(x) {
         if (!scollapse) x <- gsub("\\*", "", x)

@@ -36,8 +36,7 @@
     snames <- recreate(substitute(snames))
     
     if (length(dots) == 0) {
-        cat("\n")
-        stop(simpleError("Nothing to intersect.\n\n"))
+        stopError("Nothing to intersect.")
     }
 
     ### probably unnecessary hack to allow package admisc being checked without package QCA
@@ -95,8 +94,7 @@
         }
         
         if (!is.character(dots[[i]])) {
-            cat("\n")
-            stop(simpleError("Unrecognised input.\n\n"))
+            stopError("Unrecognised input.")
         }
     }
     
@@ -165,4 +163,3 @@
     class(result) <- c("character", "admisc_intersection")
     return(result)
 }
-

@@ -1,18 +1,15 @@
 `combnk` <- function(n, k, ogte = 0, zerobased = FALSE) {
     
     if (!is.numeric(k)) {
-        cat("\n")
-        stop(simpleError("Argument k should be numeric.\n\n"))
+        stopError("Argument k should be numeric.")
     }
     
     if (length(k) != 1L) {
-        cat("\n")
-        stop(simpleError("Argument k should be a scalar of length 1.\n\n"))
+        stopError("Argument k should be a scalar of length 1.")
     }
     
     if (k < 0) {
-        cat("\n")
-        stop(simpleError("Argument k should be positive.\n\n"))
+        stopError("Argument k should be positive.")
     }
 
     len <- length(n)
@@ -20,19 +17,16 @@
 
     if (lngt1) {
         if (len < k) {
-            cat("\n")
-            stop(simpleError("Argument k cannot be greater than the length of n.\n\n"))
+            stopError("Argument k cannot be greater than the length of n.")
         }
     }
     else {
         if (!is.numeric(n)) {
-            cat("\n")
-            stop(simpleError("When scalar, argument n should be numeric.\n\n"))
+            stopError("When scalar, argument n should be numeric.")
         }
 
         if (n < k) {
-            cat("\n")
-            stop(simpleError("Argument n should be greater than or equal to k.\n\n"))
+            stopError("Argument n should be greater than or equal to k.")
         }
     }
 
@@ -99,4 +93,3 @@
 
     return(resmat)
 }
-

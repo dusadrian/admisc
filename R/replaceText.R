@@ -5,21 +5,18 @@
         enter <- ifelse (is.element("enter", names(dots)), "",  "\n")
 
         if (!is.character(target)) {
-            cat("\n")
-            stop(simpleError("The \"target\" argument should be character.\n\n"))
+            stopError("The \"target\" argument should be character.")
         }
 
         if (!is.character(replacement)) {
-            cat("\n")
-            stop(simpleError("The \"replacement\" argument should be character.\n\n"))
+            stopError("The \"replacement\" argument should be character.")
         }
 
         if (length(target) == 1) target <- splitstr(target)
         if (length(replacement) == 1) replacement <- splitstr(replacement)
 
         if (length(target) != length(replacement)) {
-            cat(enter)
-            stop(simpleError(paste0("Length of target different from the length of replacement.", enter, enter)))
+            stopError("Length of target different from the length of replacement.")
         }
 
         torder <- order(nchar(target), decreasing = TRUE)

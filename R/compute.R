@@ -29,8 +29,7 @@ function(expression = "", data = NULL, separate = FALSE) { # na.rm = FALSE
             }
             
             if (length(unique(unlist(lapply(data, length)))) > 1) {
-                cat("\n")
-                stop(simpleError("Objects should be vectors of the same length.\n\n"))
+                stopError("Objects should be vectors of the same length.")
             }
             
             names(data) <- colnms
@@ -74,8 +73,7 @@ function(expression = "", data = NULL, separate = FALSE) { # na.rm = FALSE
             if (any(abs(nao - round(nao)) >= .Machine$double.eps^0.5)) { # fuzzy
                 
                 if (length(val[[j]]) > 1) {
-                    cat("\n")
-                    stop(simpleError("Multiple values specified for fuzzy data.\n\n"))
+                    stopError("Multiple values specified for fuzzy data.")
                 }
                 
                 if (val[[j]] == 0) {

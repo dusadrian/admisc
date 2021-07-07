@@ -51,6 +51,7 @@ export(
     sop,
     splitstr,
     sortExpressions,
+    stopError,
     translate,
     trimstr,
     tryCatchWEM,

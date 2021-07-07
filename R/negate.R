@@ -15,8 +15,7 @@
                 noflevels <- asNumeric(noflevels)
             }
             else {
-                cat("\n")
-                stop(simpleError("Invalid number of levels.\n\n"))
+                stopError("Invalid number of levels.")
             }
         }
     }
@@ -66,8 +65,7 @@
     
     
     if (!is.character(input)) {
-        cat("\n")
-        stop(simpleError("The expression should be a character vector.\n\n"))
+        stopError("The expression should be a character vector.")
     }
         
     star <- any(grepl("[*]", input))
@@ -83,8 +81,7 @@
     if (multivalue) {
         start <- FALSE
         if (is.null(noflevels) | identical(snames, "")) {
-            cat("\n")
-            stop(simpleError("Set names and their number of levels are required to negate multivalue expressions.\n\n"))
+            stopError("Set names and their number of levels are required to negate multivalue expressions.")
         }
     }
     scollapse <- scollapse | any(nchar(snames) > 1) | multivalue | star

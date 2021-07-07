@@ -25,6 +25,7 @@
 \alias{solveBrackets}
 \alias{sortExpressions}
 \alias{simplifyList}
+\alias{stopError}
 \alias{tildae}
 \alias{trimstr}
 \alias{uninstall}

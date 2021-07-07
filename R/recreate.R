@@ -17,8 +17,7 @@
                 
                 if (length(xs) == 2) {
                     if (all(grepl("\\*|\\+", xs))) {
-                        cat("\n")
-                        stop(simpleError("The outcome should be one condition (only).\n\n"))
+                        stopError("The outcome should be one condition (only).")
                     }
 
                     if (j < 3) { # necessity

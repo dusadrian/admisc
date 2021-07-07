@@ -39,18 +39,15 @@
     }
     
     if (missing(x)) {
-        cat("\n")
-        stop(simpleError("Argument \"x\" is missing.\n\n"))
+        stopError("Argument \"x\" is missing.")
     }
     
     if (!is.atomic(x))   {
-        cat("\n")
-        stop(simpleError("The input \"x\" should be an atomic vector / factor.\n\n"))
+        stopError("The input \"x\" should be an atomic vector / factor.")
     }
     
     if (all(is.na(x))) {
-        cat("\n")
-        stop(simpleError("All values are missing in x.\n\n"))
+        stopError("All values are missing in x.")
     }
     
     dots <- recreate(list(...))
@@ -141,8 +138,7 @@
         
         if (any(oldval == "else")) {
             if (sum(oldval == "else") > 1) {
-                cat("\n")
-                stop(simpleError("Too many \"else\" statements.\n\n"))
+                stopError("Too many \"else\" statements.")
             }
             
             # place the "else" statement as the last one, very important
@@ -159,8 +155,7 @@
         
         
         if (any(unlist(lapply(oldval, function(y) lapply(y, length))) > 2)) {
-            cat("\n")
-            stop(simpleError("Too many : sequence operators.\n\n"))
+            stopError("Too many : sequence operators.")
         }
         
         
@@ -199,9 +194,8 @@
                 }
                 else {
                     # if (!any(x == from[i])) {
-                    #     cat("\n")
                     #     val <- ifelse(is.na(suppressWarnings(as.numeric(from[i]))), paste("\"", from[i], "\"", sep = ""), from[i])
-                    #     stop(simpleError(paste("The value", val, "was not found.\n\n", sep="")))
+                    #     stopError(paste0("The value", val, "was not found."))
                     # }
                     temp[x == from[i]] <- newval[i]
                 }
@@ -225,8 +219,7 @@
         }
         
         if (any(duplicated(cut))) {
-            cat("\n")
-            stop(simpleError("Cut values should be unique.\n\n"))
+            stopError("Cut values should be unique.")
         }
         
         if (missing(values)) {
@@ -245,8 +238,7 @@
                 as.numeric.result <- possibleNumeric(values)
             }
             else {
-                cat("\n")
-                stop(simpleError(paste0("There should be ", length(cut) + 1, " values for ", length(cut), " cut value", ifelse(length(cut) == 1, "", "s"), ".\n\n")))
+                stopError(paste0("There should be ", length(cut) + 1, " values for ", length(cut), " cut value", ifelse(length(cut) == 1, "", "s"), "."))
             }
         }
         
@@ -284,8 +276,7 @@
             if (declared) {
                 message <- paste(message, "Consider using undeclare() before recoding.")
             }
-            cat("\n")
-            stop(simpleError(paste0(message, "\n\n")))
+            stopError(message)
         }
         
         if (is.factor(x)) {
