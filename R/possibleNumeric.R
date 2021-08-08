@@ -4,7 +4,15 @@
     }
 
     if (inherits(x, "haven_labelled") || inherits(x, "declared")) {
-        return(Recall(unclass(x)) && !any(is.na(suppressWarnings(as.numeric(names(attr(x, "labels")))))))
+        num <- Recall(unclass(x))
+        
+        labels <- attr(x, "labels")
+        if (!is.null(labels) && num) {
+            # num <- sum(is.na(suppressWarnings(as.numeric(labels)))) == 0 # without na.omit() but why...?
+            return(Recall(labels))
+        }
+
+        return(num)
     }
 
     if (is.numeric(x)) {
