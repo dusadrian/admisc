@@ -1,6 +1,7 @@
 Version 0.17
     o More robust support for multi-byte locales when detecting tilde and
       dash operators
+    o Fixed bug in possibleNumeric() for objects of class 'declared'
     
 Version 0.16
     o New functions agtb(), altb() and aneqb() to test (in)equality of floats
