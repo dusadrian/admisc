@@ -92,8 +92,7 @@
         invalid <- ifelse(grepl("\\)", expression), length(open.brackets) != length(closed.brackets), TRUE)
         
         if (invalid) {
-            cat("\n")
-            stop("Invalid expression, open bracket \"(\" not closed with \")\".\n\n", call. = FALSE)
+            stopError("Invalid expression, open bracket \"(\" not closed with \")\".")
         }
         
         all.brackets <- sort(c(open.brackets, closed.brackets))
@@ -264,8 +263,7 @@
                     if (any(tilda)) {
                         tilda.pos <- which(tilda)
                         if (max(tilda.pos) == length(star.split)) {
-                            cat("\n")
-                            stop(paste("Unusual expression \"", z, "\": terminated with a \"~\" sign?\n\n", sep=""), call. = FALSE)
+                            stopError(paste("Unusual expression \"", z, "\": terminated with a \"~\" sign?", sep = ""))
                         }
                         star.split[tilda.pos + 1] <- paste("~", star.split[tilda.pos + 1], sep="")
                         star.split <- star.split[-tilda.pos]
@@ -290,8 +288,7 @@
                     if (hastilde(w)) {
                         wsplit <- unlist(strsplit(w, split = ""))
                         if (max(which(hastilde(wsplit))) > 1) {
-                            cat("\n")
-                            stop(paste("Unusual expression: ", w, ". Perhaps you meant \"*~\"?\n\n", sep=""), call. = FALSE)
+                            stopError(paste("Unusual expression: ", w, ". Perhaps you meant \"*~\"?", sep = ""))
                         }
                         else {
                             return(c("~", notilde(w)))

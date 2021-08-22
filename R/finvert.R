@@ -1,8 +1,7 @@
 `finvert` <- function(x, levels = FALSE) {
     # to do, same for haven_labelled and declared
     if (!is.factor(x)) {
-        cat("\n")
-        stop("The variable is not a factor.\n\n", call. = FALSE)
+        stopError("The variable is not a factor.")
     }
     flist <- list(levels(x), rev(levels(x)))
     return(factor(x, levels = flist[[1 + !levels]], labels = flist[[1 + levels]]))
