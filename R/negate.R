@@ -6,7 +6,11 @@
     input <- recreate(substitute(input))
     snames <- recreate(substitute(snames))
     dots <- list(...)
-    scollapse <- ifelse(is.element("scollapse", names(dots)), dots$scollapse, FALSE) # internal collapse method
+    scollapse <- ifelse(
+        is.element("scollapse", names(dots)),
+        dots$scollapse,
+        FALSE
+    ) # internal collapse method
 
     if (!is.null(noflevels)) {
         if (is.character(noflevels)) {
@@ -69,25 +73,32 @@
     }
         
     star <- any(grepl("[*]", input))
-
+    
     if (!identical(snames, "")) {
         snames <- splitstr(snames)
         if (any(nchar(snames) > 1)) {
             star <- TRUE
         }
     }
-    
     multivalue <- any(grepl("\\[|\\]|\\{|\\}", input))
     if (multivalue) {
         start <- FALSE
         if (is.null(noflevels) | identical(snames, "")) {
-            stopError("Set names and their number of levels are required to negate multivalue expressions.")
+            stopError(
+                paste(
+                    "Set names and their number of levels are required",
+                    "to negate multivalue expressions."
+                )
+            )
         }
     }
+    
     scollapse <- scollapse | any(nchar(snames) > 1) | multivalue | star
     collapse <- ifelse(scollapse, "*", "")
     
-    negateit <- function(x, snames = "", noflevels = NULL, simplify = TRUE, collapse = "*") {
+    negateit <- function(
+        x, snames = "", noflevels = NULL, simplify = TRUE, collapse = "*"
+    ) {
 
         callist <- list(expression = x)
         callist$snames <- snames
@@ -124,12 +135,17 @@
             
         }), collapse = "")
         
-        negated <- expandBrackets(negated, snames = snames, noflevels = noflevels)
+        negated <- expandBrackets(
+            negated,
+            snames = snames,
+            noflevels = noflevels,
+            scollapse = scollapse
+        )
         
-        callist$expression <- negated
-        callist$scollapse <- identical(collapse, "*")
-        callist$snames <- snames
         if (simplify) {
+            callist$expression <- negated
+            callist$scollapse <- identical(collapse, "*")
+            callist$snames <- snames
             return(unclass(do.call("simplify", callist)))
         }
         
@@ -138,7 +154,14 @@
 
     # return(list(input = input, snames = snames, noflevels = noflevels, simplify = simplify, collapse = collapse))
 
-    result <- lapply(input, negateit, snames = snames, noflevels = noflevels, simplify = simplify, collapse = collapse)
+    result <- lapply(
+        input,
+        negateit,
+        snames = snames,
+        noflevels = noflevels,
+        simplify = simplify,
+        collapse = collapse
+    )
     
     ### probably unnecessary hack to allow package admisc being checked without package QCA
     # e.g. via simplify()

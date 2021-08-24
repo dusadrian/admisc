@@ -81,15 +81,30 @@
 }
 
 
-`expandBrackets` <- function(expression, snames = "", noflevels = NULL) {
+`expandBrackets` <- function(
+    expression, snames = "", noflevels = NULL, scollapse = FALSE
+) {
     expression <- recreate(substitute(expression))
     snames <- splitstr(snames)
     star <- any(grepl("[*]", expression))
     multivalue <- any(grepl("\\[|\\]|\\{|\\}", expression))
-    collapse <- ifelse(any(nchar(snames) > 1) | multivalue | star, "*", "")
+    collapse <- ifelse(
+        any(nchar(snames) > 1) | multivalue | star | scollapse,
+        "*",
+        ""
+    )
 
     curly <- grepl("[{]", expression)
-    sl <- ifelse(identical(snames, ""), FALSE, ifelse(all(nchar(snames) == 1), TRUE, FALSE))
+    sl <- ifelse( # single letters
+        identical(snames, ""),
+        FALSE,
+        ifelse(
+            all(nchar(snames) == 1),
+            TRUE,
+            FALSE
+        )
+    )
+
     getbl <- function(expression, snames = "", noflevels = NULL) {
         bl <- splitMainComponents(gsub("[[:space:]]", "", expression))
         bl <- splitBrackets(bl)
@@ -105,7 +120,18 @@
         bl <- splitPluses(bl)
         blu <- unlist(bl)
         # to detect something like AC + B~C with no snames (it has a tilde, but not first)
-        bl <- splitStars(bl, ifelse((sl | any(hastilde(blu) & !tilde1st(blu))) & !grepl("[*]", expression) & !multivalue, "", "*"))
+        bl <- splitStars(
+            bl,
+            ifelse(
+                (
+                    sl | any(
+                        hastilde(blu) & !tilde1st(blu)
+                    )
+                ) & !grepl("[*]", expression) & !multivalue,
+                "",
+                "*"
+            )
+        )
         bl <- solveBrackets(bl)
         bl <- simplifyList(bl)
         return(bl)
@@ -115,7 +141,17 @@
     bl <- getbl(expression, snames = snames, noflevels = noflevels)
     if (length(bl) == 0) return("")
 
-    bl <- paste(unlist(lapply(bl, paste, collapse = collapse)), collapse = " + ")
+    bl <- paste(
+        unlist(
+            lapply(
+                bl,
+                paste,
+                collapse = collapse
+            )
+        ),
+        collapse = " + "
+    )
+
     expressions <- translate(bl, snames = snames, noflevels = noflevels)
     snames <- colnames(expressions)
 
@@ -126,7 +162,11 @@
             if (!redundant[i]) {
                 for (j in seq(i + 1, nrow(expressions))) {
                     if (!redundant[j]) {
-                        subsetrow <- checkSubset(expressions[c(i, j), , drop = FALSE], implicants = FALSE)
+                        subsetrow <- checkSubset(
+                            expressions[c(i, j), , drop = FALSE],
+                            implicants = FALSE
+                        )
+
                         if (!is.null(subsetrow)) {
                             redundant[c(i, j)[subsetrow]] <- TRUE
                         }
@@ -144,7 +184,16 @@
             
         }
         else {
-            expressions <- expressions[order(apply(expressions, 1, function(x) sum(x < 0)), decreasing = TRUE), , drop = FALSE]
+            eorder <- order(
+                apply(
+                    expressions,
+                    1,
+                    function(x) sum(x < 0)
+                ),
+                decreasing = TRUE
+            )
+
+            expressions <- expressions[eorder, , drop = FALSE]
         }
     }
 
@@ -157,7 +206,16 @@
         for (i in seq(length(snames))) {
             if (x[i] != -1) {
                 if (multivalue) {
-                    result <- c(result, paste(snames[i], ifelse(curly, "{", "["), x[i], ifelse(curly, "}", "]"), sep = ""))
+                    result <- c(
+                        result,
+                        paste(
+                            snames[i],
+                            ifelse(curly, "{", "["),
+                            x[i],
+                            ifelse(curly, "}", "]"),
+                            sep = ""
+                        )
+                    )
                 }
                 else {
                     if (x[i] == 0) {
