@@ -116,24 +116,43 @@
         
         snoflevels <- lapply(noflevels, function(x) seq(x) - 1)
         sr <- nrow(trexp) == 1 # single row
-        negated <- paste(apply(trexp, 1, function(x) {
-            wx <- which(x != -1) # more acurate than >= 0, now we also have multiple levels like 1,2
-            x <- x[wx]
-            nms <- names(x)
-            
-            x <- sapply(seq_along(x), function(i) {
-                paste(setdiff(snoflevels[wx][[i]], splitstr(x[i])), collapse = ",")
-            })
-            
-            if (multivalue) {
-                return(paste("(", paste(nms, "[", x, "]", sep = "", collapse = " + "), ")", sep = ""))
-            }
-            else {
-                nms[x == 0] <- paste0("~", nms[x == 0])
-                return(paste(ifelse(sr, "", "("), paste(nms, collapse = " + ", sep = ""), ifelse(sr, "", ")"), sep = ""))
-            }
-            
-        }), collapse = "")
+        negated <- paste(
+            apply(trexp, 1, function(x) {
+                wx <- which(x != -1) # more acurate than >= 0, now we also have multiple levels like 1,2
+                x <- x[wx]
+                nms <- names(x)
+                
+                x <- sapply(seq_along(x), function(i) {
+                    paste(
+                        setdiff(snoflevels[wx][[i]], splitstr(x[i])),
+                        collapse = ","
+                    )
+                })
+                
+                if (multivalue) {
+                    return(paste(
+                        ifelse(sr | length(wx) == 1, "", "("),
+                        paste(
+                            nms, "[", x, "]",
+                            sep = "",
+                            collapse = " + "
+                        ),
+                        ifelse(sr | length(wx) == 1, "", ")"),
+                        sep = ""
+                    ))
+                }
+                else {
+                    nms[x == 0] <- paste0("~", nms[x == 0])
+                    return(paste(
+                        ifelse(sr | length(wx) == 1, "", "("),
+                        paste(nms, collapse = " + ", sep = ""),
+                        ifelse(sr | length(wx) == 1, "", ")"),
+                        sep = ""))
+                }
+                
+            }),
+            collapse = ""
+        )
         
         negated <- expandBrackets(
             negated,
