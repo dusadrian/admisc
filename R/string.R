@@ -82,14 +82,18 @@
     expression <- gsub("[[:space:]]", "", expression)
     
     ind.char <- unlist(strsplit(expression, split = ""))
-    
-    if (grepl("\\(", expression)) {
+    openclosed <- grepl("\\(", expression) | grepl("\\)", expression)
+    if (openclosed) {
         # split the string in individual characters
     
         open.brackets <- which(ind.char == "(")
         closed.brackets <- which(ind.char == ")")
         
-        invalid <- ifelse(grepl("\\)", expression), length(open.brackets) != length(closed.brackets), TRUE)
+        invalid <- ifelse(
+            openclosed,
+            length(open.brackets) != length(closed.brackets),
+            TRUE
+        )
         
         if (invalid) {
             stopError("Invalid expression, open bracket \"(\" not closed with \")\".")
@@ -104,11 +108,12 @@
                     closed.brackets <- setdiff(closed.brackets, all.brackets[seq(i - 1, i)])
                 }
                 
-                if (all.brackets[i] - all.brackets[i - 1] == 2) {
-                    if (ind.char[all.brackets[i] - 1] != "+") {
-                        open.brackets <- setdiff(open.brackets, all.brackets[seq(i - 1, i)])
-                        closed.brackets <- setdiff(closed.brackets, all.brackets[seq(i - 1, i)])
-                    }
+                if (
+                    all.brackets[i] - all.brackets[i - 1] == 2 &&
+                    ind.char[all.brackets[i] - 1] != "+"
+                ) {
+                    open.brackets <- setdiff(open.brackets, all.brackets[seq(i - 1, i)])
+                    closed.brackets <- setdiff(closed.brackets, all.brackets[seq(i - 1, i)])
                 }
             }
         }
@@ -140,14 +145,23 @@
             # there is only one open bracket
             if (open.brackets > 1) {
                 # there's something before that open bracket
-                big.list[[1]] <- paste(ind.char[seq(1, open.brackets - 2)], collapse = "")
+                big.list[[1]] <- paste(
+                    ind.char[seq(1, open.brackets - 2)],
+                    collapse = ""
+                )
             }
             nep <- min(which(unlist(lapply(big.list, is.null))))
-            big.list[[nep]] <- paste(ind.char[seq(open.brackets, closed.brackets)], collapse = "")
+            big.list[[nep]] <- paste(
+                ind.char[seq(open.brackets, closed.brackets)],
+                collapse = ""
+            )
             if (closed.brackets < length(ind.char)) {
                 # there is something beyond the closed bracket
                 nep <- min(which(unlist(lapply(big.list, is.null))))
-                big.list[[nep]] <- paste(ind.char[seq(closed.brackets + 2, length(ind.char))], collapse = "")
+                big.list[[nep]] <- paste(
+                    ind.char[seq(closed.brackets + 2, length(ind.char))],
+                    collapse = ""
+                )
             }
         }
         else {
@@ -159,23 +173,35 @@
                     
                     if (open.brackets[1] > 1) {
                         # there is something before the first bracket
-                        big.list[[1]] <- paste(ind.char[seq(1, open.brackets[1] - 2)], collapse = "")
+                        big.list[[1]] <- paste(
+                            ind.char[seq(1, open.brackets[1] - 2)],
+                            collapse = ""
+                        )
                     }
                     
                     nep <- min(which(unlist(lapply(big.list, is.null))))
-                    big.list[[nep]] <- paste(ind.char[seq(open.brackets[i], closed.brackets[i])], collapse = "")
+                    big.list[[nep]] <- paste(
+                        ind.char[seq(open.brackets[i], closed.brackets[i])],
+                        collapse = ""
+                    )
                     
                 }
                 else {
                     nep <- min(which(unlist(lapply(big.list, is.null))))
-                    big.list[[nep]] <- paste(ind.char[seq(open.brackets[i], closed.brackets[i])], collapse = "")
+                    big.list[[nep]] <- paste(
+                        ind.char[seq(open.brackets[i], closed.brackets[i])],
+                        collapse = ""
+                    )
                     
                     if (i == length(closed.brackets)) {
                         if (closed.brackets[i] < length(ind.char)) {
                             # there is something beyond the last closed bracket
                             nep <- min(which(unlist(lapply(big.list, is.null))))
                     
-                            big.list[[nep]] <- paste(ind.char[seq(closed.brackets[i] + 2, length(ind.char))], collapse = "")
+                            big.list[[nep]] <- paste(
+                                ind.char[seq(closed.brackets[i] + 2, length(ind.char))],
+                                collapse = ""
+                            )
                             
                         }
                     }

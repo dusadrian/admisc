@@ -26,7 +26,20 @@
     }
     tml <- typematrix[tml, 1:2]
     pattern <- paste("\\", tml, sep = "", collapse = "[[:alnum:]|,]*")
-    result <- gsub("\\*|\\+", "", unlist(strsplit(gsub("\\s+", " ", trimstr(gsub(pattern, " ", x))), split = " ")))
+    result <- gsub(
+        "\\*|\\+",
+        "",
+        unlist(
+            strsplit(
+                gsub(
+                    "\\s+",
+                    " ",
+                    trimstr(gsub(pattern, " ", x))
+                ),
+                split = " "
+            )
+        )
+    )
     return(result[result != ""])
 }
 
@@ -40,7 +53,11 @@
     x <- gsub("[[:space:]]", "", x)
     res <- regmatches(x, gregexpr(regexp, x), invert = outside)[[1]]
     if (outside) {
-        res <- gsub("\\*", "", unlist(strsplit(res, split="\\+")))
+        res <- gsub(
+            "\\*",
+            "",
+            unlist(strsplit(res, split = "\\+"))
+        )
         return(res[res != ""])
     }
     else {
@@ -57,7 +74,11 @@
     x <- gsub("[[:space:]]", "", x)
     res <- regmatches(x, gregexpr(regexp, x), invert = outside)[[1]]
     if (outside) {
-        res <- gsub("\\*", "", unlist(strsplit(res, split="\\+")))
+        res <- gsub(
+            "\\*",
+            "",
+            unlist(strsplit(res, split = "\\+"))
+        )
         return(res[res != ""])
     }
     else {
@@ -84,6 +105,7 @@
 `expandBrackets` <- function(
     expression, snames = "", noflevels = NULL, scollapse = FALSE
 ) {
+    
     expression <- recreate(substitute(expression))
     snames <- splitstr(snames)
     star <- any(grepl("[*]", expression))
