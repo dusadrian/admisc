@@ -1,3 +1,8 @@
+Version 0.18
+    o Fixed bug affecting the function negate() when the SOP expression contains
+      a single condition in one of the conjuncts / products
+      (thanks to Michael Baumgartner for the report)
+    
 Version 0.17
     o More robust support for multi-byte locales when detecting tilde and
       dash operators
