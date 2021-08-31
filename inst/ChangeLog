@@ -4,6 +4,8 @@ Version 0.18
       (thanks to Michael Baumgartner for the report)
     o Fixed bug in asNumeric() preventing certain character objects of class
       "haven_labelled" to be converted as numeric
+    o Improved function stopError(), printing error messages containing newline
+      characters
     
 Version 0.17
     o More robust support for multi-byte locales when detecting tilde and
