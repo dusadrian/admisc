@@ -7,7 +7,8 @@
 \title{Negate Boolean expressions}
 
 \description{
-Functions to negate a DNF/SOP expression, or to invert SOP to POS or POS to SOP.
+Functions to negate a DNF/SOP expression, or to invert a SOP to a negated POS or
+a POS to a negated SOP.
 }
 
 \usage{
@@ -41,29 +42,31 @@ In "normal" language, these would be written as:
 
 2. \code{not (A or B) = (not A) and (not B)}
 
-Based on these two laws, any Boolean expression written in disjunctive normal form
-can be transformed into its negation.
+Based on these two laws, any Boolean expression written in disjunctive normal
+form can be transformed into its negation.
 
-It is also possible to negate all models and solutions from the result of a Boolean
-minimization from function \bold{\code{\link[QCA]{minimize}()}} in package \bold{\code{QCA}}.
-The resulting object, of class \code{"qca"}, is automatically recognised by this function.
+It is also possible to negate all models and solutions from the result of a
+Boolean minimization from function \bold{\code{\link[QCA]{minimize}()}} in
+package \bold{\code{QCA}}. The resulting object, of class \code{"qca"}, is
+automatically recognised by this function.
 
-In a SOP expression, the products should normally be split by using a star \bold{\code{*}}
-sign, otherwise the sets' names will be considered the individual letters in alphabetical
-order, unless they are specified via \bold{\code{snames}}.
+In a SOP expression, the products should normally be split by using a star
+\bold{\code{*}} sign, otherwise the sets' names will be considered the individual
+letters in alphabetical order, unless they are specified via \bold{\code{snames}}.
 
 To negate multilevel expressions, the argument \bold{\code{noflevels}} is required.
 
-It is entirely possible to obtain multiple negations of a single expression, since the
-result of the negation is passed to function \bold{\code{\link{simplify}()}}.
+It is entirely possible to obtain multiple negations of a single expression, since
+the result of the negation is passed to function \bold{\code{\link{simplify}()}}.
 
-Function \bold{\code{invert}()} simply transforms an expression from a sum of products
-(SOP) to a product of sums (POS), and the other way round.
+Function \bold{\code{invert}()} simply transforms an expression from a sum of
+products (SOP) to a negated product of sums (POS), and the other way round.
 }
 
 \value{
-A character vector when the input is a SOP expresison, or a named list for minimization
-input objects, each component containing all possible negations of the model(s).
+A character vector when the input is a SOP expresison, or a named list for
+minimization input objects, each component containing all possible negations of
+the model(s).
 }
 
 \author{
