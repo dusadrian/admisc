@@ -1,3 +1,8 @@
+Version 0.19
+    o New function asSOP(), to coerce (POS) expressions to a standard SOP format
+    o New function mvSOP(), to coerce an expression from crisp set notation to
+      multivalue notation
+    
 Version 0.18
     o Fixed bug affecting the function negate() when the SOP expression contains
       a single condition in one of the conjuncts / products
@@ -10,13 +15,13 @@ Version 0.18
 Version 0.17
     o More robust support for multi-byte locales when detecting tilde and
       dash operators
-    o Fixed bug in possibleNumeric() for objects of class 'declared'
+    o Fixed bug in possibleNumeric() for objects of class declared'
     
 Version 0.16
     o New functions agtb(), altb() and aneqb() to test (in)equality of floats
     o New utility function getName() to return the name of the object being
       used in a function call
-    o Fixed bug when recoding objects of class 'declared'
+    o Fixed bug when recoding objects of class "declared"
     o Fixed bug detecting multibyte strings
       
 Version 0.15
