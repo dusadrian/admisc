@@ -27,7 +27,11 @@
             # otherwise replacement was not possible
             x[x == dc.code] <- -1
             
-            return(asNumeric(x))
+            if (possibleNumeric(x)) {
+                x <- asNumeric(x)
+            }
+
+            return(x)
         })
 
         colnames(data) <- colnms
@@ -35,6 +39,7 @@
     
     fuzzy.cc <- logical(ncol(data))
     hastime <- logical(ncol(data))
+    factor <- unlist(lapply(data, is.factor))
     
     pN <- unlist(lapply(data, possibleNumeric))
     
@@ -61,6 +66,30 @@
     # noflevels <- as.integer(noflevels)
     
     noflevels <- getLevels(data)
+
+    factor <- factor & !hastime
+
+    factors <- list()
+    columns <- colnames(data)
     
-    return(list(data = data, fuzzy.cc = fuzzy.cc, hastime = hastime, dc.code = dc.code, noflevels = as.numeric(noflevels)))
+    if (any(factor)) {
+        for (i in which(factor)) {
+            values <- seq(noflevels[i]) - 1
+            names(values) <- levels(data[, i])
+            data[, i] <- as.numeric(data[, i]) - 1
+            factors[[columns[i]]] <- values
+        }
+    }
+    
+    return(
+        list(
+            data = data,
+            fuzzy.cc = fuzzy.cc,
+            hastime = hastime,
+            factor = factor,
+            factors = factors,
+            dc.code = dc.code,
+            noflevels = as.numeric(noflevels)
+        )
+    )
 }
