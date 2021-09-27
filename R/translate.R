@@ -1,5 +1,5 @@
-`translate` <-
-function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
+`translate` <- function(expression = "", snames = "", noflevels = NULL, data = NULL, ...
+) {
     
     expression <- recreate(substitute(expression))
     snames <- recreate(substitute(snames))
@@ -9,6 +9,10 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
     
     if (identical(expression, "")) {
         stopError("Empty expression.")
+    }
+
+    if (any(grepl("[(|)]", expression))) {
+        stopError("POS expressions cannot be translated directly.")
     }
     
     if (any(grepl("<=>|<->|=>|->|<=|<-", expression))) {
@@ -62,37 +66,48 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
     }
     else {
 
-        # TO DO: see how this affects package venn, since toupper is now longer used
+        # TO DO: see how this affects package venn, since toupper is no longer used
         snames <- splitstr(snames)
         
         if (!is.null(data)) {
             if (length(setdiff(snames, colnames(data))) > 0) {
-                stopError("Part(s) of the \"snames\" not in the column names from the data.")
+                stopError("Some <snames> not found in the data column names.")
             }
-        }
-    }
-    
-    if (is.null(noflevels)) {
-        
-        if (!is.null(data)) {
-            # getInfo() not getLevels() because some data might have time information
-            if (identical(snames, "")) {
-                noflevels <- getInfo(data)$noflevels
-            }
-            else {
-                noflevels <- getInfo(data[, snames, drop = FALSE])$noflevels
-            }
-        }
-    }
-    else {
-        if (is.character(noflevels)) {
-            noflevels <- splitstr(noflevels)
+
+            data <- data[, snames, drop = FALSE]
         }
     }
 
+    multivalue <- any(grepl("\\[|\\]|\\{|\\}", expression))
+    coerced2mv <- FALSE
+
+    if (!identical(snames, "")) {
+        checkValid(
+            expression = expression,
+            snames = snames,
+            data = data
+        )
+
+        if (!multivalue) {
+            multivalue <- TRUE
+            coerced2mv <- TRUE
+            mv <- lapply(expression, function(x) {
+                mvSOP(x, snames = snames, data = data, translate = TRUE)
+            })
+
+            expression <- unlist(lapply(mv, "[[", 1))
+            oldc <- unlist(lapply(mv, "[[", 2))
+            newc <- unlist(lapply(mv, "[[", 3))
+
+            # expression <- replaceText(expression, oldc, newc)
+        }
+    }
+
+    # Replacing expression conditions is necessary before anything else
+    # because column names in the data might have spaces (it's allowed)
     replaced <- FALSE
     
-    if (!identical(snames, "") & length(snames) > 0) {
+    if (!identical(snames, "") && length(snames) > 0) {
         if (any(nchar(snames) > 1) & !is.element("validate", names(dots))) {
             
             snameso <- snames
@@ -102,18 +117,21 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
             else {
                 snamesr <- paste("X", seq(length(snames)), sep = "")
             }
-
             for (i in seq(length(expression))) {
                 expression[i] <- replaceText(expression[i], snames, snamesr)
             }
-            
+
             if (!is.null(data)) {
                 positions <- c()
                 # this code makes sure that column names
                 # don't get overwritten multiple times
                 # for instance if they are already single letters
                 for (i in seq(length(snames))) {
-                    colpos <- setdiff(which(colnames(data) == snames[i]), positions)
+                    colpos <- setdiff(
+                        which(colnames(data) == snames[i]),
+                        positions
+                    )
+
                     if (length(colpos) > 0) {
                         colnames(data)[colpos] <- snamesr[i]
                         positions <- c(positions, colpos)
@@ -125,38 +143,41 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
             replaced <- TRUE
         }
     }
-    
+
+    if (is.null(noflevels)) {
+        
+        if (!is.null(data)) {
+            
+            # getInfo() not getLevels() because some data might have time information
+            infodata <- getInfo(data)
+            noflevels <- infodata$noflevels
+        }
+    }
+    else {
+        if (is.character(noflevels)) {
+            noflevels <- splitstr(noflevels)
+        }
+    }
+
     # remove white space and any non-printable characters
     expression <- gsub("[[:space:]]|[^ -~]+", "", expression)
     
-    
     if (identical("1-", substring(expression, 1, 2))) {
         explist <- list(input = gsub("1-", "", expression), snames = snames)
-        if (!is.null(noflevels)) explist$noflevels <- noflevels
-        expression <- do.call(negate, explist)
+        if (!is.null(noflevels)) {
+            explist$noflevels <- noflevels
+        }
+        expression <- unlist(do.call(negate, explist))
     }
-    
+
     # ",[0-9]" to eliminate _only_ commas within curly brackets, like T{1,2}"
     if (any(grepl(",", gsub(",[0-9]", "", expression)))) {
-        expression <- splitstr(expression)
+        expression <- paste(splitstr(expression), collapse = "+")
     }
-    
-    arglist <- list(snames = snames)
-
-    if (!is.null(noflevels)) {
-        arglist$noflevels <- noflevels
-    }
-    
-    expression <- unlist(lapply(expression, function(x) {
-        if (grepl("[(|)]", x)) {
-            x <- do.call(expandBrackets, c(list(expression = x), arglist)) # , data = data)
-        }
-        return(x)
-    }))
     
     
     pporig <- trimstr(unlist(strsplit(expression, split="[+]")))
-    multivalue <- any(grepl("\\[|\\]|\\{|\\}", expression))
+    
     expression <- gsub("[[:space:]]", "", expression)
     
     beforemessage <- "Condition"
@@ -207,8 +228,14 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
                     aftermessage <- gsub("does", "do", aftermessage)
                 }
                 
-                stopError(sprintf("%s '%s' %s.\n\n", beforemessage, paste(conds, collapse = ","), aftermessage))
-                
+                stopError(
+                    sprintf(
+                        "%s '%s' %s.",
+                        beforemessage,
+                        paste(conds, collapse = ","),
+                        aftermessage
+                    )
+                )
             }
         }
         
@@ -267,12 +294,20 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
             
             return(ret)
         })
-        
+
         names(retlist) <- pporig
 
         # this solves the bug related with the hypothetical and illogical:
         # simplify("A{1}*B{0}*B{1}", snames = LETTERS[1:2], noflevels = c(2,2))
-        retlist <- retlist[!unlist(lapply(retlist, function(x) any(unlist(lapply(x, length)) == 0)))]
+        retlist <- retlist[
+            !unlist(
+                lapply(
+                    retlist, function(x) {
+                        any(unlist(lapply(x, length)) == 0)
+                    }
+                )
+            )
+        ]
 
         if (length(retlist) == 0) {
             stopError("The result is an empty set.")
@@ -280,7 +315,12 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
     }
     else {
 
-        sl <- ifelse((replaced & length(snames) < 27) | identical(snames, ""), TRUE, all(nchar(snames) == 1))
+        sl <- ifelse(
+            identical(snames, "") || (replaced & length(snames) < 27),
+            TRUE,
+            all(nchar(snames) == 1)
+        )
+
         # parse plus
         pp <- unlist(strsplit(expression, split = "[+]"))
         
@@ -288,19 +328,40 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
             pp <- gsub("[*]", "", pp)
         }
 
-        splitchar <- ifelse(any(grepl("[*]", pp)) | !sl, "[*]", "")
-        conds <- setdiff(sort(unique(notilde(unlist(strsplit(pp, split = splitchar))))), "")
-        
+        splitchar <- ifelse(
+            any(grepl("[*]", pp)) | !sl,
+            "[*]",
+            ""
+        )
+
+        conds <- setdiff(
+            sort(
+                unique(
+                    notilde(
+                        unlist(strsplit(pp, split = splitchar))
+                    )
+                )
+            ),
+            ""
+        )
+
         if (!identical(snames, "")) {
             
             if (!is.null(data)) {
                 
-                if (all(is.element(conds, snames)) & all(is.element(conds, colnames(data)))) {
+                if (
+                    all(is.element(conds, snames)) & 
+                    all(is.element(conds, colnames(data)))
+                ) {
                     
                     infodata <- getInfo(data[, conds, drop = FALSE])
                     
                     valid <- which(infodata$noflevels >= 2)
-                    invalid <- !any(infodata$hastime[valid]) & any(infodata$noflevels[valid] > 2)
+                    invalid <- any(
+                        infodata$noflevels[valid] > 2 &
+                        !infodata$hastime[valid] &
+                        !infodata$factor[valid]
+                    )
                     
                     if (invalid) {
                         stopError("Expression should be multi-value, since it refers to multi-value data.")
@@ -308,6 +369,7 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
                 }
             }
             
+            # return(list(pp, conds, snames, colnames(data)))
             
             if (all(is.element(conds, snames))) {
                 conds <- snames
@@ -323,7 +385,14 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
                     conds <- replaceText(conds, snames, snameso)
                 }
 
-                stopError(sprintf("%s '%s' %s.\n\n", beforemessage, paste(conds, collapse = ","), aftermessage))
+                stopError(
+                    sprintf(
+                        "%s '%s' %s.",
+                        beforemessage,
+                        paste(conds, collapse = ","),
+                        aftermessage
+                    )
+                )
             }
             
         }
@@ -358,6 +427,7 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
     
     
     retlist <- retlist[!unlist(lapply(retlist, function(x) all(unlist(x) < 0)))]
+
     
     if (replaced) {
         
@@ -367,10 +437,8 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
             names(retlist[[i]]) <- snameso
         }
     }
-
     # checkl <- createMatrix(rep(2, length(retlist)))
     # checkl <- apply(checkl[rowSums(checkl) == 2, ], 1, function(x) which(x == 1))
-    # checkl <-
     
     retmat <- do.call(rbind, lapply(retlist, function(x) {
         xnames <- names(x)
@@ -381,6 +449,29 @@ function(expression = "", snames = "", noflevels = NULL, data = NULL, ...) {
     
     if (length(retmat) == 0) {
         stopError("Impossible to translate an empty set.")
+    }
+
+    if (coerced2mv) {
+        for (i in seq(length(retlist))) {
+            names(retlist)[i] <- replaceText(names(retlist)[i], oldc, newc)
+            names(retlist[[i]]) <- replaceText(names(retlist[[i]]), oldc, newc)
+        }
+
+        rownms <- rownames(retmat)
+        
+        for (i in seq(nrow(retmat))) {
+            rownms[i] <- replaceText(rownms[i], oldc, newc)
+        }
+        
+        rownames(retmat) <- rownms
+
+        colnms <- colnames(retmat)
+
+        for (i in seq(ncol(retmat))) {
+            colnms[i] <- replaceText(colnms[i], oldc, newc)
+        }
+        
+        colnames(retmat) <- colnms
     }
     
     if (is.element("retlist", names(dots))) {
