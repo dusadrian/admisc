@@ -70,14 +70,14 @@
     else { # the data is present
         # if (identical(snames, "")) {
             if (length(setdiff(conds, colnames(data))) > 0) {
-                stopError("Parts of the expression don't match the column names from \"data\" argument.")
+                stopError("Part(s) of the expression not found in the data.")
             }
         # }
     }
     
     if (!identical(snames, "")) {
         if (length(setdiff(conds, splitstr(snames))) > 0) {
-            stopError("Parts of the expression don't match the set names from \"snames\" argument.")
+            stopError("Part(s) of the expression not found in the <snames> argument.")
         }
     }
 }

@@ -74,7 +74,11 @@
         }
     }
 
-    scollapse <- scollapse | any(nchar(colnames(implicants)) > 1) | any(grepl(mvregexp, unlist(sols$solution))) # | any(grepl("[*]", unlist(sols$solution)))
+    scollapse <- scollapse |
+                any(nchar(colnames(implicants)) > 1) |
+                any(grepl(mvregexp, unlist(sols$solution)))
+            # | any(grepl("[*]", unlist(sols$solution)))
+
     expression <- unlist(lapply(sols$solution, function(x) {
         if (!scollapse) x <- gsub("\\*", "", x)
         return(paste(x, collapse = " + "))  
