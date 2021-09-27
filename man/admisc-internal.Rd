@@ -31,6 +31,7 @@
 \alias{uninstall}
 \alias{unload}
 \alias{unlockEnvironment}
+\alias{checkValid}
 \alias{validateNames}
 \alias{verify}
 \alias{writePrimeimp}
