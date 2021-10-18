@@ -28,6 +28,8 @@ function(expression = "", data = NULL, separate = FALSE) { # na.rm = FALSE
                 data[[i]] <- eval.parent(parse(text = sprintf("get(\"%s\")", colnms[i]), n = 1))
             }
             
+            # TODO: ?model.frame
+
             if (length(unique(unlist(lapply(data, length)))) > 1) {
                 stopError("Objects should be vectors of the same length.")
             }
@@ -37,7 +39,17 @@ function(expression = "", data = NULL, separate = FALSE) { # na.rm = FALSE
         }
     }
     
-    ppm <- translate(expression, data = data, retlist = TRUE)
+    multivalue <- grepl("\\{|\\}|\\[|\\]", expression)
+
+
+    if (!multivalue) {
+        ppm <- translate(mvSOP(expression, data = data), data = data, retlist = TRUE)
+        rownames(ppm) <- trimstr(unlist(strsplit(expression, split = "\\+")))
+    }
+    else {
+        ppm <- translate(expression, data = data, retlist = TRUE)
+    }
+
     pp <- attr(ppm, "retlist")
     retain <- apply(ppm, 2, function(x) any(x >= 0))
     pp <- lapply(pp, function(x) x[retain])
@@ -46,10 +58,7 @@ function(expression = "", data = NULL, separate = FALSE) { # na.rm = FALSE
     
     infodata <- getInfo(data)
     
-    if (any(infodata$hastime)) {
-        # because time conditions get modified by getInfo()
-        data <- infodata$data[, colnames(data), drop = FALSE]
-    }
+    data <- infodata$data
     
     verify(data)
     

@@ -48,6 +48,7 @@
             etuplow <- gsub("\\{", "\\\\{", etuplow)
             etuplow <- gsub("\\}", "\\\\}", etuplow)
             locations <- gregexpr(etuplow, expression)[[1]]
+            
             # temp <- gsub(tuplow[i], paste(rep(ruplow[i], nchar(tuplow[i])), collapse = ""), expression)
             
             if (any(locations > 0)) {

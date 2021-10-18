@@ -1,35 +1,60 @@
-`writePrimeimp` <-
-function(mymat, mv = FALSE, collapse = "*", snames = "", ...) {
+`writePrimeimp` <- function(
+    impmat, mv = FALSE, collapse = "*", snames = "", curly = FALSE,
+    use.categories = FALSE, categories = list(), ...
+) {
     ### ... is to allow calls having "use dot tilde" which is now deprecated
     
-    if (any(mymat > 2)) {
+    if (any(impmat > 2)) {
         mv <- TRUE
     }
     
     dots <- list(...)
 
     if (identical(snames, "")) {
-        snames <- colnames(mymat)
+        snames <- colnames(impmat)
     }
     else {
-        # ... therefore mymat needs to be transposed
-        mymat <- t(mymat)
+        # ... therefore impmat needs to be transposed
+        impmat <- t(impmat)
     }
     
-    chars <- snames[col(mymat)]
-    curly <- dots$curly
+    chars <- matrix(snames[col(impmat)], nrow = nrow(impmat))
     
-    if (is.null(curly)) curly <- FALSE
-
     if (mv) {
-        chars <- matrix(paste(chars, ifelse(curly, "{", "["), mymat - 1, ifelse(curly, "}", "]"), sep = ""), nrow = nrow(mymat))
+        chars <- matrix(
+            paste(
+                chars,
+                ifelse(curly, "{", "["),
+                impmat - 1,
+                ifelse(curly, "}", "]"),
+                sep = ""
+            ),
+            nrow = nrow(impmat)
+        )
     }
     else {
-        chars <- ifelse(mymat == 1L, paste0("~", chars), chars)
+        chars <- ifelse(impmat == 1L, paste0("~", chars), chars)
+        if (use.categories && length(categories) > 0) {
+            fnames <- names(categories)
+            for (i in seq(length(categories))) {
+                values <- impmat[, fnames[i]]
+                # print(chars[values > 0, fnames[i]])
+                chars[values > 0, fnames[i]] <- names(categories[[i]])[values[values > 0]]
+            }
+        }
     }
     
-    keep <- mymat > 0L
-    as.vector(unlist(lapply(split(chars[keep], row(chars)[keep]), paste, collapse = collapse)))
+    keep <- impmat > 0L
+    return(
+        as.vector(
+            unlist(
+                lapply(
+                    split(chars[keep], row(chars)[keep]),
+                    paste,
+                    collapse = collapse
+                )
+            )
+        )
+    )
     
 }
-

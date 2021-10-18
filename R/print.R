@@ -186,9 +186,14 @@
     else {
         y[x < 0] <- ""
     }
+
+    # original <- attr(x, "original")
+
+    # if (!is.null(original)) {
+    #     rownames(x) <- original
+    # }
     
     rownames(y) <- paste(rownames(x), " ")
     print(prettyTable(y))
     cat("\n")
 }
-

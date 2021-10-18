@@ -65,7 +65,7 @@
 
     # return(list(input = dataset, outcome = outcome, all.sol = all.sol, simplify = TRUE))
     test <- tryCatchWEM(sols <- QCA::minimize(dataset, outcome = outcome, all.sol = all.sol, simplify = TRUE))
-    
+
     if (!is.null(test)) {
         if (!is.null(test$error)) {
             if (grepl("All truth table", test$error)) {

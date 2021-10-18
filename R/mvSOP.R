@@ -23,91 +23,82 @@
 
     oldc <- newc <- c()
 
+    categories <- list()
     if (is.null(data)) {
-        checkValid(expression = expression, snames = snames)
+        if (!is.null(dots$categories)) {
+            categories <- dots$categories
+        }
     }
     else {
-        checkValid(expression = expression, snames = snames, data = data)
-
         infodata <- getInfo(data)
+        noflevels <- infodata$noflevels
+        categories <- infodata$categories
+    }
 
-        if (any(infodata$factor)) {
-            factors <- infodata$factors
-            snames <- setdiff(snames, names(factors))
-            oldc <- newc <- c()
+    checkValid(
+        expression = expression,
+        snames = snames,
+        data = data,
+        categories = categories
+    )
 
-            for (i in seq(length(factors))) {
-                values <- factors[[i]]
-                oldc <- c(oldc, names(factors[[i]]))
-                newc <- c(newc, paste0(names(factors)[i], "[", values, "]"))
-                
-                
-                if (!keep.tilde) {
-                    oldc <- c(oldc, paste0("~", names(factors[[i]])))
+    if (length(categories) > 0) {
+        labels <- names(categories)
+        # snames <- setdiff(snames, labels)
+        oldc <- c(paste0("~", labels), labels)
+        newc <- c(paste0(labels, "[0]"), paste0(labels, "[1]"))
 
-                    for (v in values) {
-                        newc <- c(newc,
-                            paste0(
-                                names(factors)[i],
-                                "[",
-                                paste(setdiff(values, v), collapse = ","),
-                                "]"
-                            )
+        for (i in seq(length(categories))) {
+            values <- categories[[i]]
+            oldc <- c(oldc, names(categories[[i]]))
+            newc <- c(newc, paste0(names(categories)[i], "[", values, "]"))
+            
+            if (!keep.tilde) {
+                oldc <- c(oldc, paste0("~", names(categories[[i]])))
+
+                for (v in values) {
+                    newc <- c(newc,
+                        paste0(
+                            names(categories)[i],
+                            "[",
+                            paste(setdiff(values, v), collapse = ","),
+                            "]"
                         )
-                    }
+                    )
                 }
             }
         }
     }
-
-    if (!identical(snames, "") & length(snames) > 0) {
-        if (!is.null(noflevels)) {
-            noflevels <- noflevels[match(snames, colnames(data))]
-            if (any(noflevels) > 2) {
-                stopError("Part(s) of the expression refer to multi-value data.")
-            }
-        }
-        oldc <- c(oldc, paste0("~", snames), snames)
-        newc <- c(newc, paste0(snames, "[0]"), paste0(snames, "[1]"))
-    }
-
-    expression <- replaceText(expression, oldc, newc)
     
-    if (is.element("translate", names(dots))) {
-        return(list(expression = expression, oldc = newc, newc = oldc))
+
+    oldc <- c(oldc, paste0("~", snames), snames)
+    newc <- c(newc, paste0(snames, "[0]"), paste0(snames, "[1]"))
+    expression <- replaceText(expression, oldc, newc)
+
+    
+    if (!is.null(noflevels)) {
+        if (any(infodata$hastime)) {
+            noflevels[infodata$hastime] <- noflevels[infodata$hastime] - 1
+        }
+        
+        rnames <- colnames(validateNames(expression, snames = snames, data = data))
+        noflevels <- noflevels[match(rnames, colnames(data))]
+        
+        if (any(noflevels > 2)) {
+            stopError("Part(s) of the expression refer to multi-value data.")
+        }
+    }
+    
+    if (!is.null(dots$translate)) {
+        return(
+            list(
+                expression = expression,
+                oldc = oldc,
+                newc = newc
+            )
+        )
     }
 
     return(expression)
     
-}
-
-
-`as.cs` <- function (
-    expression = "", snames = "", data = NULL
-) {
-    if (!any(grepl("\\[|\\]|\\{|\\}", expression))) {
-        stopError("The expression does not contain multi-value notation.")
-    }
-
-    if (identical(snames, "")) {
-        if (!is.null(data)) {
-            snames <- colnames(data)
-        }
-    }
-    else {
-        snames <- splitstr(snames)
-    }
-
-    noflevels <- NULL
-    
-    if (is.null(data)) {
-        checkValid(expression = expression, snames = snames)
-    }
-    else {
-        checkValid(expression = expression, snames = snames, data = data)
-
-        infodata <- getInfo(data)
-
-    }
-
 }

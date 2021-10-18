@@ -1,11 +1,15 @@
-`checkMV` <- function(expression, snames = "", noflevels = NULL, data = NULL, ...) {
+`checkMV` <- function(
+    expression, snames = "", noflevels = NULL, data = NULL, categories = list(), ...
+) {
     
     curly <- any(grepl("[{]", expression))
     # check to see if opened brackets have closing brackets
     if (length(unlist(gregexpr(ifelse(curly, "[{]+", "\\[+"), expression))) != length(unlist(gregexpr(ifelse(curly, "[}]+", "\\]+"), expression)))) {
         stopError("Incorrect expression, opened and closed brackets don't match.")
     }
-    
+
+    dots <- list(...)
+
     # whatever it is outside the curly brackets must have the same length
     # as the information inside the curly brackets
     
@@ -59,6 +63,7 @@
             for (i in seq(length(tempexpr))) {
                 
                 if (!is.element(notilde(tempexpr[i]), snames)) {
+                    # print(list(expression, tempexpr, snames))
                     stopError(sprintf("Condition %s not present in the set names.", tempexpr[i]))
                 }
                 if (max(asNumeric(splitstr(insb[i]))) > noflevels[match(notilde(tempexpr[i]), snames)] - 1) {
@@ -67,17 +72,13 @@
             }
         }
     }
-    else { # the data is present
-        # if (identical(snames, "")) {
-            if (length(setdiff(conds, colnames(data))) > 0) {
-                stopError("Part(s) of the expression not found in the data.")
-            }
-        # }
-    }
     
-    if (!identical(snames, "")) {
-        if (length(setdiff(conds, splitstr(snames))) > 0) {
-            stopError("Part(s) of the expression not found in the <snames> argument.")
-        }
+    for (i in seq(length(expression))) {
+        checkValid(
+            expression = expression[i],
+            snames = "something", # doesn't matter here
+            data = data,
+            categories = categories
+        )
     }
 }

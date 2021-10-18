@@ -5,7 +5,17 @@
     snames <- recreate(substitute(snames))
     dots <- list(...)
 
+    # print(list(expression, snames, noflevels))
+
     enter <- ifelse (is.element("enter", names(dots)), "",  "\n") # internal
+    
+    categories <- list()
+    if (!is.null(dots$categories)) {
+        categories <- dots$categories
+    }
+
+    oldexp <- NULL
+    
     
     if (identical(expression, "")) {
         stopError("Empty expression.")
@@ -85,28 +95,34 @@
         checkValid(
             expression = expression,
             snames = snames,
-            data = data
+            data = data,
+            categories = categories
         )
 
+        oldexp <- trimstr(unlist(lapply(expression, strsplit, split = "\\+")))
+        
         if (!multivalue) {
             multivalue <- TRUE
             coerced2mv <- TRUE
-            mv <- lapply(expression, function(x) {
-                mvSOP(x, snames = snames, data = data, translate = TRUE)
-            })
-
-            expression <- unlist(lapply(mv, "[[", 1))
-            oldc <- unlist(lapply(mv, "[[", 2))
-            newc <- unlist(lapply(mv, "[[", 3))
-
-            # expression <- replaceText(expression, oldc, newc)
+            
+            mv <- mvSOP(
+                expression = paste(expression, collapse = "+"),
+                snames = snames,
+                data = data,
+                categories = categories,
+                translate = TRUE
+            )
+            
+            expression <- mv$expression
+            oldc <- mv$newc # switch oldc with newc
+            newc <- mv$oldc
         }
     }
 
     # Replacing expression conditions is necessary before anything else
     # because column names in the data might have spaces (it's allowed)
     replaced <- FALSE
-    
+
     if (!identical(snames, "") && length(snames) > 0) {
         if (any(nchar(snames) > 1) & !is.element("validate", names(dots))) {
             
@@ -122,21 +138,22 @@
             }
 
             if (!is.null(data)) {
-                positions <- c()
-                # this code makes sure that column names
-                # don't get overwritten multiple times
-                # for instance if they are already single letters
-                for (i in seq(length(snames))) {
-                    colpos <- setdiff(
-                        which(colnames(data) == snames[i]),
-                        positions
-                    )
+                colnames(data) <- snamesr[match(colnames(data), snames)]
+                # positions <- c()
+                # # this code makes sure that column names
+                # # don't get overwritten multiple times
+                # # for instance if they are already single letters
+                # for (i in seq(length(snames))) {
+                #     colpos <- setdiff(
+                #         which(colnames(data) == snames[i]),
+                #         positions
+                #     )
 
-                    if (length(colpos) > 0) {
-                        colnames(data)[colpos] <- snamesr[i]
-                        positions <- c(positions, colpos)
-                    }
-                }
+                #     if (length(colpos) > 0) {
+                #         colnames(data)[colpos] <- snamesr[i]
+                #         positions <- c(positions, colpos)
+                #     }
+                # }
             }
 
             snames <- snamesr
@@ -198,7 +215,13 @@
         curly <- any(grepl("[{]", expression))
         expression <- gsub("[*]", "", expression)
         # return(list(expression = expression, snames = snames, noflevels = noflevels, data = data))
-        checkMV(expression, snames = snames, noflevels = noflevels, data = data)
+        checkMV(
+            expression,
+            snames = snames,
+            noflevels = noflevels,
+            data = data,
+            ... = ...
+        )
         
         # parse plus
         pp <- unlist(strsplit(expression, split = "[+]"))
@@ -427,7 +450,6 @@
     
     
     retlist <- retlist[!unlist(lapply(retlist, function(x) all(unlist(x) < 0)))]
-
     
     if (replaced) {
         
@@ -437,6 +459,7 @@
             names(retlist[[i]]) <- snameso
         }
     }
+    
     # checkl <- createMatrix(rep(2, length(retlist)))
     # checkl <- apply(checkl[rowSums(checkl) == 2, ], 1, function(x) which(x == 1))
     
@@ -473,10 +496,21 @@
         
         colnames(retmat) <- colnms
     }
+
+
+
+    if (!is.null(oldexp) && length(oldexp) == nrow(retmat)) {
+        rownames(retmat) <- oldexp
+        names(retlist) <- oldexp
+    }
     
     if (is.element("retlist", names(dots))) {
         attr(retmat, "retlist") <- retlist
     }
+
+    # if (!is.null(oldexp) && length(oldexp) == length(retlist)) {
+    #     attr(retmat, "original") <- oldexp
+    # }
     
     class(retmat) <- c("matrix", "admisc_translate")
     return(retmat)

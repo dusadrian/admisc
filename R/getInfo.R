@@ -40,6 +40,7 @@
     fuzzy.cc <- logical(ncol(data))
     hastime <- logical(ncol(data))
     factor <- unlist(lapply(data, is.factor))
+    declared <- unlist(lapply(data, function(x) inherits(x, "declared")))
     
     pN <- unlist(lapply(data, possibleNumeric))
     
@@ -66,18 +67,39 @@
     # noflevels <- as.integer(noflevels)
     
     noflevels <- getLevels(data)
+    attributes(noflevels) <- NULL
 
     factor <- factor & !hastime
 
-    factors <- list()
+    categories <- list()
     columns <- colnames(data)
     
-    if (any(factor)) {
-        for (i in which(factor)) {
-            values <- seq(noflevels[i]) - 1
-            names(values) <- levels(data[, i])
-            data[, i] <- as.numeric(data[, i]) - 1
-            factors[[columns[i]]] <- values
+    if (any(factor | declared)) {
+        for (i in which(factor | declared)) {
+            if (factor[i]) {
+                values <- seq(noflevels[i]) - 1
+                names(values) <- levels(data[, i])
+                data[, i] <- as.numeric(data[, i]) - 1
+                categories[[columns[i]]] <- values
+            }
+            else {
+                values <- seq(noflevels[i]) - 1
+                x <- data[, i]
+                labels <- attr(x, "labels")
+                if (is.null(labels)) {
+                    stopError("Declared columns should have labels for all values.")
+                }
+                else {
+                    if (length(labels) != noflevels[i]) {
+                        stopError("All values should have declared labels.")
+                    }
+                }
+                attributes(x) <- NULL
+                data[, i] <- recode(x, paste(sort(labels), values, sep = "=", collapse = ";"))
+                names(values) <- names(labels)
+                categories[[columns[i]]] <- values
+                attr(categories, "labels") <- labels
+            }
         }
     }
     
@@ -87,9 +109,10 @@
             fuzzy.cc = fuzzy.cc,
             hastime = hastime,
             factor = factor,
-            factors = factors,
+            declared = declared,
+            categories = categories,
             dc.code = dc.code,
-            noflevels = as.numeric(noflevels)
+            noflevels = noflevels
         )
     )
 }

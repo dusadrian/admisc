@@ -6,13 +6,27 @@
     pN <- unlist(lapply(data, possibleNumeric))
     
     noflevels <- rep(NA, ncol(data))
+    ulevels <- rep(NA, ncol(data))
     
     noflevels[pN] <- apply(
         data[, pN, drop = FALSE],
-        2, max
+        2,
+        max
     ) + 1
+
+    ulevels <- apply(
+        data,
+        2,
+        function(x) {
+            return(length(unique(x)))
+        }
+    )
+
+    noflevels[is.na(noflevels)] <- ulevels[is.na(noflevels)]
+
     
-    noflevels[pN][noflevels[pN] == 1] <- 2
+    factor <- unlist(lapply(data, is.factor))
+    declared <- unlist(lapply(data, function(x) inherits(x, "declared")))
     
     noflevels[pN][
         apply(
@@ -22,16 +36,10 @@
         )
     ] <- 2
     
-    
-    if (any(!pN)) {
-        for (i in which(!pN)) {
-            if (!is.factor(data[, i])) {
-                stopError("Data should be numeric or / and factor.")
-            }
-
-            noflevels[i] <- length(levels(data[, i]))
-        }
+    if (any(factor | declared)) {
+        noflevels[factor | declared] <- pmin(noflevels[factor | declared], ulevels[factor | declared])
     }
     
-    return(as.vector(noflevels))
+    noflevels[noflevels == 1] <- 2
+    return(noflevels)
 }

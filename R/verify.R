@@ -8,13 +8,15 @@ function(data) {
         # determine if it's a valid QCA dataframe
         checkNumUncal <- lapply(data, function(x) {
             # making sure it's not a temporal QCA column
+            is_a_factor <- is.factor(x)
+            is_a_declared <- inherits(x, "declared")
             x <- setdiff(x, c("-", "dc", "?"))
-            pn <- possibleNumeric(x)
+            is_possible_numeric <- admisc::possibleNumeric(x)
             
             uncal <- mvuncal <- FALSE
             
-            if (pn) {
-                y <- na.omit(asNumeric(x))
+            if (is_possible_numeric & !is_a_declared) {
+                y <- na.omit(admisc::asNumeric(x))
                 if (any(y > 1) & any(abs(y - round(y)) >= .Machine$double.eps^0.5)) {
                     uncal <- TRUE
                 }
@@ -24,14 +26,16 @@ function(data) {
                 }
             }
             
-            return(c(pn, uncal, mvuncal))
+            return(c(is_possible_numeric, uncal, mvuncal, is_a_factor, is_a_declared))
         })
         
         checknumeric <- sapply(checkNumUncal, "[[", 1)
         checkuncal <- sapply(checkNumUncal, "[[", 2)
         checkmvuncal <- sapply(checkNumUncal, "[[", 3)
+        checkfactor <- sapply(checkNumUncal, "[[", 4)
+        checkdeclared <- sapply(checkNumUncal, "[[", 5)
         
-        if (!all(checknumeric)) {
+        if (!all(checknumeric | checkfactor | checkdeclared)) {
             notnumeric <- colnames(data)[!checknumeric]
             errmessage <- paste("The causal condition",
                                 ifelse(length(notnumeric) == 1, " ", "s "),
