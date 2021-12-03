@@ -174,6 +174,12 @@
         if (is.character(noflevels)) {
             noflevels <- splitstr(noflevels)
         }
+
+        # temporary fix until version 3.14 of package QCA is published
+        if (length(noflevels) == 1 && is.numeric(noflevels) && length(snames) > 1) {
+            noflevels <- rep(noflevels, length(snames))
+        }
+        # end temporary fix
     }
 
     # remove white space and any non-printable characters
