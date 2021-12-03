@@ -1,6 +1,6 @@
 `writePrimeimp` <- function(
     impmat, mv = FALSE, collapse = "*", snames = "", curly = FALSE,
-    use.categories = FALSE, categories = list(), ...
+    categorical = FALSE, categories = list(), ...
 ) {
     ### ... is to allow calls having "use dot tilde" which is now deprecated
     
@@ -34,7 +34,7 @@
     }
     else {
         chars <- ifelse(impmat == 1L, paste0("~", chars), chars)
-        if (use.categories && length(categories) > 0) {
+        if (categorical && length(categories) > 0) {
             fnames <- names(categories)
             for (i in seq(length(categories))) {
                 values <- impmat[, fnames[i]]
