@@ -16,11 +16,11 @@ brackets.
 }
 
 \usage{
-insideBrackets(x, type = "[", invert = FALSE)
-outsideBrackets(x, type = "[")
-curlyBrackets(x, outside = FALSE)
-squareBrackets(x, outside = FALSE)
-roundBrackets(x, outside = FALSE)
+insideBrackets(x, type = "[", invert = FALSE, regexp = NULL)
+outsideBrackets(x, type = "[", regexp = NULL)
+curlyBrackets(x, outside = FALSE, regexp = NULL)
+squareBrackets(x, outside = FALSE, regexp = NULL)
+roundBrackets(x, outside = FALSE, regexp = NULL)
 }
 
 \arguments{
