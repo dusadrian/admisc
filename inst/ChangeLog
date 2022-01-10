@@ -1,7 +1,25 @@
+Version 0.22
+    o Improved function tryCatchWEM(), now also returning the actual output value
+      (thanks to John Fox for the suggestion)
+    o New argument "regexp" to all brackets functions, extending functionality
+      for any general purpose (thanks to Brice Richard for the suggestion)
+    o New function using(), allowing to evaluate an expression in every subset
+      of a split file
+    o New function hclr(), to produce colors from the HCL spectrum
+    o New function coerceMode(), to coerce objects to numeric or integer, if at
+      all possible
+    
+Version 0.21
+    o Bug fix in function negate(), expressions were not properly concatenated
+      (thanks to Alessandra Costa for the report)
+    
+Version 0.20
+    o New argument "each" in functions possibleNumeric() and wholeNumeric()
+    
 Version 0.19
-    o New function asSOP(), to coerce (POS) expressions to a standard SOP format
+    o New function asSOP(), to coerce a POS expression to a standard SOP format
     o New function mvSOP(), to coerce an expression from crisp set notation to
-      multivalue notation
+      multi-value notation
     
 Version 0.18
     o Fixed bug affecting the function negate() when the SOP expression contains

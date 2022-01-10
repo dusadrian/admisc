@@ -2,3 +2,7 @@
     load(.filename)
     return(as.list(environment()))
 }
+
+`list.rdata` <- function(...) {
+    list.rda(...)
+}

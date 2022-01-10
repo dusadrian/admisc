@@ -11,13 +11,14 @@ Adrian Dusa's Miscellaneous
 }
 
 \description{
-Contains functions used across packages 'QCA', 'DDIwR', and 'venn'.
-Interprets and translates DNF - Disjunctive Normal Form and SOP - Sum of
-Products expressions, for both binary and multi-value crisp sets, and extracts
+Contains functions used across packages 'declared', 'DDIwR', 'mixed', 'QCA' and
+'venn'. Interprets and translates, factorizes and negates SOP - Sum of Products
+expressions, for both binary and multi-value crisp sets, and extracts
 information (set names, set values) from those expressions. Other functions
-perform various other checks if possibly numeric (even if all numbers reside
-in a character vector) and coerce to numeric, or check if the numbers are
-whole. It also offers, among others, a highly flexible recoding function.
+perform various checks if possibly numeric (even if all numbers reside in a
+character vector) and coerce to numeric, or check if the numbers are whole. It
+also offers, among many others, a highly flexible \code{recode()}-ing routine
+and a more flexible alternative to the base function \code{with()}.
 Some of the functions in this package use related functions from package
 \bold{\pkg{QCA}}, and users are encouraged to install that package despite not
 being listed in the Imports field (due to circular dependency issues).
@@ -27,8 +28,8 @@ being listed in the Imports field (due to circular dependency issues).
     \tabular{ll}{
     Package: \tab admisc\cr
     Type:    \tab Package\cr
-    Version: \tab 0.17-5\cr
-    Date:    \tab 2021-08-31\cr
+    Version: \tab 0.22\cr
+    Date:    \tab 2021-12-22\cr
     License: \tab GPL (>= 2)\cr
     }
 }

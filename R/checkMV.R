@@ -1,5 +1,5 @@
 `checkMV` <- function(
-    expression, snames = "", noflevels = NULL, data = NULL, categories = list(), ...
+    expression, snames = "", noflevels = NULL, data = NULL, categorical = FALSE, categories = list(), ...
 ) {
     
     curly <- any(grepl("[{]", expression))
@@ -27,7 +27,15 @@
     }
     
     if (length(insb) != length(tempexpr)) {
-        stopError("Incorrect expression, some set names do not have brackets.")
+        error <- TRUE
+        if (categorical) {
+            tempexpr2 <- tempexpr[!is.element(tempexpr, names(unlist(unname(categories))))]
+            error <- length(insb) != length(tempexpr2)
+        }
+        
+        if (error) {
+            stopError("Incorrect expression, some set names do not have brackets.")
+        }
     }
     
     if (any(grepl("[a-zA-Z]", gsub("[,|;]", "", insb)))) {
@@ -66,6 +74,7 @@
             if (length(snames) != length(noflevels)) {
                 stopError("Length of the set names differs from the length of the number of levels.")
             }
+            
             for (i in seq(length(tempexpr))) {
                 
                 if (!is.element(notilde(tempexpr[i]), snames)) {

@@ -25,7 +25,7 @@
         rep("", length(allnames))
     )
 
-    if (grepl(":alpha:", expression)) {
+    if (any(grepl(":alpha:", expression))) { # is it not [:alpha:] ???
         stopError(
             sprintf(
                 "Part(s) of the expression not found in the %s.",

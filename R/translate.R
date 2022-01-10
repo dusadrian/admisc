@@ -220,7 +220,7 @@
     if (multivalue) {
         curly <- any(grepl("[{]", expression))
         expression <- gsub("[*]", "", expression)
-        # return(list(expression = expression, snames = snames, noflevels = noflevels, data = data))
+        # return(list(expression = expression, snames = snames, noflevels = noflevels, data = data, ... = ...))
         checkMV(
             expression,
             snames = snames,

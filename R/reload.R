@@ -1,5 +1,5 @@
 `reload` <- function(package, silent = TRUE) {
-    package <- recreate(substitute(package))
+    package <- as.character(substitute(package))
     unload(package)
 
     if (is.element(package, rownames(installed.packages()))) { # if installed

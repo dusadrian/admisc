@@ -10,6 +10,9 @@
 \alias{getNonChars}
 \alias{getInfo}
 \alias{getLevels}
+\alias{getTag}
+\alias{hasTag}
+\alias{makeTag}
 \alias{negateLoop}
 \alias{prettyString}
 \alias{prettyTable}

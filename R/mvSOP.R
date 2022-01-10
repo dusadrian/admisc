@@ -43,23 +43,23 @@
     )
 
     if (length(categories) > 0) {
-        labels <- names(categories)
-        # snames <- setdiff(snames, labels)
-        oldc <- c(paste0("~", labels), labels)
-        newc <- c(paste0(labels, "[0]"), paste0(labels, "[1]"))
+        fnames <- names(categories)
+        # snames <- setdiff(snames, fnames)
+        oldc <- c(paste0("~", fnames), fnames)
+        newc <- c(paste0(fnames, "[0]"), paste0(fnames, "[1]"))
 
         for (i in seq(length(categories))) {
-            values <- categories[[i]]
-            oldc <- c(oldc, names(categories[[i]]))
-            newc <- c(newc, paste0(names(categories)[i], "[", values, "]"))
+            values <- seq(length(categories[[i]])) - 1
+            oldc <- c(oldc, categories[[i]])
+            newc <- c(newc, paste0(fnames[i], "[", values, "]"))
             
             if (!keep.tilde) {
-                oldc <- c(oldc, paste0("~", names(categories[[i]])))
+                oldc <- c(oldc, paste0("~", categories[[i]]))
 
                 for (v in values) {
                     newc <- c(newc,
                         paste0(
-                            names(categories)[i],
+                            fnames[i],
                             "[",
                             paste(setdiff(values, v), collapse = ","),
                             "]"

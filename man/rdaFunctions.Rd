@@ -1,7 +1,9 @@
 \name{.rda functions: list.rda, obj.rda}
 
 \alias{list.rda}
+\alias{list.rdata}
 \alias{obj.rda}
+\alias{obj.rdata}
 
 \title{Load and list objects from an .rda file}
 

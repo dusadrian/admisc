@@ -1,6 +1,7 @@
 importFrom("utils", "read.csv", "write.csv", "write.table", "capture.output", "installed.packages", "packageDescription", "remove.packages")
 importFrom("stats", "na.omit", "dist", "relevel")
 importFrom("methods", "is")
+importFrom("grDevices", "hcl")
 useDynLib(admisc, .registration = TRUE)
 
 export(
@@ -17,6 +18,7 @@ export(
     checkMV,
     checkSubset,
     classify,
+    coerceMode,
     combnk,
     compute,
     mvSOP,
@@ -30,9 +32,14 @@ export(
     getLevels,
     getMatrix,
     getName,
+    getTag,
+    hasTag,
+    hclr,
     intersection,
     invert,
     list.rda,
+    list.rdata,
+    makeTag,
     permutations,
     asSOP,
     possibleNumeric,
@@ -40,6 +47,7 @@ export(
     prettyTable,
     deMorgan,
     obj.rda,
+    obj.rdata,
     negate,
     recode,
         hastilde,
@@ -74,7 +82,9 @@ export(
         splitTildas,
         solveBrackets,
         simplifyList,
-        getNonChars
+        getNonChars,
+
+    using
 )
 
 
@@ -83,6 +93,7 @@ S3method(print, "admisc_intersection")
 S3method(print, "admisc_translate")
 S3method(print, "admisc_deMorgan")
 S3method(print, "admisc_simplify")
+S3method(print, "admisc_using")
 
 S3method(recode, default)
 S3method(recode, declared)

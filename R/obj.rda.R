@@ -4,3 +4,7 @@
     on.exit(eval(substitute(detach(name), list(name = attached_filename))))
     return(ls(envir = as.environment(attached_filename)))
 }
+
+`obj.rdata` <- function(...) {
+    obj.rda(...)
+}
