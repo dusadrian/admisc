@@ -62,7 +62,6 @@
     outcome <- paste(sample(LETTERS, 10), collapse = "")
     colnames(dataset)[ncol(dataset)] <- outcome
 
-
     # return(list(input = dataset, outcome = outcome, all.sol = all.sol, simplify = TRUE))
     test <- tryCatchWEM(sols <- QCA::minimize(dataset, outcome = outcome, all.sol = all.sol, simplify = TRUE))
 

@@ -5,9 +5,12 @@ importFrom("grDevices", "hcl")
 useDynLib(admisc, .registration = TRUE)
 
 export(
+    altb,
     alteb,
+    agtb,
     agteb,
     aeqb,
+    aneqb,
     asNumeric,
         curlyBrackets,
         insideBrackets,

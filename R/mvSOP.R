@@ -73,7 +73,11 @@
 
     oldc <- c(oldc, paste0("~", snames), snames)
     newc <- c(newc, paste0(snames, "[0]"), paste0(snames, "[1]"))
+    
     expression <- replaceText(expression, oldc, newc)
+    if (any(!is.element(squareBrackets(expression, outside = TRUE), snames))) {
+        stopError("Unkown condition(s) in the expression.")
+    }
 
     
     if (!is.null(noflevels)) {

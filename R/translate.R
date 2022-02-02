@@ -89,6 +89,9 @@
     }
 
     multivalue <- any(grepl("\\[|\\]|\\{|\\}", expression))
+    if (length(expression) == 1) {
+        expression <- splitstr(expression)
+    }
     coerced2mv <- FALSE
 
     if (!identical(snames, "")) {
@@ -104,7 +107,7 @@
         if (!multivalue) {
             multivalue <- TRUE
             coerced2mv <- TRUE
-            
+
             mv <- mvSOP(
                 expression = paste(expression, collapse = "+"),
                 snames = snames,

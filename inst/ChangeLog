@@ -1,3 +1,11 @@
+Version 0.23
+    o Bug fix in mvSOP(), for situations when some conditions are not present
+      in the data
+    o Bug fix in compute(), avoiding situations when mvSOP() fails
+    o Improved possibleNumeric() and wholeNumeric() for logical vectors
+    o New argument "bincat" for equality check functions
+      (thanks to Brice Richard for the suggestion)
+
 Version 0.22
     o Improved function tryCatchWEM(), now also returning the actual output value
       (thanks to John Fox for the suggestion)

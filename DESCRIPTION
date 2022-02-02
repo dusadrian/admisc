@@ -1,5 +1,5 @@
 Package: admisc
-Version: 0.22
+Version: 0.23
 Date: 2021-12-22
 Title: Adrian Dusa's Miscellaneous
 Authors@R: person(given = "Adrian", family = "Dusa",

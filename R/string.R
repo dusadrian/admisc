@@ -13,19 +13,32 @@
 `splitstr` <- function(x) {
     
     if (identical(x, "")) return(x)
+    x <- gsub("\\n", "", x)
+    # y <- unlist(strsplit(x, split = ","))
+    oldv <- newv <- NULL
+    if (any(grepl(",", x) & grepl("\\{|\\[", x))) {
+        curly <- grepl("\\{", x)
+        squared <- grepl("\\[", x)
+        if (curly & squared) {
+            stopError(
+                "Multi-value expressions should not mix curly and squared brackets."
+            )
+        }
 
-    y <- trimstr(gsub("\\n", "", unlist(strsplit(x, split = ","))))
+        regexp <- ifelse(curly, "\\{[[:alnum:]|,|;]+\\}", "\\[[[:alnum:]|,|;]+\\]")
+        oldv <- regmatches(x, gregexpr(regexp, x), invert = FALSE)[[1]]
+        newv <- paste("XYZW", seq(length(oldv)), sep = "")
+        x <- replaceText(x, oldv, newv)
+    }
     
-    if (any(grepl(",", x) & grepl("[{]", x))) {
-        i <- 1
-        while (i <= length(y)) {
-            if (grepl("[{]", y[i]) & !grepl("[}]", y[i])) {
-                y[i] <- paste(y[i], y[i + 1], sep = ",")
-                y <- y[-(i + 1)]
-            }
-            i <- i + 1
+    y <- unlist(strsplit(x, split = ","))
+    if (!is.null(oldv)) {
+        for (i in seq(length(y))) {
+            y[i] <- replaceText(y[i], newv, oldv)
         }
     }
+
+    y <- trimstr(y)
     
     if (length(y) == 1) {
         # try again, using a semicolon
