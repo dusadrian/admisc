@@ -1,6 +1,7 @@
 Version 0.24
     o Fixed issue with too big whole numbers to be coerced to integers
       (thanks to Sarah Goslee for the report)
+    o Function wholeNumeric() now returns FALSE for characters, instead of NA
 
 Version 0.23
     o Bug fix in mvSOP(), for situations when some conditions are not present
