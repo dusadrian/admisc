@@ -5,14 +5,8 @@
     }
 
     if (possibleNumeric(x) || all(is.na(x))) {
-        if (wholeNumeric(x)) {
-            testx <- tryCatchWEM(as.integer(x))
-            if (is.element("warning", names(testx))) {
-                x <- asNumeric(x)
-            }
-            else {
-                x <- testx
-            }
+        if (wholeNumeric(x) && is.null(tryCatchWEM(as.integer(x)))) {
+            x <- as.integer(x)
         }
         else {
             x <- asNumeric(x)
