@@ -3,6 +3,10 @@
         return(Recall(unclass(x), each = each))
     }
 
+    if (!possibleNumeric(x) & !each) {
+        return(FALSE)
+    }
+
     result <- logical(length(x))
     isna <- is.na(x)
     result[isna] <- NA
@@ -14,7 +18,14 @@
         return(FALSE)
     }
     
-    x <- asNumeric(x[!isna])
+    x <- asNumeric(x)
+    # some characters might be recoded to NA when coerced to numeric
+    isnax <- is.na(x)
+
+    result[!isna & isnax] <- FALSE
+    isna <- isna | isnax
+    x <- x[!isna]
+    
     result[!isna] <- floor(x) == x
 
     if (each) {
