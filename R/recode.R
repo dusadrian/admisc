@@ -147,12 +147,32 @@
             newval <- c(newval[-whichelse], newval[whichelse])
         }
         
-        oldval <- lapply(lapply(lapply(oldval, strsplit, split=","), "[[", 1), function(y) {
-            lapply(strsplit(y, split=":"), trimstr)
-        })
+        oldval <- lapply(
+            lapply(
+                lapply(oldval, strsplit, split = ","),
+                "[[",
+                1
+            ),
+            function(y) {
+                lapply(
+                    strsplit(y, split = ":"),
+                    trimstr
+                )
+            }
+        )
         
         newval <- trimstr(rep(newval, unlist(lapply(oldval, length))))
         
+        for (i in seq(length(newval))) {
+            tc <- tryCatch(eval(parse(text = newval[[i]])), error = function(e) e)
+            if (!(is.list(tc) && identical(names(tc), c("message", "call")))) {
+                newval[i] <- tc
+            }
+        }
+
+        if (possibleNumeric(newval)) {
+            newval <- asNumeric(newval)
+        }
         
         if (any(unlist(lapply(oldval, function(y) lapply(y, length))) > 2)) {
             stopError("Too many : sequence operators.")
