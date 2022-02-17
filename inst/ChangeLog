@@ -1,3 +1,6 @@
+Version 0.25
+    o Function recode() now evaluates the new values in the parent environment
+
 Version 0.24
     o Fixed coerceMode() when whole numbers are too big to be coerced to integers
       (thanks to Sarah Goslee for the report)
