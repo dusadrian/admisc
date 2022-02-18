@@ -109,7 +109,15 @@
     
     if (missing(cut)) {
         
-        rules <- gsub("\n|\t", "", gsub("'", "", gsub(")", "", gsub("c(", "", rules, fixed = TRUE))))
+        rules <- gsub(
+            "\n|\t", "", gsub(
+                "'", "", gsub(
+                    ")", "", gsub(
+                        "c(", "", rules, fixed = TRUE
+                    )
+                )
+            )
+        )
         if (length(rules) == 1) {
              rules <- unlist(strsplit(rules, split=";"))
         }
@@ -147,13 +155,32 @@
             newval <- c(newval[-whichelse], newval[whichelse])
         }
         
-        oldval <- lapply(lapply(lapply(oldval, strsplit, split=","), "[[", 1), function(y) {
-            lapply(strsplit(y, split=":"), trimstr)
-        })
-        
+        oldval <- lapply(
+            lapply(
+                lapply(oldval, strsplit, split = ","),
+                "[[", 1
+            ),
+            function(y) {
+                lapply(
+                    strsplit(y, split = ":"),
+                    trimstr
+                )
+            }
+        )
+
         newval <- trimstr(rep(newval, unlist(lapply(oldval, length))))
-        
-        
+
+        # for (i in seq(length(newval))) {
+        #     tc <- tryCatch(eval(parse(text = newval[[i]])), error = function(e) e)
+        #     if (!(is.list(tc) && identical(names(tc), c("message", "call")))) {
+        #         newval[i] <- tc
+        #     }
+        # }
+        #
+        # if (possibleNumeric(newval)) {
+        #     newval <- asNumeric(newval)
+        # }
+
         if (any(unlist(lapply(oldval, function(y) lapply(y, length))) > 2)) {
             stopError("Too many : sequence operators.")
         }
@@ -207,7 +234,15 @@
     else {
         
         if (length(cut) == 1 & is.character(cut)) {
-            cut <- gsub("\n|\t", "", gsub("'", "", gsub(")", "", gsub("c(", "", cut, fixed = TRUE))))
+            cut <- gsub(
+                "\n|\t", "", gsub(
+                    "'", "", gsub(
+                        ")", "", gsub(
+                            "c(", "", cut, fixed = TRUE
+                        )
+                    )
+                )
+            )
             cut <- trimstr(unlist(strsplit(cut, split = ",")))
             if (length(cut) == 1) {
                 cut <- trimstr(unlist(strsplit(cut, split = ";")))
@@ -227,7 +262,15 @@
         }
         else {
             if (length(values) == 1 & is.character(values)) {
-                values <- gsub("\n|\t", "", gsub("'", "", gsub(")", "", gsub("c(", "", values, fixed = TRUE))))
+                values <- gsub(
+                    "\n|\t", "", gsub(
+                        "'", "", gsub(
+                            ")", "", gsub(
+                                "c(", "", values, fixed = TRUE
+                            )
+                        )
+                    )
+                )
                 values <- trimstr(unlist(strsplit(values, split = ",")))
                 if (length(values) == 1) {
                     values <- trimstr(unlist(strsplit(values, split = ";")))
@@ -238,7 +281,13 @@
                 as.numeric.result <- possibleNumeric(values)
             }
             else {
-                stopError(paste0("There should be ", length(cut) + 1, " values for ", length(cut), " cut value", ifelse(length(cut) == 1, "", "s"), "."))
+                stopError(
+                    paste0(
+                        "There should be ", length(cut) + 1,
+                        " values for ", length(cut), " cut value",
+                        ifelse(length(cut) == 1, "", "s"), "."
+                    )
+                )
             }
         }
         
@@ -309,7 +358,12 @@
             factor.labels <- factor.levels
         }
         
-        temp <- factor(temp, levels = factor.levels, labels = factor.labels, ordered = factor.ordered)
+        temp <- factor(
+            temp,
+            levels = factor.levels,
+            labels = factor.labels,
+            ordered = factor.ordered
+        )
     }
     else if (as.numeric.result) {
         if (possibleNumeric(temp)) {
