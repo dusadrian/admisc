@@ -1,6 +1,6 @@
 Package: admisc
-Version: 0.24
-Date: 2022-02-09
+Version: 0.23-5
+Date: 2022-02-02
 Title: Adrian Dusa's Miscellaneous
 Authors@R: person(given = "Adrian", family = "Dusa",
                   role = c("aut", "cre", "cph"),
