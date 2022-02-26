@@ -14,6 +14,9 @@
 \alias{hasTag}
 \alias{makeTag}
 \alias{negateLoop}
+\alias{padLeft}
+\alias{padRight}
+\alias{padBoth}
 \alias{prettyString}
 \alias{prettyTable}
 \alias{reload}

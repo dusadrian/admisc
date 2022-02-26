@@ -1,9 +1,7 @@
-\name{.rda functions: list.rda, obj.rda}
+\name{.rda functions: listRDA, objRDA}
 
-\alias{list.rda}
-\alias{list.rdata}
-\alias{obj.rda}
-\alias{obj.rdata}
+\alias{listRDA}
+\alias{objRDA}
 
 \title{Load and list objects from an .rda file}
 
@@ -13,9 +11,9 @@ an R list.
 }
 
 \usage{
-list.rda(.filename)
+listRDA(.filename)
 
-obj.rda(.filename)
+objRDA(.filename)
 }
 
 \arguments{
@@ -26,13 +24,13 @@ obj.rda(.filename)
 Files with the extension .rda are routinely created using the base function
 \bold{\code{\link[base]{save}()}}.
 
-The function \bold{\code{list.rda()}} loads the object(s) from the .rda file into a list,
+The function \bold{\code{listRDA()}} loads the object(s) from the .rda file into a list,
 preserving the object names in the list components.
 
 The .rda file can naturally be loaded with the base \bold{\code{\link[base]{load}()}} function,
 but in doing so the containing objects will overwrite any existing objects with the same names.
 
-The function \bold{\code{obj.rda()}} returns the names of the objects from the .rda file.
+The function \bold{\code{objRDA()}} returns the names of the objects from the .rda file.
 }
 
 \value{

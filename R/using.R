@@ -13,6 +13,7 @@
 
     expr <- substitute(expr)
     vexpr <- all.vars(expr)
+    vexpr <- vexpr[is.element(vexpr, names(data))]
 
     # capture the use of "all variables" in a formula, for instance lm(y ~ .)
     if (any(vexpr == ".")) {
