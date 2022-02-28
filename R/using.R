@@ -4,12 +4,23 @@
 `using` <- function(data, expr, split.by = NULL, ...) {
 
     split.by <- substitute(split.by)
-    sby <- all.vars(split.by)
-    nsby <- all.names(split.by)
+    # if (is.character(split.by)) {
+    #     split.by <- gsub("[[:space:]]", "", split.by)
+    #     if (grepl("[&]", split.by)) {
+    #         split.by <- unlist(strsplit(split.by, split = "[&]"))
+    #     }
+    #     else if (grepl("[+]", split.by)) {
+    #         split.by <- unlist(strsplit(split.by, split = "[+]"))
+    #     }
 
-    if (length(setdiff(nsby, c("c", "+", "&", colnames(data)))) > 0) {
-        stopError("Incorrect specification of the argument <split.by>.")
-    }
+    #     sby <- nsby <- split.by
+    # }
+    # else {
+        sby <- all.vars(split.by)
+        nsby <- all.names(split.by)
+    # }
+
+
 
     expr <- substitute(expr)
     vexpr <- all.vars(expr)
@@ -20,22 +31,46 @@
         vexpr <- colnames(data)
     }
 
-    data <- data[, unique(c(vexpr, sby)), drop = FALSE]
-    # if (!is.null(select)) {
-    #     data <- data[eval(expr = select, envir = data, enclos = parent.frame()), , drop = FALSE]
-    # }
-
     if (length(sby) == 0) {
+        # ret <- eval(expr = expr, envir = data, enclos = parent.frame())
+        # class(ret) <- c("admisc_fobject", class(ret))
+        # return(ret)
         return(eval(expr = expr, envir = data, enclos = parent.frame()))
     }
 
-    if (!all(is.element(sby, colnames(data)))) {
-        stopError("One or more split variables not found in the data.")
-    }
+
     
+    csby <- setdiff(as.character(split.by), c("c", "+", "&"))
+
+    test <- unlist(lapply(seq(length(csby)), function(i) {
+        tryCatchWEM(eval(parse(text = csby[i]), envir = data, enclos = parent.frame()))
+    }))
+    
+
+    if (length(test) > 0) {
+        stopError(test[1])
+    }
+
+    sbylist <- lapply(csby, function(x) {
+        eval(parse(text = x), envir = data, enclos = parent.frame())
+    })
+
+    test <- unlist(lapply(sbylist, function(x) {
+        is.factor(x) | inherits(x, "declared") | inherits(x, "haven_labelled_spss")
+    }))
+
+    if (sum(test) < length(test)) {
+        stopError("Split variables should be factors or a declared / labelled objects.")
+    }
+
+    test <- table(unlist(lapply(sbylist, length)))
+
+    if (length(test) > 1 || nrow(data) != as.numeric(names(test))) {
+        stopError("Split variables do not match the number of rows in the data.")
+    }
+
     # split by (non-missing-declared) levels
-    sl <- lapply(sby, function(sb) {
-        x <- data[[sb]]
+    sl <- lapply(sbylist, function(x) {
 
         if (inherits(x, "declared") | inherits(x, "haven_labelled_spss")) {
             na_values <- attr(x, "na_values", exact = TRUE)
@@ -53,21 +88,13 @@
             return(as.character(x))
         }
         
-        if (is.factor(x)) {
+        # if (is.factor(x)) {
             return(levels(x))
-        }
-        else {
-            stopError(
-                sprintf(
-                    "The split variable %s should be a factor or a declared / labelled variable.",
-                    sb
-                )
-            )
-        }
+        # }
     })
 
-
     names(sl) <- sby
+
 
     noflevels <- unlist(lapply(sl, length))
     mbase <- c(rev(cumprod(rev(noflevels))), 1)[-1]
@@ -94,7 +121,13 @@
     for (i in seq(length(sl))) {
         slexp[, i] <- sl[[i]][retmat[, i]]
     }
-    
+
+    ###--------------------------------
+    # mandatory, otherwise subset() below will take a LOT of time
+    data <- data[, vexpr, drop = FALSE]
+    # because it is re-creating all declared variables, all NA indexes etc.
+    ###--------------------------------
+
     res <- vector(mode = "list", length = nrow(slexp))
 
     for (r in seq(nrow(slexp))) {
@@ -102,7 +135,7 @@
 
         for (c in seq(ncol(slexp))) {
             val <- slexp[r, c]
-            x <- data[[sby[c]]] # split variable
+            x <- sbylist[[c]] # split variable
             attrx <- attributes(x)
 
             if (inherits(x, "declared") | inherits(x, "haven_labelled_spss")) {
@@ -125,7 +158,7 @@
             selection <- selection & (x == val)
         }
 
-        if (sum(selection) > 0) {
+        if (sum(selection, na.rm = TRUE) > 0) {
             res[[r]] <- eval(
                 expr = expr,
                 envir = subset(data, selection),
@@ -137,6 +170,9 @@
 
     if (all(unlist(lapply(res, is.atomic)))) {
 
+        classes <- unique(unlist(lapply(res, class)))
+        classes <- setdiff(classes, c("integer", "double", "character", "numeric", "complex"))
+
         # all are vectors (e.g. from summary) but lengths can differ
         # if one subset has NAs and others not
         lengths <- unlist(lapply(res, length))
@@ -147,10 +183,9 @@
                 result[i, seq(length(res[[i]]))] <- res[[i]]
             }
         }
-        
-        for (i in seq(ncol(slexp))) {
-            slexp[, i] <- format(slexp[, i], justify = "right")
-        }
+
+        result[] <- admisc::coerceMode(round(result, 3))
+
         rownames(result) <- apply(slexp, 1, function(x) paste(x, collapse = ", "))
 
         if (max(lengths) == 1) {
@@ -159,13 +194,19 @@
         else {
             colnames(result) <- names(res[[which.max(lengths)]])
         }
+
         res <- result
+        
+        if (length(classes) > 0) {
+            class(res) <- c("admisc_fobject", "matrix")
+        }
 
     }
     else {
+        # res is a list
         attr(res, "split") <- slexp
+        class(res) <- c("admisc_fobject", class(res))
     }
     
-    class(res) <- "admisc_using"
     return(res)
 }
