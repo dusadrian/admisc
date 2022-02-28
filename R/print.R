@@ -198,13 +198,16 @@
     cat("\n")
 }
 
-`print.admisc_using` <- function(x, ...) {
-    # nms <- apply(sl, 1, function(x) paste(names(x), x, sep = ":", collapse = "; "))
+`print.admisc_fobject` <- function(x, startend = TRUE, ...) {
+
+    class(x) <- setdiff(class(x), "admisc_fobject")
+
     if (is.list(x)) {
         nms <- apply(attr(x, "split", exact = TRUE), 1, function(x) {
             paste(x, collapse = ", ")
         })
 
+        cat(ifelse(startend, "\n", ""))
         for (i in seq(length(x))) {
             cat(nms[i], "\n")
             cat(paste(c(rep("-", nchar(nms[i])), "\n"), collapse = ""))
@@ -213,45 +216,91 @@
                 cat("No data.\n")
             }
             else {
-                print(x[[i]])
+                if (is.matrix(x[[i]])) {
+                    class(x[[i]]) <- c("admisc_fobject", class(x[[i]]))
+                }
+                print(x[[i]], startend = FALSE)
             }
             
             if (i < length(x)) {
                 cat("\n")
             }
         }
+        cat(ifelse(startend, "\n", ""))
     }
-    else if (is.matrix(x)) {
-        class(x) <- setdiff(class(x), "usage")
-        
-        if (ncol(x) == 1) {
-            x[] <- prettyNum(round(x, 3))
+    else {
+        if (is.matrix(x)) {
+            # for ex. via using() with split.by
+            rnms <- rownames(x)
+            
+            max.nchar.rnms <- max(nchar(encodeString(rnms)), na.rm = TRUE)
+            for (i in seq(length(rnms))) {
+                if (nchar(rnms[i]) < max.nchar.rnms) {
+                    rnms[i] <- admisc::padLeft(rnms[i], max.nchar.rnms - nchar(rnms[i]))
+                }
+            }
+
+            rownames(x) <- rnms
         }
-        else if (ncol(x) > 1) {
-            # for instance summary() has an additional column to count NAs
-            # but not all groups might have NAs when using split.by
-            x[] <- gsub("NA", "", prettyNum(round(x, 3)))
+        else if (is.atomic(x)) {
+            x <- matrix(x, nrow = 1, dimnames = list("", names(x)))
         }
-        
-        for (i in seq(ncol(x))) {
-            splitcol <- strsplit(x[, i], split = "[.]")
-            nchars <- unlist(lapply(lapply(splitcol, "[", 2), nchar))
-            if (!all(is.na(nchars))) {
-                maxnchar <- max(nchars, na.rm = TRUE)
-                x[, i] <- unlist(lapply(splitcol, function(x) {
-                    if (length(x) == 1) {
-                        x <- c(x, paste(c(rep("0", maxnchar)), collapse = ""))
-                    }
-                    else if (length(x) == 2) {
-                        x[2] <- paste(x[2], paste(rep("0", maxnchar - nchar(x[2])), collapse = ""), sep = "")
-                    }
-                    return(paste(x, collapse = "."))
-                }))
+
+        nax <- is.na(x)
+
+        pN <- apply(x, 2, possibleNumeric)
+        nms <- colnames(x)
+
+        for (c in seq(ncol(x))) {
+            xc <- x[, c]
+            if (pN[c]) {
+                max.nchar.nc <- max(nchar(xc), na.rm = TRUE)
+                ndec <- numdec(xc)
+                x[, c] <- sprintf(
+                    paste0("%", max.nchar.nc, ".", ndec, "f"),
+                    asNumeric(xc)
+                )
+            }
+
+            if (possibleNumeric(nms[c])) {
+                # since this is a column name, most likely it is a whole number
+                # e.g. the value of a declared object instead of the label
+                nmsc <- sprintf(
+                    paste0("%", max.nchar.nc, ".", ndec, "f"),
+                    asNumeric(nms[c])
+                )
+
+                if (grepl("[.]", nmsc)) {
+                    nmsc <- paste(
+                        unlist(strsplit(nmsc, split = "[.]"))[1],
+                        paste(rep(" ", ndec), collapse = "")
+                    )
+                }
+
+                nms[c] <- nmsc
             }
         }
-        
-        maxwidth <- max(nchar(c(colnames(x), x)))
-        colnames(x) <- format(colnames(x), justify = "right", width = maxwidth)
-        print(noquote(format(x, justify = "right", width = maxwidth)))
+
+        x[nax] <- ""
+
+
+        max.nchars <- max(nchar(c(encodeString(nms), x)), na.rm = TRUE)
+        for (i in seq(length(nms))) {
+            if (nchar(nms[i]) < max.nchars) {
+                nms[i] <- admisc::padBoth(nms[i], max.nchars - nchar(nms[i]))
+            }
+        }
+
+        for (i in seq(length(x))) {
+            if (nchar(x[i]) < max.nchars) {
+                x[i] <- admisc::padBoth(x[i], max.nchars - nchar(x[i]))
+            }
+        }
+
+        colnames(x) <- nms
+
+        cat(ifelse(startend, "\n", ""))
+        print(noquote(x))
+        cat(ifelse(startend, "\n", ""))
     }
 }
