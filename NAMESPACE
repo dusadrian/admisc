@@ -53,6 +53,7 @@ export(
     deMorgan,
     objRDA,
     negate,
+    numdec,
     recode,
         hastilde,
         notilde,
@@ -97,7 +98,7 @@ S3method(print, "admisc_intersection")
 S3method(print, "admisc_translate")
 S3method(print, "admisc_deMorgan")
 S3method(print, "admisc_simplify")
-S3method(print, "admisc_using")
+S3method(print, "admisc_fobject")
 
 S3method(recode, default)
 S3method(recode, declared)
