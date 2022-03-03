@@ -243,13 +243,19 @@
             rownames(x) <- rnms
         }
         else if (is.atomic(x)) {
-            x <- matrix(x, nrow = 1, dimnames = list("", names(x)))
+            x <- matrix(
+                if (possibleNumeric(x)) round(asNumeric(x), 3) else x,
+                nrow = 1,
+                dimnames = list("", names(x))
+            )
         }
 
         nax <- is.na(x)
 
         pN <- apply(x, 2, possibleNumeric)
         nms <- colnames(x)
+
+        cx <- x
 
         for (c in seq(ncol(x))) {
             xc <- x[, c]

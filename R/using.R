@@ -4,6 +4,12 @@
 `using` <- function(data, expr, split.by = NULL, ...) {
 
     split.by <- substitute(split.by)
+    sby <- all.vars(split.by)
+    nsby <- all.names(split.by)
+
+    ###------------------------------------------------------------
+    ## The code below allows specifying a quoted split.by argument
+    ## but I am not sure this is a good idea
     # if (is.character(split.by)) {
     #     split.by <- gsub("[[:space:]]", "", split.by)
     #     if (grepl("[&]", split.by)) {
@@ -12,14 +18,10 @@
     #     else if (grepl("[+]", split.by)) {
     #         split.by <- unlist(strsplit(split.by, split = "[+]"))
     #     }
-
+    #
     #     sby <- nsby <- split.by
     # }
-    # else {
-        sby <- all.vars(split.by)
-        nsby <- all.names(split.by)
-    # }
-
+    ###------------------------------------------------------------
 
 
     expr <- substitute(expr)
@@ -184,7 +186,7 @@
             }
         }
 
-        result[] <- admisc::coerceMode(round(result, 3))
+        result[] <- coerceMode(round(result, 3))
 
         rownames(result) <- apply(slexp, 1, function(x) paste(x, collapse = ", "))
 
@@ -197,9 +199,7 @@
 
         res <- result
         
-        if (length(classes) > 0) {
-            class(res) <- c("admisc_fobject", "matrix")
-        }
+        class(res) <- c("admisc_fobject", "matrix")
 
     }
     else {

@@ -4,6 +4,8 @@ Version 0.26
     o Improved treatment of the "split.by" argument in function using()
     o Rewritten print method for resulting objects from function using(), now
       of a more general class "admisc_fobject"
+    o Printing numerical vectors of class "admisc_fobject" are now automatically
+      rounded to maximum three decimals
 
 Version 0.25
     o Bug fix in function using(), function names were sometimes misinterpreted
