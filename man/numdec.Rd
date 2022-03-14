@@ -2,7 +2,7 @@
 \alias{numdec}
 
 
-\title{Number of decimals}
+\title{Count number of decimals}
 
 \description{
 Calculates the (maximum) number of decimals in a possibly numeric vector.

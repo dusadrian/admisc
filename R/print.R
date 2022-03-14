@@ -219,6 +219,7 @@
                 if (is.matrix(x[[i]])) {
                     class(x[[i]]) <- c("admisc_fobject", class(x[[i]]))
                 }
+                class(x[[i]]) <- setdiff(class(x[[i]]), "admisc_fobject")
                 print(x[[i]], startend = FALSE)
             }
             
@@ -259,9 +260,11 @@
 
         for (c in seq(ncol(x))) {
             xc <- x[, c]
+            max.nchar.nc <- max(nchar(xc), na.rm = TRUE)
+            ndec <- 0
+            
             if (pN[c]) {
-                max.nchar.nc <- max(nchar(xc), na.rm = TRUE)
-                ndec <- numdec(xc)
+                ndec <- min(numdec(xc), 3)
                 x[, c] <- sprintf(
                     paste0("%", max.nchar.nc, ".", ndec, "f"),
                     asNumeric(xc)
@@ -291,6 +294,7 @@
 
 
         max.nchars <- max(nchar(c(encodeString(nms), x)), na.rm = TRUE)
+
         for (i in seq(length(nms))) {
             if (nchar(nms[i]) < max.nchars) {
                 nms[i] <- admisc::padBoth(nms[i], max.nchars - nchar(nms[i]))

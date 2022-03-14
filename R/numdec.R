@@ -2,7 +2,8 @@
 
     pN <- possibleNumeric(x, each = each)
 
-    if ((each & sum(pN) == 0) || (!each & !pN)) {
+    # sum(pN), maybe each = TRUE and it's a vector
+    if (sum(pN) == 0) {
         stopError("'x' values should be numeric.")
     }
 
@@ -42,7 +43,7 @@
         return(result)
     }
 
-    if ((each & sum(pN) == length(x)) || pN) {
+    if ((each & sum(pN) == length(x)) || sum(pN) > 0) {
         return(0)
     }
 

@@ -170,7 +170,9 @@
         }
     }
 
-    if (all(unlist(lapply(res, is.atomic)))) {
+    wt <- any(unlist(lapply(res, function(x) class(x)[1] == "w_table")))
+
+    if (all(unlist(lapply(res, is.atomic))) & !wt) {
 
         classes <- unique(unlist(lapply(res, class)))
         classes <- setdiff(classes, c("integer", "double", "character", "numeric", "complex"))
