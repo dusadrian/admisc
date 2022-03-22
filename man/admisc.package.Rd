@@ -11,8 +11,8 @@ Adrian Dusa's Miscellaneous
 }
 
 \description{
-Contains functions used across packages 'declared', 'DDIwR', 'mixed', 'QCA' and
-'venn'. Interprets and translates, factorizes and negates SOP - Sum of Products
+Contains functions used across packages 'declared', 'DDIwR', 'QCA' and 'venn'.
+Interprets and translates, factorizes and negates SOP - Sum of Products
 expressions, for both binary and multi-value crisp sets, and extracts
 information (set names, set values) from those expressions. Other functions
 perform various checks if possibly numeric (even if all numbers reside in a

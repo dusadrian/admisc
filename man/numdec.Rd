@@ -9,13 +9,14 @@ Calculates the (maximum) number of decimals in a possibly numeric vector.
 }
 
 \usage{
-numdec(x, each = FALSE, na.rm = TRUE)
+numdec(x, each = FALSE, na.rm = TRUE, maxdec = 15)
 }
 
 \arguments{
   \item{x}{A vector of values}
   \item{each}{Logical, return the result for each value in the vector}
   \item{na.rm}{Logical, ignore missing values}
+  \item{maxdec}{Maximal number of decimals to count}
 }
 
 
@@ -30,17 +31,11 @@ numdec(x) # 2
 
 numdec(x, each = TRUE) # 0, 1, 2
 
-x <- c("-.1", " 2.75 ", "12")
+x <- c("-.1", " 2.75 ", "12", "B", NA)
 
 numdec(x) # 2
 
-numdec(x, each = TRUE) # 1, 2, 0
-
-x <- c("-.1", " 2.75 ", "B")
-
-# numdec(x) will result into an error that x is not numeric
-
-numdec(x, each = TRUE) # 1 2 NA
+numdec(x, each = TRUE) # 1, 2, 0, NA, NA
 }
 
 
