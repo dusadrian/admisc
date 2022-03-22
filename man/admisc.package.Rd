@@ -28,8 +28,8 @@ being listed in the Imports field (due to circular dependency issues).
     \tabular{ll}{
     Package: \tab admisc\cr
     Type:    \tab Package\cr
-    Version: \tab 0.23-5\cr
-    Date:    \tab 2022-02-02\cr
+    Version: \tab 0.26-5\cr
+    Date:    \tab 2022-03-22\cr
     License: \tab GPL (>= 2)\cr
     }
 }
