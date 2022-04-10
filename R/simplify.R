@@ -44,16 +44,15 @@
         noflevels <- rep(2, ncol(implicants))
     }
 
-    version <- NULL
+    version <- -1
     if (requireNamespace("QCA", quietly = TRUE)) {
-        version <- packageDescription("QCA")$Version
-        version <- as.numeric(unlist(strsplit(version, split = "\\.")))
-        if (version[1] < 3 | (version[1] >= 3 & version[2] < 7)) {
-            version <- NULL
-        }
+        version <- compareVersion(
+            packageDescription("QCA")$Version,
+            "3.7"
+        )
     }
     
-    if (is.null(version)) {
+    if (version < 0) {
         message(paste(enter, "Error: Package QCA (>= 3.7) is needed to make this work, please install it.", enter, sep = ""))
         return(invisible(character(0)))
     }
