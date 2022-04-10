@@ -1,6 +1,4 @@
-\name{admisc-package}
-
-\alias{admisc-package}
+\name{About the admisc package}
 
 \alias{admisc}
 

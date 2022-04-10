@@ -1,4 +1,4 @@
-\name{admisc-internal}
+\name{admisc internal functions}
 \alias{checkMV}
 \alias{checkSubset}
 \alias{classify}
