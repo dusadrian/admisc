@@ -46,15 +46,17 @@
     
     for (i in seq(ncol(data))) {
         if (pN[i]) {
-            fuzzy.cc[i] <- any(na.omit(data[, i]) %% 1 > 0)
-            if (!fuzzy.cc[i] & !any(is.na(data[, i]))) {
-                copy.cc <- data[, i]
+            copy.cc <- asNumeric(data[, i])
+
+            fuzzy.cc[i] <- any(na.omit(copy.cc) %% 1 > 0)
+            if (!fuzzy.cc[i] & !any(is.na(copy.cc))) {
                 if (any(na.omit(copy.cc) < 0)) {
                     hastime[i] <- TRUE
                     copy.cc[copy.cc < 0] <- max(copy.cc) + 1
-                    data[, i] <- copy.cc
                 }
             }
+            
+            data[, i] <- copy.cc
         }
     }
     
