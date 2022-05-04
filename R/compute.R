@@ -1,8 +1,8 @@
 `compute` <-
-function(expression = "", data = NULL, separate = FALSE) { # na.rm = FALSE
+function(expression = "", data = NULL, separate = FALSE, ...) { # na.rm = FALSE
     
     expression <- recreate(substitute(expression))
-    
+
     enchar <- nchar(expression)
     if (identical(substring(expression, 1, 2), "~(") & identical(substring(expression, enchar, enchar), ")")) {
         expression <- paste("1-", substring(expression, 3, enchar - 1), sep = "")
@@ -42,7 +42,7 @@ function(expression = "", data = NULL, separate = FALSE) { # na.rm = FALSE
     multivalue <- grepl("\\{|\\}|\\[|\\]", expression)
 
     if (!multivalue) {
-        mvsop <- mvSOP(expression, data = data)
+        mvsop <- mvSOP(expression, data = data, ... = ...)
         ppm <- translate(mvsop, data = data, retlist = TRUE)
         rownames(ppm) <- trimstr(unlist(strsplit(expression, split = "\\+")))
     }

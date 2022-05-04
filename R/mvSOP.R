@@ -7,7 +7,7 @@
     dots <- list(...)
 
     if (any(grepl("\\[|\\]|\\{|\\}", expression))) {
-        stopError("The expression is already in multi-value notation.")
+        stopError("The expression is already in multi-value notation.", ... = ...)
     }
 
     if (identical(snames, "")) {
@@ -76,7 +76,7 @@
     
     expression <- replaceText(expression, oldc, newc)
     if (any(!is.element(squareBrackets(expression, outside = TRUE), snames))) {
-        stopError("Unkown condition(s) in the expression.")
+        stopError("Unkown condition(s) in the expression.", ... = ...)
     }
 
     
@@ -89,7 +89,7 @@
         noflevels <- noflevels[match(rnames, colnames(data))]
         
         if (any(noflevels > 2)) {
-            stopError("Part(s) of the expression refer to multi-value data.")
+            stopError("Part(s) of the expression refer to multi-value data.", ... = ...)
         }
     }
     

@@ -1,4 +1,7 @@
-`stopError` <- function(message, enter = "\n") {
+`stopError` <- function(message, enter = "\n", ...) {
+
+    dots <- list(...)
+    prenter <- ifelse(is.element("prenter", names(dots)), dots$prenter, TRUE)
     
     message <- paste0(
         "Error: ",
@@ -18,7 +21,9 @@
         )
     }
 
-    cat(enter)
+    if (prenter) {
+        cat(enter)
+    }
 
     stop(
         simpleError(
