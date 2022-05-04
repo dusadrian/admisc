@@ -1,4 +1,4 @@
-importFrom("utils", "read.csv", "write.csv", "write.table", "capture.output", "installed.packages", "packageDescription", "remove.packages")
+importFrom("utils", "read.csv", "write.csv", "write.table", "capture.output", "installed.packages", "packageDescription", "compareVersion", "remove.packages")
 importFrom("stats", "na.omit", "dist", "relevel")
 importFrom("methods", "is")
 importFrom("grDevices", "hcl")
