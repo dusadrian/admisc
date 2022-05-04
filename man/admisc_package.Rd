@@ -9,7 +9,7 @@ Adrian Dusa's Miscellaneous
 }
 
 \description{
-Contains functions used across packages 'declared', 'DDIwR', 'QCA' and 'venn'.
+Contains functions used across packages 'DDIwR', 'QCA' and 'venn'.
 Interprets and translates, factorizes and negates SOP - Sum of Products
 expressions, for both binary and multi-value crisp sets, and extracts
 information (set names, set values) from those expressions. Other functions

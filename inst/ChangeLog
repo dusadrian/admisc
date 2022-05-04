@@ -1,5 +1,8 @@
 Version 0.27
     o New argument "maxdec" in function numdec()
+    o Correct way of checking the package QCA version for simplify()
+    o More robust way to calculate expressions even when a condition is
+      numeric, but of character mode
 
 Version 0.26
     o New function numdec() to count the number of decimals in a possibly

@@ -38,7 +38,7 @@ multi-value notation.
 \usage{
 asSOP(expression = "", snames = "", noflevels = NULL)
 
-compute(expression = "", data = NULL, separate = FALSE)
+compute(expression = "", data = NULL, separate = FALSE, ...)
 
 expand(expression = "", snames = "", noflevels = NULL, partial = FALSE,
       implicants = FALSE, ...)
