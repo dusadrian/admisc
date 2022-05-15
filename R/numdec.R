@@ -9,6 +9,7 @@
 
     result <- rep(0, length(x))
     x <- asNumeric(x)
+    attributes(x) <- NULL
     result[is.na(x)] <- NA
     hasdec <- agtb(x %% 1, 0)
 
