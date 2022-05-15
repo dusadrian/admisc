@@ -1,3 +1,6 @@
+Version 0.28
+    o Bug fix in numdec() for objects of specific classes (e.g. labelled_spss)
+
 Version 0.27
     o New argument "maxdec" in function numdec()
     o Correct way of checking the package QCA version for simplify()
