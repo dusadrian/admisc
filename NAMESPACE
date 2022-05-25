@@ -11,6 +11,7 @@ export(
     agteb,
     aeqb,
     aneqb,
+    anyTagged,
     asNumeric,
         curlyBrackets,
         insideBrackets,

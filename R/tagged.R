@@ -36,3 +36,11 @@
         return(rep(NA, length(x)))
     }
 }
+
+`anyTagged` <- function(x) {
+    if (is.double(x)) {
+        return(.Call("_any_tagged", x, PACKAGE = "admisc"))
+    }
+    
+    return(FALSE)
+}

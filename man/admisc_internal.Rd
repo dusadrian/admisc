@@ -1,4 +1,5 @@
 \name{admisc internal functions}
+\alias{anyTagged}
 \alias{checkMV}
 \alias{checkSubset}
 \alias{classify}
