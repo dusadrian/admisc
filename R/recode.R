@@ -3,58 +3,43 @@
 }
 
 
-`recode.declared` <- function(x, rules, cut, values, ...) {
+`recode.declared` <- function(x, rules, cut, values, ..., na_values = TRUE) {
     na_index <- attr(x, "na_index")
+    attributes(x) <- NULL
 
-    if (!is.null(na_index)) {
+    if (!is.null(na_index) & isTRUE(na_values)) {
         nms <- names(na_index)
-        if (possibleNumeric(nms) || all(is.na(nms))) {
+
+        if (possibleNumeric(nms)) {
             nms <- asNumeric(nms)
-            if (wholeNumeric(nms)) {
-                nms <- as.integer(nms)
-            }
         }
         
-        x <- unclass(x)
         x[na_index] <- nms
     }
     
-    recode(unclass(x), rules, cut, values, ...)
+    NextMethod()
 }
 
 
 `recode.default` <- function(x, rules, cut, values, ...) {
     
-    # TO DO: detect usage of both ; and , as rules separator, and generate error
-    # TO DO: when input is a factor, cut should be within the <order> of the ordered levels
-    # and the output values should recode the <levels> in their exact <order>
-    # ex. aa <- factor(rep(LETTERS[1:5], 20, replace = TRUE), levels = c("E", "C", "B", "D", "A"))
-    # and recode(aa, cut = "B") should recode:
-    # "E", "C" and "B" to 1
-    # "D" and "A" to 2
-
-    declared <- inherits(x, "declared")
-    if (declared) {
-        x <- unclass(x)
-    }
-    
     if (missing(x)) {
-        stopError("Argument \"x\" is missing.")
+        stopError("Argument 'x' is missing.")
     }
     
     if (!is.atomic(x))   {
-        stopError("The input \"x\" should be an atomic vector / factor.")
+        stopError("The input 'x' should be an atomic vector / factor.")
     }
     
     if (all(is.na(x))) {
-        stopError("All values are missing in x.")
+        stopError("Nothing to recode, all values are missing.")
     }
     
     dots <- recreate(list(...))
-    as.factor.result  <- if (is.element("as.factor.result",  names(dots))) dots$as.factor.result  else FALSE
-    as.numeric.result <- if (is.element("as.numeric.result", names(dots))) dots$as.numeric.result else TRUE
-    factor.levels     <- if (is.element("levels",            names(dots))) splitstr(dots$levels)  else c()
-    factor.labels     <- if (is.element("labels",            names(dots))) splitstr(dots$labels)  else c()
+    as.factor.result  <- isTRUE(dots$as.factor.result)
+    as.numeric.result <- !isFALSE(dots$as.numeric.result)
+    factor.levels     <- if (is.element("levels", names(dots))) splitstr(dots$levels)  else c()
+    factor.labels     <- if (is.element("labels", names(dots))) splitstr(dots$labels)  else c()
     factor.ordered    <- FALSE
 
     if (is.element("ordered", names(dots))) {
@@ -65,6 +50,7 @@
     }
     
     if (is.element("cuts", names(dots)) & missing(cut)) {
+        # backwards compatibility
         cut <- dots[["cuts"]]
     }
     
@@ -106,7 +92,7 @@
         
         return(seq(seqfrom, seqto))
     }
-    
+
     if (missing(cut)) {
         
         rules <- gsub(
@@ -118,11 +104,20 @@
                 )
             )
         )
+
         if (length(rules) == 1) {
-             rules <- unlist(strsplit(rules, split=";"))
+            semicolons <- gsub("[^;]", "", rules)
+            equals <- gsub("[^=]", "", rules)
+
+            if (nchar(equals) != nchar(semicolons) + 1) {
+                stopError("The rules should be separated by a semicolon.")
+            }
+
+            rules <- unlist(strsplit(rules, split = ";"))
         }
-        
-        rulsplit <- strsplit(rules, split="=")
+
+        rulsplit <- strsplit(rules, split = "=")
+
         oldval <- unlist(lapply(lapply(rulsplit, trimstr), "[", 1))
         newval <- unlist(lapply(lapply(rulsplit, trimstr), "[", 2))
         
