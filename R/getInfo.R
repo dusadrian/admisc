@@ -22,13 +22,15 @@
 
         data[] <- lapply(data, function(x) {
             # to make sure that any factor is character
-            x <- as.character(x)
-            
-            # otherwise replacement was not possible
-            x[x == dc.code] <- -1
-            
-            if (possibleNumeric(x)) {
-                x <- asNumeric(x)
+            if (!inherits(x, "declared")) {
+                x <- as.character(x)
+                
+                # otherwise replacement was not possible
+                x[x == dc.code] <- -1
+                
+                if (possibleNumeric(x)) {
+                    x <- asNumeric(x)
+                }                
             }
 
             return(x)
@@ -39,13 +41,13 @@
     
     fuzzy.cc <- logical(ncol(data))
     hastime <- logical(ncol(data))
-    factor <- unlist(lapply(data, is.factor))
-    declared <- unlist(lapply(data, function(x) inherits(x, "declared")))
+    factor <- sapply(data, is.factor)
+    declared <- sapply(data, function(x) inherits(x, "declared"))
     
-    pN <- unlist(lapply(data, possibleNumeric))
+    pN <- sapply(data, possibleNumeric)
     
     for (i in seq(ncol(data))) {
-        if (pN[i]) {
+        if (pN[i] & !declared[i]) {
             copy.cc <- asNumeric(data[, i])
 
             fuzzy.cc[i] <- any(na.omit(copy.cc) %% 1 > 0)
@@ -59,6 +61,7 @@
             data[, i] <- copy.cc
         }
     }
+
     
     # the data MUST begin with 0 and MUST be incremented by 1 for each level...!
     # perhaps trying something like
@@ -85,7 +88,8 @@
             else {
                 
                 x <- data[, i]
-                labels <- attr(x, "labels")
+                labels <- attr(x, "labels", exact = TRUE)
+
                 if (is.null(labels)) {
                     stopError("Declared columns should have labels for all values.")
                 }
