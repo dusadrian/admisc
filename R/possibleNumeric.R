@@ -7,6 +7,7 @@
         if (each) {
             return(result)
         }
+
         return(FALSE)
     }
 
@@ -16,6 +17,7 @@
             result[isna] <- NA
             return(result)
         }
+
         return(FALSE)
     }
 
@@ -35,6 +37,7 @@
             result[!isna] <- TRUE
             return(result)
         }
+
         return(TRUE)
     }
 

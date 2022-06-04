@@ -115,7 +115,7 @@
                 categories = categories,
                 translate = TRUE
             )
-            
+
             expression <- mv$expression
             oldc <- mv$newc # switch oldc with newc
             newc <- mv$oldc
@@ -270,7 +270,7 @@
                 )
             }
         }
-        
+
         if (any(hastilde(expression))) {
             if (is.null(noflevels)) {
                 # for sure there is data, as checked by checkMV()
