@@ -93,7 +93,7 @@
         }
     }
     
-    if (!is.null(dots$translate)) {
+    if (isTRUE(dots$translate)) {
         return(
             list(
                 expression = expression,
