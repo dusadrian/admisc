@@ -162,11 +162,11 @@ recode(sort(x), cut = "that has", values = 0:1)
 x <- 10:20
 
 # recoding rules don't overlap all existing values, the rest are empty
-recode(x, "8:15=1")
+recode(x, "8:15 = 1")
 #  [1]  1  1  1  1  1  1 NA NA NA NA NA
 
 # all other values copied
-recode(x, "8:15=1; else=copy")
+recode(x, "8:15 = 1; else = copy")
 #  [1]  1  1  1  1  1  1 16 17 18 19 20
 
 }

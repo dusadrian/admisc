@@ -9,11 +9,12 @@ This is a utility to be used inside a function.
 }
 
 \usage{
-getName(x)
+getName(x, object = FALSE)
 }
 
 \arguments{
-    \item{x}{A function argument}
+    \item{x}{String, expression to be evaluated}
+    \item{object}{Logical, return the object's name}
 }
 
 \details{
@@ -44,7 +45,7 @@ foo <- function(x) {
     return(getName(funargs[1]))
 }
 
-dd <- data.frame(X = 1:5)
+dd <- data.frame(X = 1:5, Y = 1:5, Z = 1:5)
 
 foo(dd)
 # dd
@@ -55,8 +56,14 @@ foo(dd$X)
 foo(dd[["X"]])
 # X
 
+foo(dd[[c("X", "Y")]])
+# X Y
+
 foo(dd[, 1])
 # X
+
+foo(dd[, 2:3])
+# Y Z
 }
 
 \keyword{functions}

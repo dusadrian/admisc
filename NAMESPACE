@@ -103,3 +103,6 @@ S3method(print, "admisc_fobject")
 
 S3method(recode, default)
 S3method(recode, declared)
+S3method(asNumeric, default)
+S3method(asNumeric, factor)
+S3method(asNumeric, declared)

@@ -66,10 +66,6 @@ and quantitative strategies}, Berkeley: University of California Press
 \seealso{\code{\link{translate}}}
 
 \examples{
-\dontrun{
-  # make sure the package QCA is loaded
-  library(QCA)
-}
 
 # typical example with redundant conditions
 factorize(a~b~cd + a~bc~d + a~bcd + abc~d)
@@ -85,6 +81,9 @@ factorize(~one*two*~four + ~one*three + three*~four,
 factorize(~a~c + ~ad + ~b~c + ~bd, pos = TRUE)
 
 \dontrun{
+# make sure the package QCA is loaded
+library(QCA)
+
 # using an object of class "qca" produced with function minimize()
 # in package QCA
 

@@ -1,5 +1,13 @@
+Version 0.29
+    o Functions asNumeric() and recode() are now generic, with class methods for
+      factors and objects of class "declared"
+    o New arguments "na_values" (for declared objects) in function recode()
+    o Improved function getName() for more than one variable
+    o New argument "object" in function getName()
+
 Version 0.28
-    o Bug fix in numdec() for objects of specific classes (e.g. labelled_spss)
+    o Bug fix in asNumeric() preserving classes for some types of objects
+    o New arguments "levels" and "na_values" in function asNumeric()
 
 Version 0.27
     o New argument "maxdec" in function numdec()
@@ -70,7 +78,7 @@ Version 0.18
 Version 0.17
     o More robust support for multi-byte locales when detecting tilde and
       dash operators
-    o Fixed bug in possibleNumeric() for objects of class declared'
+    o Fixed bug in possibleNumeric() for objects of class declared
     
 Version 0.16
     o New functions agtb(), altb() and aneqb() to test (in)equality of floats
@@ -95,7 +103,7 @@ Version 0.12
     o Small improvement of the recode() function
 
 Version 0.11
-    o New function finvert(), to invert a factor's values (and optional
+    o New function finvert(), to invert a factor`s values (and optional
       its levels)
     o New function frelevel(), an improved version of the base relevel()
     o New function permutations()

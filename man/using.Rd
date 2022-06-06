@@ -31,7 +31,7 @@ Adrian Dusa
 
 \examples{
 set.seed(123)
-df <- data.frame(
+DF <- data.frame(
     Area = factor(sample(c("Rural", "Urban"), 123, replace = TRUE)),
     Gender = factor(sample(c("Female", "Male"), 123, replace = TRUE)),
     Age = sample(18:90, 123, replace = TRUE),
@@ -40,31 +40,31 @@ df <- data.frame(
 
 
 # table of frequencies for Gender
-table(df$Gender)
+table(DF$Gender)
 
 # same with
-using(df, table(Gender))
+using(DF, table(Gender))
 
 # same, but split by Area
-using(df, table(Gender), split.by = Area)
+using(DF, table(Gender), split.by = Area)
 
 # calculate the mean age by gender
-using(df, mean(Age), split.by = Gender)
+using(DF, mean(Age), split.by = Gender)
 
 # same, but select cases from the urban area
-using(subset(df, Area == "Urban"), mean(Age), split.by = Gender)
+using(subset(DF, Area == "Urban"), mean(Age), split.by = Gender)
 
 # mean age by gender and area
-using(df, mean(Age), split.by = Area & Gender)
+using(DF, mean(Age), split.by = Area & Gender)
 
 # same with
-using(df, mean(Age), split.by = c(Area, Gender))
+using(DF, mean(Age), split.by = c(Area, Gender))
 
 # average number of children by Area
-using(df, mean(Children), split.by = Area)
+using(DF, mean(Children), split.by = Area)
 
 # frequency tables by Area
-using(df, table(Children), split.by = Area)
+using(DF, table(Children), split.by = Area)
 }
 
 \keyword{functions}

@@ -75,7 +75,7 @@ asNumeric(f, levels = FALSE)
 
 possibleNumeric(x) # FALSE
 
-possibleNumeric(x) # TRUE  TRUE FALSE
+possibleNumeric(x, each = TRUE) # TRUE  TRUE FALSE
 
 possibleNumeric(c("1", 2, 3)) # TRUE
 
