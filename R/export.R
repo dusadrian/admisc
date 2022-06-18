@@ -10,7 +10,6 @@ function(x, file = "", ...) {
         Call[["caseid"]] <- NULL
     }
     
-    
     if (!missing(x)) {
         if (is.data.frame(x) | is.matrix(x)) {
             if (any(rownames(x) != seq(nrow(x)))) {
@@ -24,10 +23,6 @@ function(x, file = "", ...) {
     
     Call[["x"]] <- x
     
-    if (any(names(export.args) == "row.names")) {
-        warning("The argument \"row.names\" is set to FALSE by default.", domain = NA)
-    }
-    
     if (any(names(export.args) == "sep")) {
         if (export.args[["sep"]] == "tab") {
             export.args[["sep"]] <- "\t"
@@ -40,6 +35,10 @@ function(x, file = "", ...) {
     
     if (any(names(export.args) == "col.names")) {
         Call[["col.names"]] <- export.args[["col.names"]]
+    }
+    
+    if (any(names(export.args) == "row.names")) {
+        message("The argument 'row.names' is always set to FALSE, by default.")
     }
     
     Call[["row.names"]] <- FALSE
