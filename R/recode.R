@@ -41,6 +41,8 @@
     factor.levels     <- if (is.element("levels", names(dots))) splitstr(dots$levels)  else c()
     factor.labels     <- if (is.element("labels", names(dots))) splitstr(dots$labels)  else c()
     factor.ordered    <- FALSE
+    
+    declared <- inherits(x, "declared")
 
     if (is.element("ordered", names(dots))) {
         factor.ordered <- dots$ordered
