@@ -12,10 +12,10 @@
     result[isna] <- NA
 
     if (all(isna) || is.logical(x)) {
-        if (each) {
-            return(result)
-        }
-        return(FALSE)
+        # each is certainly TRUE because if they are all missing or all logical
+        # it would not be numeric, which means the only condition continuing the
+        # function on line 6 is each = TRUE otherwise line 7 would stop
+        return(result)
     }
     
     x <- asNumeric(x)
