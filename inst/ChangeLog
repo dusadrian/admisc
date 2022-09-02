@@ -1,3 +1,9 @@
+Version 0.30
+    o Improved treatment of multi-byte space characters in functions
+      possibleNumeric() and asNumeric()
+    o Function using() now accepts all types of variables for the "split.by"
+      argument, that can be coerced to factors
+
 Version 0.29
     o Functions asNumeric() and recode() are now generic, with class methods for
       factors and objects of class "declared"
