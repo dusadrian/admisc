@@ -438,5 +438,5 @@
     }
     z <- notilde(unique(unlist(z)))
     
-    return(z[-which(z == "")])
+    return(z[nzchar(z)])
 }
