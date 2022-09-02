@@ -52,20 +52,37 @@
     if (length(test) > 0) {
         stopError(test[1])
     }
-
-    sbylist <- lapply(csby, function(x) {
+    
+    sbylist <- lapply(lapply(csby, function(x) {
         eval(parse(text = x), envir = data, enclos = parent.frame())
+    }), function(x) {
+        if (inherits(x, "declared") || inherits(x, "haven_labelled")) {
+            na_values <- attr(x, "na_values")
+            if (inherits(x, "haven_labelled")) {
+                x[is.element(x), na_values] <- NA
+            }
+            labels <- attr(x, "labels", exact = TRUE)
+            labels <- labels[!is.element(labels, na_values)]
+            uniques <- sort(unique(c(x, labels)))
+            names(uniques) <- uniques
+            names(uniques)[match(labels, uniques)] <- names(labels)
+            attributes(x) <- NULL
+            return(factor(x, levels = uniques, labels = names(uniques)))
+        }
+        return(as.factor(x))
     })
 
-    test <- unlist(lapply(sbylist, function(x) {
-        is.factor(x) | inherits(x, "declared") | inherits(x, "haven_labelled_spss")
-    }))
+    names(sbylist) <- csby
 
-    if (sum(test) < length(test)) {
-        stopError("Split variables should be factors or a declared / labelled objects.")
-    }
+    # test <- unlist(lapply(sbylist, function(x) {
+    #     is.factor(x) | inherits(x, "declared") | inherits(x, "haven_labelled_spss")
+    # }))
 
-    test <- table(unlist(lapply(sbylist, length)))
+    # if (sum(test) < length(test)) {
+    #     stopError("Split variables should be factors or a declared / labelled objects.")
+    # }
+
+    test <- table(sapply(sbylist, length))
 
     if (length(test) > 1 || nrow(data) != as.numeric(names(test))) {
         stopError("Split variables do not match the number of rows in the data.")
