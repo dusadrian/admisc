@@ -11,8 +11,13 @@
 
     if (identical(snames, "")) {
         syscalls <- unlist(lapply(sys.calls(), deparse))
-        if (any(withdata <- grepl("with\\(", syscalls))) {
-            data <- get(unlist(strsplit(gsub("with\\(", "", syscalls), split = ","))[1], envir = length(syscalls) - which(withdata))
+        usingwith <- "admisc::using\\(|using\\(|with\\("
+        if (any(usingdata <- grepl(usingwith, syscalls))) {
+            data <- get(
+                unlist(strsplit(gsub(usingwith, "", syscalls), split = ","))[1],
+                envir = length(syscalls) - tail(which(usingdata), 1)
+            )
+            
             if (is.data.frame(data) | is.matrix(data)) {
                 snames <- colnames(data)
             }

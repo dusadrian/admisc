@@ -2,30 +2,44 @@
 function(expression = "", data = NULL, separate = FALSE, ...) { # na.rm = FALSE
     
     expression <- recreate(substitute(expression))
+    if (grepl("<-|<=|=>|->", expression)) {
+        stopError("This function is not intended to calculate parameters of fit.")
+    }
 
     enchar <- nchar(expression)
-    if (identical(substring(expression, 1, 2), "~(") & identical(substring(expression, enchar, enchar), ")")) {
-        expression <- paste("1-", substring(expression, 3, enchar - 1), sep = "")
+    if (
+        identical(substring(expression, 1, 2), "~(") &
+        identical(substring(expression, enchar, enchar), ")")
+    ) {
+        expression <- paste0("1-", substring(expression, 3, enchar - 1))
     }
     
     negated <- identical(unname(substring(expression, 1, 2)), "1-")
     expression <- gsub("1-", "", expression)
     
     if (is.null(data)) {
-        
         syscalls <- as.character(sys.calls())
-        if (any(withdata <- grepl("with\\(", syscalls))) {
-            withdata <- which(withdata)
-            withdata <- withdata[length(withdata)]
-            data <- get(unlist(strsplit(gsub("with\\(", "", syscalls[withdata]), split = ","))[1], envir = length(syscalls) - withdata)
+        usingwith <- "admisc::using\\(|using\\(|with\\("
+        if (any(usingdata <- grepl(usingwith, syscalls))) {
+            data <- get(
+                unlist(strsplit(gsub(usingwith, "", syscalls), split = ","))[1],
+                envir = length(syscalls) - tail(which(usingdata), 1)
+            )
         }
         else {
             
-            colnms <- colnames(validateNames(notilde(expression), sort(eval.parent(parse(text = "ls()", n = 1)))))
+            colnms <- colnames(
+                validateNames(
+                    notilde(expression),
+                    sort(eval.parent(parse(text = "ls()", n = 1)))
+                )
+            )
             
             data <- vector(mode = "list", length = length(colnms))
             for (i in seq(length(data))) {
-                data[[i]] <- eval.parent(parse(text = sprintf("get(\"%s\")", colnms[i]), n = 1))
+                data[[i]] <- eval.parent(
+                    parse(text = sprintf("get(\"%s\")", colnms[i]), n = 1)
+                )
             }
             
             # TODO: ?model.frame
@@ -88,6 +102,7 @@ function(expression = "", data = NULL, separate = FALSE, ...) { # na.rm = FALSE
                 if (val[[j]] == 0) {
                     temp[, j] <- 1 - temp[, j]
                 }
+        
             }
             else { # cs or mv
                 
