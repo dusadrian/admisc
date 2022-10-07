@@ -1,5 +1,5 @@
 `tryCatchWEM` <- function(expr, capture = FALSE) {
-    comment <- 'modified version of http://stackoverflow.com/questions/4948361/how-do-i-save-warnings-and-errors-as-output-from-a-function'
+    #' modified version of http://stackoverflow.com/questions/4948361/how-do-i-save-warnings-and-errors-as-output-from-a-function
     
     toreturn <- list()
     output <- withVisible(withCallingHandlers(
