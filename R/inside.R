@@ -17,3 +17,23 @@
     data[del] <- NULL
     parent[[dataname]] <- data
 }
+
+
+
+`inside.list` <- function(data, expr, keepAttrs = TRUE, ...) {
+    # modified version of within.list
+    parent <- parent.frame()
+    dataname <- deparse(substitute(data))
+    e <- evalq(environment(), data, parent)
+    eval(substitute(expr), e)
+    if (keepAttrs) { # names() kept in original order; also other attributes
+        l <- as.list(e, all.names=TRUE)
+        nl <- names(l)
+        del <- setdiff(names(data), nl) # variables to delete
+        data[nl] <- l
+        data[del] <- NULL
+        parent[[dataname]] <- data
+    } else { # (order should not matter in *named* list)
+	    parent[[dataname]] <- as.list(e, all.names=TRUE)
+    }
+}
