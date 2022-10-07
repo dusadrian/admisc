@@ -1,6 +1,7 @@
 \name{using}
 
 \alias{using}
+\alias{using.data.frame}
 
 \title{Evaluate an expression in a data environment}
 

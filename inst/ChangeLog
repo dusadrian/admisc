@@ -1,3 +1,8 @@
+Version 0.31
+    o New function inside(), as an alternative to the base function within()
+    o Function using() is now generic, with exactly the same default
+      functionality as the base function with()
+
 Version 0.30
     o Improved treatment of multi-byte space characters in functions
       possibleNumeric() and asNumeric()

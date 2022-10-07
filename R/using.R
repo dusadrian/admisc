@@ -2,6 +2,16 @@
 # https://developer.r-project.org/nonstandard-eval.pdf
 
 `using` <- function(data, expr, split.by = NULL, ...) {
+    UseMethod("using")
+}
+
+`using.default` <- function(data, expr, ...) {
+    eval(substitute(expr), data, enclos = parent.frame())
+}
+
+`using.data.frame` <- function(data, expr, split.by = NULL, ...) {
+    
+    ### TODO: see evalq() from within.data.frame
 
     split.by <- substitute(split.by)
     sby <- all.vars(split.by)
@@ -53,24 +63,27 @@
         stopError(test[1])
     }
     
-    sbylist <- lapply(lapply(csby, function(x) {
-        eval(parse(text = x), envir = data, enclos = parent.frame())
-    }), function(x) {
-        if (inherits(x, "declared") || inherits(x, "haven_labelled")) {
-            na_values <- attr(x, "na_values")
-            if (inherits(x, "haven_labelled")) {
-                x[is.element(x), na_values] <- NA
+    sbylist <- lapply(
+        lapply(csby, function(x) {
+            eval(parse(text = x), envir = data, enclos = parent.frame())
+        }),
+        function(x) {
+            if (inherits(x, "declared") || inherits(x, "haven_labelled")) {
+                na_values <- attr(x, "na_values")
+                if (inherits(x, "haven_labelled")) {
+                    x[is.element(x), na_values] <- NA
+                }
+                labels <- attr(x, "labels", exact = TRUE)
+                labels <- labels[!is.element(labels, na_values)]
+                uniques <- sort(unique(c(x, labels)))
+                names(uniques) <- uniques
+                names(uniques)[match(labels, uniques)] <- names(labels)
+                attributes(x) <- NULL
+                return(factor(x, levels = uniques, labels = names(uniques)))
             }
-            labels <- attr(x, "labels", exact = TRUE)
-            labels <- labels[!is.element(labels, na_values)]
-            uniques <- sort(unique(c(x, labels)))
-            names(uniques) <- uniques
-            names(uniques)[match(labels, uniques)] <- names(labels)
-            attributes(x) <- NULL
-            return(factor(x, levels = uniques, labels = names(uniques)))
+            return(as.factor(x))
         }
-        return(as.factor(x))
-    })
+    )
 
     names(sbylist) <- csby
 
