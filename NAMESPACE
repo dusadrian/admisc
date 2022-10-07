@@ -40,6 +40,7 @@ export(
     hasTag,
     hclr,
     intersection,
+    inside,
     invert,
     listRDA,
     makeTag,
@@ -106,3 +107,4 @@ S3method(recode, declared)
 S3method(asNumeric, default)
 S3method(asNumeric, factor)
 S3method(asNumeric, declared)
+S3method(inside, data.frame)
