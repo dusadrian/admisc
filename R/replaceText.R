@@ -1,6 +1,7 @@
 
     replaceText <- function(
-        expression, target = "", replacement = "", boolean = FALSE, ...
+        expression, target = "", replacement = "", protect = "",
+        boolean = FALSE, ...
     ) {
 
         dots <- list(...)
@@ -15,6 +16,7 @@
 
         if (length(target) == 1) target <- splitstr(target)
         if (length(replacement) == 1) replacement <- splitstr(replacement)
+        if (length(protect) == 1) protect <- splitstr(protect)
 
         if (length(target) != length(replacement)) {
             stopError("Length of target different from the length of replacement.")
@@ -23,6 +25,8 @@
         torder <- order(nchar(target), decreasing = TRUE)
         tuplow <- target[torder]
         ruplow <- replacement[torder]
+
+        protect <- protect[order(nchar(protect), decreasing = TRUE)]
 
         if (
             all(target == toupper(target)) &
@@ -37,60 +41,91 @@
             ruplow <- rep(toupper(ruplow), each = 2)
             tuplow[seq(2, length(tuplow), by = 2)] <- tolower(tuplow[seq(2, length(tuplow), by = 2)])
             ruplow[seq(2, length(ruplow), by = 2)] <- tolower(ruplow[seq(2, length(ruplow), by = 2)])
+            
+            torder <- order(nchar(tuplow), decreasing = TRUE)
+            tuplow <- tuplow[torder]
+            ruplow <- ruplow[torder]
         }
 
-        positions <- vector(mode = "list", length = 0)
-        pos <- 0
-        
-        for (i in order(nchar(tuplow), decreasing = TRUE)) {
-            etuplow <- gsub("\\[", "\\\\[", tuplow[i])
-            etuplow <- gsub("\\]", "\\\\]", etuplow)
-            etuplow <- gsub("\\{", "\\\\{", etuplow)
-            etuplow <- gsub("\\}", "\\\\}", etuplow)
-            locations <- gregexpr(etuplow, expression)[[1]]
-            
-            # temp <- gsub(tuplow[i], paste(rep(ruplow[i], nchar(tuplow[i])), collapse = ""), expression)
-            
-            if (any(locations > 0)) {
-                diffs <- c()
-                for (l in seq(length(locations))) {
-                    tempd <- seq(locations[l], locations[l] + nchar(tuplow[i]) - 1)
-                    if (!any(is.element(tempd, unlist(positions)))) {
-                        diffs <- c(diffs, tempd)
-                    }
-                }
-                
-                # diffs <- setdiff(diffs, unlist(positions))
+        getPositions <- function(expression, tuplow, ruplow = NULL, protect = NULL) {
+            if (identical(tuplow, "")) {
+                return(NULL)
+            }
 
-                if (length(diffs) > 0) {
-                    if (length(diffs) == 1) {
-                        pos <- pos + 1
-                        positions[[pos]] <- diffs
-                        names(positions)[pos] <- ruplow[i]
+            positions <- vector(mode = "list", length = 0)
+            pos <- 0
+            
+            for (i in seq(length(tuplow))) {
+                etuplow <- gsub("\\[", "\\\\[", tuplow[i])
+                etuplow <- gsub("\\]", "\\\\]", etuplow)
+                etuplow <- gsub("\\{", "\\\\{", etuplow)
+                etuplow <- gsub("\\}", "\\\\}", etuplow)
+                etuplow <- gsub("\\*", "\\\\*", etuplow)
+                etuplow <- gsub("\\.", "\\\\.", etuplow)
+                locations <- gregexpr(etuplow, expression)[[1]]
+                
+                # temp <- gsub(tuplow[i], paste(rep(ruplow[i], nchar(tuplow[i])), collapse = ""), expression)
+                
+                if (any(locations > 0)) {
+                    diffs <- c()
+                    for (l in seq(length(locations))) {
+                        tempd <- seq(locations[l], locations[l] + nchar(tuplow[i]) - 1)
+                        if (!any(is.element(tempd, c(unlist(positions), unlist(protect))))) {
+                            diffs <- c(diffs, tempd)
+                        }
                     }
-                    else {
-                        # the same condition can be found in multiple locations of the expression
-                        start <- diffs[1]
-                        for (v in seq(2, length(diffs))) {
-                            if ((diffs[v] - diffs[v - 1]) > 1) {
-                                pos <- pos + 1
-                                positions[[pos]] <- c(start, diffs[v - 1])
+                    
+                    # diffs <- setdiff(diffs, unlist(positions))
+
+                    if (length(diffs) > 0) {
+                        if (length(diffs) == 1) {
+                            pos <- pos + 1
+                            positions[[pos]] <- diffs
+                            names(positions)[pos] <- ruplow[i]
+                        }
+                        else {
+                            # the same condition can be found in multiple locations of the expression
+                            start <- diffs[1]
+                            for (v in seq(2, length(diffs))) {
+                                if ((diffs[v] - diffs[v - 1]) > 1) {
+                                    pos <- pos + 1
+                                    positions[[pos]] <- seq(start, diffs[v - 1])
+                                    if (!is.null(ruplow)) {
+                                        names(positions)[pos] <- ruplow[i]
+                                    }
+                                    start <- diffs[v]
+                                }
+                            }
+
+                            pos <- pos + 1
+                            positions[[pos]] <- seq(start, diffs[length(diffs)])
+                            if (!is.null(ruplow)) {
                                 names(positions)[pos] <- ruplow[i]
-                                start <- diffs[v]
                             }
                         }
-
-                        pos <- pos + 1
-                        positions[[pos]] <- c(start, diffs[length(diffs)])
-                        names(positions)[pos] <- ruplow[i]
                     }
                 }
             }
+
+            return(positions)
+
         }
+
+        posprotect <- NULL
+        if (!identical(protect, "")) {
+            larger <- tuplow[nchar(tuplow) > max(nchar(protect))]
+            posprotect <- getPositions(expression, larger)
+        }
+
+
+        posprotect <- getPositions(expression, protect, protect = posprotect)
+        positions <- getPositions(expression, tuplow, ruplow, posprotect)
+
+        # positions <- lapply(positions, function(x) range(x))
 
         covered <- logical(length(positions))
         pos2 <- positions
-        if (pos > 1) {
+        if (length(positions) > 1) {
             for (i in seq(length(pos2) - 1)) {
                 if (!covered[i]) {
                     for (j in seq(i + 1, length(pos2))) {

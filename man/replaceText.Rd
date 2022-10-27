@@ -10,13 +10,16 @@ Provides an improved method to replace strings, compared to function
 }
 
 \usage{
-replaceText(expression = "", target = "", replacement = "", boolean = FALSE, ...)
+replaceText(
+    expression = "", target = "", replacement = "", protect = "",
+    boolean = FALSE, ...)
 }
 
 \arguments{
   \item{expression}{Character string, usually a SOP - sum of products expression.}
   \item{target}{Character vector or a string containing the text to be replaced.}
   \item{replacement}{Character vector or a string containing the text to replace with.}
+  \item{protect}{Character vector or a string containing the text to protect.}
   \item{boolean}{Treat characters in a boolean way, using upper and lower case letters.}
   \item{...}{Other arguments, from and to other functions.}
 }

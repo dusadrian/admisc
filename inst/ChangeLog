@@ -1,5 +1,6 @@
 Version 0.31
     o New function inside(), as an alternative to the base function within()
+    o New argument "protect" in function replaceText()
     o Function using() is now generic, with exactly the same default
       functionality as the base function with()
 
