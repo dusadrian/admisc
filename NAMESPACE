@@ -64,6 +64,7 @@ export(
     recreate,
     reload,
     replaceText,
+    scan.clipboard,
     simplify,
     sop,
     splitstr,
