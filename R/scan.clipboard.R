@@ -3,10 +3,8 @@ scan.clipboard <- function (...) {
     
     if (Sys.info()[['sysname']] == "Darwin") {
         clipboard <- readLines(textConnection(system("pbpaste", intern = TRUE)))
-        
-        if (!is.null(dots$sep)) {
-            clipboard <- unlist(strsplit(clipboard, split = dots$sep))
-        }    
+        sep <- ifelse(is.null(dots$sep), "\t", dots$sep)
+        clipboard <- unlist(strsplit(clipboard, split = sep))
     } else if (Sys.info()[['sysname']] == "Windows") {
         dots$file <- "clipboard"
         clipboard <- do.call("scan", dots)
