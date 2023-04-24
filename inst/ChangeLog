@@ -1,3 +1,7 @@
+Version 0.32
+    o New functions setColnames(), setRownames() and setDimnames()
+    o Bug fix in using(), when the split variable has missing range values
+
 Version 0.31
     o New function inside(), as an alternative to the base function within()
     o New function scan.clipboard()

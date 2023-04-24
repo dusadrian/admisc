@@ -70,6 +70,12 @@
         function(x) {
             if (inherits(x, "declared") || inherits(x, "haven_labelled")) {
                 na_values <- attr(x, "na_values")
+                if (is.null(na_values)) {
+                    na_range <- missing_range(x)
+                    if (!is.null(na_range)) {
+                        na_values <- seq(na_range[1], na_range[2])
+                    }
+                }
                 if (inherits(x, "haven_labelled")) {
                     x[is.element(x), na_values] <- NA
                 }
