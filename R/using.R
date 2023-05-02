@@ -92,7 +92,7 @@
                 uniques <- sort(unique(c(x, labels)))
                 names(uniques) <- uniques
                 names(uniques)[match(labels, uniques)] <- names(labels)
-
+                attributes(x) <- NULL
                 return(factor(x, levels = uniques, labels = names(uniques)))
             }
 
@@ -101,6 +101,7 @@
     )
 
     names(sbylist) <- csby
+    return(sbylist)
 
     # test <- unlist(lapply(sbylist, function(x) {
     #     is.factor(x) | inherits(x, "declared") | inherits(x, "haven_labelled_spss")
