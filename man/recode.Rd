@@ -12,7 +12,7 @@ but more flexible. It also has similarities with the function
 }
 
 \usage{
-recode(x, rules, cut, values, ...)
+recode(x, rules, cut, values = NULL, ...)
 }
 
 \arguments{
@@ -40,16 +40,18 @@ and allow for:
 }
 
 Contrary to the \bold{\code{recode}()} function in package \pkg{car}, this
-function allows the \bold{\code{:}} sequence operator (even for factors), so that a rule
-such as \bold{\code{c(1,3,5:7)}}, or \bold{\code{c(a,d,f:h)}} would be valid.
+function allows the \bold{\code{:}} sequence operator (even for factors), so
+that a rule such as \bold{\code{c(1,3,5:7)}}, or \bold{\code{c(a,d,f:h)}} would
+be valid.
 
 Actually, since all rules are specified in a string, it really doesn't matter
-if the \bold{\code{c()}} function is used or not. For compatibility reasons it accepts it, but
-a more simple way to specify a set of rules is \bold{\code{"1,3,5:7=A; else=B"}}
+if the \bold{\code{c()}} function is used or not. For compatibility reasons it
+accepts it, but a more simple way to specify a set of rules is
+\bold{\code{"1,3,5:7=A; else=B"}}
 
-Special values \bold{\code{lo}} and \bold{\code{hi}} may also appear in the range of values,
-while \bold{\code{else}} can be used with \bold{\code{else=copy}} to copy all values which
-were not specified in the recoding rules.
+Special values \bold{\code{lo}} and \bold{\code{hi}} may also appear in the
+range of values, while \bold{\code{else}} can be used with \bold{\code{else=copy}}
+to copy all values which were not specified in the recoding rules.
 
 In the package \pkg{car}, a character \bold{\code{output}} would have to be quoted,
 like \bold{\code{"1:2='A'"}} but that is not mandatory in this function, \bold{\code{"1:2=A"}}
@@ -77,19 +79,22 @@ such as \bold{\code{as.factor.result}}, \bold{\code{as.numeric.result}}. In addi
 accepts \bold{\code{levels}}, \bold{\code{labels}} and \bold{\code{ordered}} specific to function
 \bold{\code{\link[base]{factor}()}} in package \bold{\pkg{base}}. When using the arguments
 \bold{\code{levels}} and / or \bold{\code{labels}}, the output will automatically be coerced
-to a factor.
+to a factor, unless the argument \bold{\code{values}} is used, as indicated below.
 
 Blank spaces outside category labels are ignored, see the last example.
 
-It is possible to use \bold{\code{recode()}} in a similar way to function \bold{\code{cut()}},
-by specifying a vector of cut values which work for both numeric and character/factor objects. 
-For any number of \bold{\code{c}} cut values, there should be \bold{\code{c + 1}} values, and
-if not otherwise specified the argument \bold{\code{values}} is automatically constructed as a
-sequence of numbers from \bold{\code{1}} to \bold{\code{c + 1}}.
+It is possible to use \bold{\code{recode()}} in a similar way to function
+\bold{\code{cut()}}, by specifying a vector of cut points. For any number of
+such \bold{\code{c}} cut ploints, there should be \bold{\code{c + 1}} values.
+If not otherwise specified, the argument \bold{\code{values}} is automatically
+constructed as a sequence of numbers from \bold{\code{1}} to \bold{\code{c + 1}}.
 
-Unlike the function \bold{\code{cut()}}, arguments such as \bold{\code{include.lowest}} or
-\bold{\code{right}} are not necessary because the final outcome can be changed by tweaking
-the cut values.
+Unlike the function \bold{\code{cut()}}, arguments such as
+\bold{\code{include.lowest}} or \bold{\code{right}} are not necessary because
+the final outcome can be changed by tweaking the cut values.
+
+If both arguments \bold{\code{values}} and \bold{\code{labels}} are provided,
+the labels are going to be stored as an attribute.
 }
 
 \author{
