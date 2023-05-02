@@ -25,7 +25,7 @@
 
 `splitstr` <- function(x) {
     
-    if (identical(x, "")) return(x)
+    if (identical(x, "") || is.null(x)) return(x)
     x <- gsub("\\n", "", x)
     # y <- unlist(strsplit(x, split = ","))
     oldv <- newv <- NULL
