@@ -101,7 +101,6 @@
     )
 
     names(sbylist) <- csby
-    return(sbylist)
 
     # test <- unlist(lapply(sbylist, function(x) {
     #     is.factor(x) | inherits(x, "declared") | inherits(x, "haven_labelled_spss")
