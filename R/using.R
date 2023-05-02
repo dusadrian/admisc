@@ -70,30 +70,23 @@
         function(x) {
             if (inherits(x, "declared") || inherits(x, "haven_labelled")) {
                 labels <- attr(x, "labels", exact = TRUE)
-
                 na_values <- attr(x, "na_values")
                 na_range <- attr(x, "na_range")
-                na_index <- attr (x, "na_index")
-
-                attributes (x) <- NULL
 
                 if (!is.null(na_range)) {
                     if (length(na_range) > 2) {
                         stopError("Split by variable has a missing range with more than two values.")
                     }
 
-                    if (!is.null (na_index)) { # declared object
-                        x[na_index] <- names (na_index)
-                        x <- coerceMode(x)
-                    }
-
                     na_values <- sort(union(
                         na_values,
-                        x[x >= na_range[1] & x <= na_range[2]]
+                        seq(na_range[1], na_range[2])
                     ))
                 }
 
-                x[is.element(x, na_values)] <- NA # mainly for haven objects
+                if (inherits(x, "haven_labelled")) {
+                    x[is.element(x), na_values] <- NA
+                }
 
                 labels <- labels[!is.element(labels, na_values)]
                 uniques <- sort(unique(c(x, labels)))
