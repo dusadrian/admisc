@@ -65,6 +65,9 @@ export(
     reload,
     replaceText,
     scan.clipboard,
+    setColnames,
+    setDimnames,
+    setRownames,
     simplify,
     sop,
     splitstr,
@@ -79,6 +82,7 @@ export(
     validateNames,
     verify,
     wholeNumeric,
+    write.clipboard,
     writePrimeimp,
     unlockEnvironment,
     

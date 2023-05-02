@@ -35,6 +35,56 @@ const int TAG_BYTE = 4;
 #endif
 
 
+
+static R_INLINE Rboolean hasDimnames(SEXP matrix) {
+    
+    return !Rf_isNull(getAttrib(matrix, R_DimNamesSymbol));
+    
+}
+
+static R_INLINE Rboolean hasColnames(SEXP matrix) {
+    
+    return hasDimnames(matrix) ? !Rf_isNull(VECTOR_ELT(getAttrib(matrix, R_DimNamesSymbol), 1)) : FALSE;
+    
+}
+
+static R_INLINE Rboolean hasRownames(SEXP matrix) {
+    
+    return hasDimnames(matrix) ? !Rf_isNull(VECTOR_ELT(getAttrib(matrix, R_DimNamesSymbol), 0)) : FALSE;
+    
+}
+
+SEXP C_setDimnames(SEXP tt, SEXP dimnames) {
+    setAttrib(tt, R_DimNamesSymbol, dimnames);
+    return(R_NilValue);
+}
+
+SEXP C_setColnames(SEXP matrix, SEXP colnames) {
+    SEXP dimnames = PROTECT(allocVector(VECSXP, 2));
+    SET_VECTOR_ELT(dimnames, 1, colnames);
+    
+    if (hasRownames(matrix)) {
+        SET_VECTOR_ELT(dimnames, 0, VECTOR_ELT(getAttrib(matrix, R_DimNamesSymbol), 0));
+    }
+    
+    setAttrib(matrix, R_DimNamesSymbol, dimnames);
+    UNPROTECT(1);
+    return(R_NilValue);
+}
+
+SEXP C_setRownames(SEXP matrix, SEXP rownames) {
+    SEXP dimnames = PROTECT(allocVector(VECSXP, 2));
+    SET_VECTOR_ELT(dimnames, 0, rownames);
+    
+    if (hasColnames(matrix)) {
+        SET_VECTOR_ELT(dimnames, 1, VECTOR_ELT(getAttrib(matrix, R_DimNamesSymbol), 1));
+    }
+    
+    setAttrib(matrix, R_DimNamesSymbol, dimnames);
+    UNPROTECT(1);
+    return(R_NilValue);
+}
+
 SEXP _tag(SEXP x) {
     int n = Rf_length(x);
     SEXP out = PROTECT(Rf_allocVector(REALSXP, n));
@@ -73,7 +123,6 @@ SEXP _tag(SEXP x) {
     UNPROTECT(1);
     return(out);
 }
-
 
 SEXP _any_tagged(SEXP x) {
     int n = Rf_length(x);
@@ -169,8 +218,6 @@ SEXP _has_tag(SEXP x, SEXP tag_) {
     UNPROTECT(1);
     return out;
 }
-
-
 
 SEXP _get_tag(SEXP x) {
     
