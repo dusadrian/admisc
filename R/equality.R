@@ -1,4 +1,4 @@
-`undeclareit` <- function(x, ...) {
+`undeclareit` <- function(x, drop = FALSE, ...) {
     na_index <- attr(x, "na_index")
     attrx <- attributes(x)
     
@@ -16,7 +16,10 @@
     attrx$na_values <- NULL
     attrx$na_range <- NULL
 
-    attributes(x) <- attrx
+    if (isFALSE(drop)) {
+        attributes (x) <- attrx
+    }
+
     return(x)
 }
 
