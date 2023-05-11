@@ -89,7 +89,7 @@
                 }
 
                 labels <- labels[!is.element(labels, na_values)]
-                uniques <- sort(unique(c(x, labels)))
+                uniques <- sort(unique(c(undeclareit(x, drop = TRUE), labels)))
                 names(uniques) <- uniques
                 names(uniques)[match(labels, uniques)] <- names(labels)
                 attributes(x) <- NULL
