@@ -91,11 +91,18 @@
                 labels <- attr(x, "labels", exact = TRUE)
 
                 if (is.null(labels)) {
-                    stopError("Declared columns should have labels for all values.")
+                    stopError("Declared columns should have labels.")
                 }
                 else {
-                    if (length(labels) != noflevels[i]) {
-                        stopError("All values should have declared labels.")
+                    if (noflevels[i] == 2) {
+                        if (length(labels) == 1) {
+                            stopError("Binary crisp columns should have labels for both presence and absence.")
+                        }
+                    }
+                    else { # noflevels > 2 (impossible less than 2)
+                        if (length(labels) != noflevels[i]) {
+                            stopError("All multi-values should have declared labels.")
+                        }
                     }
                 }
 

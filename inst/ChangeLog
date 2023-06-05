@@ -1,3 +1,6 @@
+Version 0.33
+    o Minor changes to the internal function getInfo()
+
 Version 0.32
     o New functions setColnames(), setRownames() and setDimnames()
     o Bug fix in using(), when the split variable has missing range values
