@@ -50,3 +50,22 @@
 
     return(min(maxdec, max(result, na.rm = na.rm)))
 }
+
+
+# numdec(c(1.1,-8.5,-5,145,5,10.15,pi,44532456.345243627,0), each = TRUE)
+# numdec(c(234.1, 3.7500, 1.345, 3e-12), each = TRUE)
+# numdec(c(234.1, 3.7500, 1.345, 3e-17), maxdec = 17)
+# numdec(c(234.1, 3.7500, 1.345, 3e-17), maxdec = 3)
+# numdec(123456.123456789) # !!
+# numdec(c(2.45496e-5, 3e-17, 5.002e-5, 0.3, 123456789.123456789), each = TRUE) # !!
+
+
+
+    # old way from DDIwR::getDecimals()
+    # unique(
+    #     nchar(
+    #         format(abs(number), scientific = FALSE)
+    #     ) -
+    #     (trunc(log10(max(1, trunc(abs(number))))) + 1) -
+    #     1
+    # )
