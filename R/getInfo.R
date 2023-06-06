@@ -16,63 +16,54 @@
     if (length(dc.code) > 1) {
         stopError("Multiple \"don't care\" codes found.")
     }
-
-    if (length(dc.code) > 0) {
-        colnms <- colnames(data)
-
-        data[] <- lapply(data, function(x) {
-            # to make sure that any factor is character
-            if (!inherits(x, "declared")) {
-                x <- as.character(x)
-                
-                # otherwise replacement was not possible
-                x[x == dc.code] <- -1
-                
-                if (possibleNumeric(x)) {
-                    x <- asNumeric(x)
-                }                
-            }
-
-            return(x)
-        })
-
-        colnames(data) <- colnms
-    }
     
     fuzzy.cc <- logical(ncol(data))
     hastime <- logical(ncol(data))
     factor <- sapply(data, is.factor)
     declared <- sapply(data, function(x) inherits(x, "declared"))
     
-    pN <- sapply(data, possibleNumeric)
-    
-    for (i in seq(ncol(data))) {
-        if (pN[i] & !declared[i]) {
-            copy.cc <- asNumeric(data[, i])
-
-            fuzzy.cc[i] <- any(na.omit(copy.cc) %% 1 > 0)
-            if (!fuzzy.cc[i] & !any(is.na(copy.cc))) {
-                if (any(na.omit(copy.cc) < 0)) {
-                    hastime[i] <- TRUE
-                    copy.cc[copy.cc < 0] <- max(copy.cc) + 1
-                }
-            }
-            
-            data[, i] <- copy.cc
-        }
-    }
-
-    
-    # the data MUST begin with 0 and MUST be incremented by 1 for each level...!
-    # perhaps trying something like
-    # apply(data, 2, function(x) length(unique(x))) + 1
-    # noflevels <- apply(data, 2, max) + 1
-    # noflevels[noflevels == 1] <- 2
-    # noflevels[fuzzy.cc] <- 2
-    # noflevels <- as.integer(noflevels)
-    
     noflevels <- getLevels(data)
     attributes(noflevels) <- NULL
+
+    for (i in seq(ncol(data))) {
+        cc <- data[, i]
+        label <- attr(cc, "label", exact = TRUE)
+        labels <- attr(cc, "labels", exact = TRUE)
+        
+        if (is.factor(cc)) {
+            cc <- as.character(cc)
+        }
+
+        if (length(dc.code) > 0 && is.element(dc.code, cc)) {
+            cc[is.element(cc, dc.code)] <- -1
+        }
+
+        if (possibleNumeric(cc)) {
+            cc <- asNumeric(cc)
+
+            fuzzy.cc[i] <- any(na.omit(cc) %% 1 > 0)
+            if (!fuzzy.cc[i] & !anyNA(cc)) {
+                if (any(na.omit(cc) < 0)) {
+                    hastime[i] <- TRUE
+                    cc[cc < 0] <- max(cc) + 1 # TODO if declared...?
+                }
+            }
+
+            if (declared[i]) {
+                if (min(cc) != 0 && !fuzzy.cc[i]) {
+                    # the data MUST begin with 0 and MUST be incremented by 1 for each level...!
+                    cc <- recode(cc, paste(sort(labels), seq(noflevels[i]) - 1, sep = "=", collapse = ";"))
+                }
+
+                attr(cc, "label") <- label
+                attr(cc, "labels") <- labels
+                class(cc) <- c("declared", class(cc))
+            }
+            
+            data[[i]] <- cc
+        }
+    }
+    
 
     factor <- factor & !hastime
 
@@ -83,6 +74,7 @@
         for (i in which(factor | declared)) {
             if (factor[i]) {
                 categories[[columns[i]]] <- levels(data[, i])
+                # the data MUST begin with 0 and MUST be incremented by 1 for each level...!
                 data[, i] <- as.numeric(data[, i]) - 1
             }
             else {
@@ -106,8 +98,6 @@
                     }
                 }
 
-                attributes(x) <- NULL
-                data[, i] <- recode(x, paste(sort(labels), seq(noflevels[i]) - 1, sep = "=", collapse = ";"))
                 categories[[columns[i]]] <- names(sort(labels))
                 attr(categories, "labels") <- labels
             }
