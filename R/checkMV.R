@@ -1,5 +1,5 @@
 `checkMV` <- function(
-    expression, snames = "", noflevels = NULL, data = NULL, categorical = FALSE, categories = list(), ...
+    expression, snames = "", noflevels = NULL, data = NULL, categories = FALSE, labels = list(), ...
 ) {
     
     curly <- any(grepl("[{]", expression))
@@ -28,8 +28,8 @@
     
     if (length(insb) != length(tempexpr)) {
         error <- TRUE
-        if (categorical) {
-            tempexpr2 <- tempexpr[!is.element(tempexpr, names(unlist(unname(categories))))]
+        if (categories) {
+            tempexpr2 <- tempexpr[!is.element(tempexpr, names(unlist(unname(labels))))]
             error <- length(insb) != length(tempexpr2)
         }
         
@@ -93,7 +93,7 @@
             expression = expression[i],
             snames = "something", # doesn't matter here
             data = data,
-            categories = categories
+            labels = labels
         )
     }
 }

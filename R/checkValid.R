@@ -1,5 +1,5 @@
 `checkValid` <- function(
-    expression = "", snames = "", data = NULL, categories = list()
+    expression = "", snames = "", data = NULL, labels = list()
 ) {
 
     if (identical(snames, "")) {
@@ -12,11 +12,11 @@
         allnames <- colnames(data)
         infodata <- getInfo(data)
         if (any(infodata$factor)) {
-            allnames <- c(allnames, names(unlist(infodata$categories)))
+            allnames <- c(allnames, names(unlist(infodata$labels)))
         }
     }
-    else if (length(categories) > 0) {
-        allnames <- c(allnames, names(unlist(categories)))
+    else if (length(labels) > 0) {
+        allnames <- c(allnames, names(unlist(labels)))
     }
         
     expression <- replaceText(

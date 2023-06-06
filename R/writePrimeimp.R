@@ -1,6 +1,6 @@
 `writePrimeimp` <- function(
     impmat, mv = FALSE, collapse = "*", snames = "", curly = FALSE,
-    categorical = FALSE, categories = list(), ...
+    categories = FALSE, labels = list(), ...
 ) {
     ### ... is to allow calls having "use dot tilde" which is now deprecated
     
@@ -32,24 +32,24 @@
             nrow = nrow(impmat)
         )
 
-        if (categorical && length(categories) > 0) {
-            fnames <- names(categories)
-            for (i in seq(length(categories))) {
+        if (categories && length(labels) > 0) {
+            fnames <- names(labels)
+            for (i in seq(length(labels))) {
                 values <- impmat[, fnames[i]]
                 pos <- nrow(impmat) * (which(snames == fnames[i]) - 1) + 1
                 pos <- seq(pos, pos + length(values) - 1)[values > 0]
-                chars[pos] <- categories[[i]][values[values > 0]]
+                chars[pos] <- labels[[i]][values[values > 0]]
             }
         }
     }
     else {
         chars <- ifelse(impmat == 1L, paste0("~", chars), chars)
-        if (categorical && length(categories) > 0) {
-            fnames <- names(categories)
-            for (i in seq(length(categories))) {
+        if (categories && length(labels) > 0) {
+            fnames <- names(labels)
+            for (i in seq(length(labels))) {
                 values <- impmat[, fnames[i]]
                 # print(chars[values > 0, fnames[i]])
-                chars[values > 0, fnames[i]] <- categories[[i]][values[values > 0]]
+                chars[values > 0, fnames[i]] <- labels[[i]][values[values > 0]]
             }
         }
     }

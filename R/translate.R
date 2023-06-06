@@ -9,9 +9,9 @@
 
     enter <- ifelse (is.element("enter", names(dots)), "",  "\n") # internal
     
-    categories <- list()
-    if (!is.null(dots$categories)) {
-        categories <- dots$categories
+    labels <- list()
+    if (!is.null(dots$labels)) {
+        labels <- dots$labels
     }
 
     oldexp <- NULL
@@ -102,7 +102,7 @@
             expression = expression,
             snames = snames,
             data = data,
-            categories = categories
+            labels = labels
         )
 
         oldexp <- trimstr(unlist(lapply(expression, strsplit, split = "\\+")))
@@ -115,7 +115,7 @@
                 expression = paste(expression, collapse = "+"),
                 snames = snames,
                 data = data,
-                categories = categories,
+                labels = labels,
                 translate = TRUE
             )
 
