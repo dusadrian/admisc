@@ -1,5 +1,5 @@
 `checkMV` <- function(
-    expression, snames = "", noflevels = NULL, data = NULL, categorical = FALSE, categories = list(), ...
+    expression, snames = "", noflevels = NULL, data = NULL, use.labels = FALSE, categories = list(), ...
 ) {
     
     curly <- any(grepl("[{]", expression))
@@ -9,6 +9,11 @@
     }
 
     dots <- list(...)
+
+    if (is.element("categorical", names(dots))) {
+        use.labels <- dots$categorical
+        dots$categorical <- NULL
+    }
 
     # whatever it is outside the curly brackets must have the same length
     # as the information inside the curly brackets
@@ -28,7 +33,7 @@
     
     if (length(insb) != length(tempexpr)) {
         error <- TRUE
-        if (categorical) {
+        if (use.labels) {
             tempexpr2 <- tempexpr[!is.element(tempexpr, names(unlist(unname(categories))))]
             error <- length(insb) != length(tempexpr2)
         }
