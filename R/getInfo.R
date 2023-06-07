@@ -1,5 +1,5 @@
 `getInfo` <- function(data) {
-
+    
     if (is.matrix(data)) {
         data <- as.data.frame(data)
     }
@@ -12,16 +12,16 @@
             return(as.character(x[is.element(x, c("-", "dc"))]))
         }
     })))
-
+    
     if (length(dc.code) > 1) {
         stopError("Multiple \"don't care\" codes found.")
     }
-
+    
     fuzzy.cc <- logical(ncol(data))
     hastime <- logical(ncol(data))
     factor <- sapply(data, is.factor)
     declared <- sapply(data, function(x) inherits(x, "declared"))
-
+    
     noflevels <- getLevels(data)
     attributes(noflevels) <- NULL
 
@@ -29,7 +29,7 @@
         cc <- data[, i]
         label <- attr(cc, "label", exact = TRUE)
         labels <- attr(cc, "labels", exact = TRUE)
-
+        
         if (is.factor(cc)) {
             cc <- as.character(cc)
         }
@@ -59,26 +59,26 @@
                 attr(cc, "labels") <- labels
                 class(cc) <- c("declared", class(cc))
             }
-
+            
             data[[i]] <- cc
         }
     }
-
+    
 
     factor <- factor & !hastime
 
-    categorylabels <- list()
+    categories <- list()
     columns <- colnames(data)
-
+    
     if (any(factor | declared)) {
         for (i in which(factor | declared)) {
             if (factor[i]) {
-                categorylabels[[columns[i]]] <- levels(data[, i])
+                categories[[columns[i]]] <- levels(data[, i])
                 # the data MUST begin with 0 and MUST be incremented by 1 for each level...!
                 data[, i] <- as.numeric(data[, i]) - 1
             }
             else {
-
+                
                 x <- data[, i]
                 labels <- attr(x, "labels", exact = TRUE)
 
@@ -98,12 +98,12 @@
                     }
                 }
 
-                categorylabels[[columns[i]]] <- names(sort(labels))
-                attr(categorylabels, "labels") <- labels
+                categories[[columns[i]]] <- names(sort(labels))
+                attr(categories, "labels") <- labels
             }
         }
     }
-
+    
     return(
         list(
             data = data,
@@ -111,7 +111,7 @@
             hastime = hastime,
             factor = factor,
             declared = declared,
-            labels = categorylabels,
+            categories = categories,
             dc.code = dc.code,
             noflevels = noflevels
         )

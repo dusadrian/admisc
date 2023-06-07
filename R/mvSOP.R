@@ -23,38 +23,38 @@
 
     oldc <- newc <- c()
 
-    labels <- list()
+    categories <- list()
     if (is.null(data)) {
-        if (!is.null(dots$labels)) {
-            labels <- dots$labels
+        if (!is.null(dots$categories)) {
+            categories <- dots$categories
         }
     }
     else {
         infodata <- getInfo(data)
         noflevels <- infodata$noflevels
-        labels <- infodata$labels
+        categories <- infodata$categories
     }
 
     checkValid(
         expression = expression,
         snames = snames,
         data = data,
-        labels = labels
+        categories = categories
     )
 
-    if (length(labels) > 0) {
-        fnames <- names(labels)
+    if (length(categories) > 0) {
+        fnames <- names(categories)
         # snames <- setdiff(snames, fnames)
         oldc <- c(paste0("~", fnames), fnames)
         newc <- c(paste0(fnames, "[0]"), paste0(fnames, "[1]"))
 
-        for (i in seq(length(labels))) {
-            values <- seq(length(labels[[i]])) - 1
-            oldc <- c(oldc, labels[[i]])
+        for (i in seq(length(categories))) {
+            values <- seq(length(categories[[i]])) - 1
+            oldc <- c(oldc, categories[[i]])
             newc <- c(newc, paste0(fnames[i], "[", values, "]"))
             
             if (!keep.tilde) {
-                oldc <- c(oldc, paste0("~", labels[[i]]))
+                oldc <- c(oldc, paste0("~", categories[[i]]))
 
                 for (v in values) {
                     newc <- c(newc,
