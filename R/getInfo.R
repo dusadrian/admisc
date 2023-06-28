@@ -99,7 +99,6 @@
                 }
 
                 categories[[columns[i]]] <- names(sort(labels))
-                attr(categories, "labels") <- labels
             }
         }
     }
