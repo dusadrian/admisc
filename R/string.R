@@ -1,7 +1,6 @@
 `trimstr` <- function(x, what = " ", side = "both") {
-    # as once identified with grepl("[^!-~ ]", x) on students' emails from the secretariat
-    irv <- c(194, 160)
-    multibyte_space <- rawToChar(as.raw(irv))
+    # as once identified with grepl("[^!-~ ]", x) on students' emails from the
+    # secretariat, containing a multibyte space
     
     if (is.element(what, c("*", "+"))) {
         what <- paste("\\", what, sep = "")
@@ -9,7 +8,7 @@
     
     what <- ifelse(
         identical(what, " "),
-        paste0("[[:space:]|", multibyte_space, "]"),
+        paste0("[[:space:]|", "\u00a0", "]"), # plus the multibyte space
         what
     )
     
