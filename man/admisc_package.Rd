@@ -15,19 +15,20 @@ expressions, for both binary and multi-value crisp sets, and extracts
 information (set names, set values) from those expressions. Other functions
 perform various checks if possibly numeric (even if all numbers reside in a
 character vector) and coerce to numeric, or check if the numbers are whole. It
-also offers, among many others, a highly flexible \code{recode()}-ing routine
-and a more flexible alternative to the base function \code{with()}.
-Some of the functions in this package use related functions from package
-\bold{\pkg{QCA}}, and users are encouraged to install that package despite not
-being listed in the Imports field (due to circular dependency issues).
+also offers, among many others, a highly versatile recoding routine and some
+more flexible alternatives to the base functions \code{with()} and
+\code{within()}.
+SOP simplification functions in this package use related minimization from
+package \bold{\pkg{QCA}}, which is recommended to be installed despite not being
+listed in the Imports field, due to circular dependency issues.
 }
 
 \details{
     \tabular{ll}{
     Package: \tab admisc\cr
     Type:    \tab Package\cr
-    Version: \tab 0.32.2\cr
-    Date:    \tab 2023-06-06\cr
+    Version: \tab 0.33\cr
+    Date:    \tab 2023-06-30\cr
     License: \tab GPL (>= 2)\cr
     }
 }

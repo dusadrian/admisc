@@ -1,5 +1,7 @@
 Version 0.33
     o Minor changes to the internal function getInfo()
+    o Employed hexadecimal representation for replacing special characters
+    o More integration with the companion package QCA
 
 Version 0.32
     o New functions setColnames(), setRownames() and setDimnames()
