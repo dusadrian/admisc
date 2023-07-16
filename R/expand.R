@@ -12,7 +12,6 @@
     snames <- recreate(substitute(snames))
 
     dots <- list(...)
-    enter <- ifelse(is.element("enter", names(dots)), "",  "\n") # internal
     
     multivalue <- FALSE
     
