@@ -1,3 +1,6 @@
+Version 0.34
+    o New function change()
+
 Version 0.33
     o Minor changes to the internal function getInfo()
     o Employed hexadecimal representation for replacing special characters

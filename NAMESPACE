@@ -19,6 +19,7 @@ export(
         roundBrackets,
         squareBrackets,
         expandBrackets,
+    change,
     checkMV,
     checkSubset,
     classify,
@@ -116,3 +117,4 @@ S3method(inside, data.frame)
 S3method(inside, list)
 S3method(using, default)
 S3method(using, data.frame)
+S3method(change, QCA_tt)
