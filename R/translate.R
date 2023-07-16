@@ -1,4 +1,5 @@
-`translate` <- function(expression = "", snames = "", noflevels = NULL, data = NULL, ...
+`translate` <- function(
+    expression = "", snames = "", noflevels = NULL, data = NULL, ...
 ) {
     
     expression <- recreate(substitute(expression))
