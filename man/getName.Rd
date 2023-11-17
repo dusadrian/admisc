@@ -41,7 +41,7 @@ Adrian Dusa
 
 \examples{
 foo <- function(x) {
-    funargs <- unlist(lapply(match.call(), deparse)[-1])
+    funargs <- sapply(match.call(), deparse)[-1]
     return(getName(funargs[1]))
 }
 

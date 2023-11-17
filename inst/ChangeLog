@@ -1,5 +1,8 @@
 Version 0.34
+    o New function overwrite()
     o New function change()
+    o Improved version of inside(), where now the argument "data" can be
+      anything (including a list component)
 
 Version 0.33
     o Minor changes to the internal function getInfo()
@@ -78,19 +81,19 @@ Version 0.22
     o New function hclr(), to produce colors from the HCL spectrum
     o New function coerceMode(), to coerce objects to numeric or integer, if at
       all possible
-    
+
 Version 0.21
     o Bug fix in function negate(), expressions were not properly concatenated
       (thanks to Alessandra Costa for the report)
-    
+
 Version 0.20
     o New argument "each" in functions possibleNumeric() and wholeNumeric()
-    
+
 Version 0.19
     o New function asSOP(), to coerce a POS expression to a standard SOP format
     o New function mvSOP(), to coerce an expression from crisp set notation to
       multi-value notation
-    
+
 Version 0.18
     o Fixed bug affecting the function negate() when the SOP expression contains
       a single condition in one of the conjuncts / products
@@ -99,26 +102,26 @@ Version 0.18
       "haven_labelled" to be converted as numeric
     o Improved function stopError(), printing error messages containing newline
       characters
-    
+
 Version 0.17
     o More robust support for multi-byte locales when detecting tilde and
       dash operators
     o Fixed bug in possibleNumeric() for objects of class declared
-    
+
 Version 0.16
     o New functions agtb(), altb() and aneqb() to test (in)equality of floats
     o New utility function getName() to return the name of the object being
       used in a function call
     o Fixed bug when recoding objects of class "declared"
     o Fixed bug detecting multibyte strings
-      
+
 Version 0.15
     o possibleNumeric() and asNumeric() are now more robust in situations
       with invalid multibyte strings
     o Argument "cuts" renamed to "cut" in function recode()
     o Fixed bug in function recode() that prevented creating ordered
       factors
-      
+
 Version 0.12
     o Solved bug in function translate() when called from plumber or
       callr (thanks to Trevor Strobel for the report)
@@ -135,17 +138,17 @@ Version 0.11
     o Improved version of combnk(), to cover input vectors of any type
     o Improved error trapping for functions negate() and simplify, when
       dealing with multivalue expressions
-      
+
 Version 0.10
     o Minor, internal functionality changes
-      
+
 Version 0.9
     o Solved bug in translate() recognizing column names for datasets with more
       than 27 columns (thanks to Sophia Birchinger for the report)
     o New function export(), moved here from package QCA
-      
+
 Version 0.8
-    o Extended functionality to other types of vectors, such as having the 
+    o Extended functionality to other types of vectors, such as having the
       class "haven_labelled"
     o Novel way of recognizing SOP expressions, even without quotes
     o New utility function recreate() to facilitate substitution
@@ -179,7 +182,7 @@ Version 0.5
       suited in dealing with set names of variable number of
       characters, including space
     o As a result, argument "snames" from function venn() can deal with
-      spaces in set names (thanks to Andre Gohr for the suggestion) 
+      spaces in set names (thanks to Andre Gohr for the suggestion)
 
 Version 0.4
     o Fixed small printing bug in possibleNumeric()
