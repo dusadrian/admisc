@@ -12,7 +12,7 @@
     metacall <- match.call(expand.dots = TRUE)
     callargs <- as.list(metacall[-1])
 
-    # dots <- list(...)
+    dots <- list(...)
 
     if (!requireNamespace("QCA", quietly = TRUE)) {
         enter <- ifelse(isFALSE(dots$enter), "", "\n") # internal

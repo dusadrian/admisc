@@ -1,5 +1,5 @@
 `recreate` <- function(x, snames = NULL) {
- 
+
     if (is.null(x) | is.logical(x) | is.character(x)) return(x)
 
     withinobj <- function(x) {
@@ -11,10 +11,10 @@
 
             arrows <- c("<=", "<-", "=>", "->")
             # => will never occur here because it is not allowed by the parser
-            
+
             for (j in seq(length(arrows))) {
                 xs <- unlist(strsplit(x, split = arrows[j]))
-                
+
                 if (length(xs) == 2) {
                     if (all(grepl("\\*|\\+", xs))) {
                         stopError("The outcome should be a single condition.")
@@ -40,13 +40,13 @@
 
         return(x)
     }
-    
+
     # vector with c() and list with list()
     typev <- typel <- FALSE
     callx <- identical(class(x), "call")
 
     dx <- deparse(x)
-    
+
     if (callx) {
         typev <- is.name(x[[1]]) & identical(as.character(x[[1]]), "c")
         typel <- is.name(x[[1]]) & identical(as.character(x[[1]]), "list")
@@ -55,7 +55,7 @@
     # typel <- identical(substr(dx, 1, 5), "list(")
 
     if (callx & (typev | typel)) {
-        
+
         result <- dxlist <- vector(mode = "list", length = max(1, length(x) - 1))
 
         if (length(x) == 1) {
@@ -63,7 +63,7 @@
             if (typev) return(NULL)
             if (typel) return(list())
         }
-        
+
         if (typev) {
             if (length(snames) > 0) { # since length of NULL is zero
                 # c(VAR1, VAR2, VAR3)
@@ -80,7 +80,7 @@
             result[[i]] <- tryCatch(eval(x[[i + 1]], envir = parent.frame(n = 2)), error = function(e) {
                 withinobj(dx)
             })
-            
+
             if (length(snames) > 0) {
                 if (all(is.element(dx, snames))) {
                     result[[i]] <- dx
@@ -108,11 +108,11 @@
                     # c(T, C, F) where all T, C and F are reserved names
                     if (is.element("function", unlist(lapply(result[[i]], class)))) {
                         result[[i]] <- dxlist[[i]]
-                    } 
+                    }
                 }
             }
         }
-        
+
         if (typev) {
             return(unlist(result))
         }
@@ -128,12 +128,18 @@
         }
     }
 
-    
+
     if (identical(class(x), "<-")) {
         return(withinobj(dx))
     }
 
-    x <- tryCatch(eval(x, envir = parent.frame(n = 2)), error = function(e) withinobj(dx))
+    x <- tryCatch(
+        eval(
+            x,
+            envir = parent.frame(n = 2)
+        ),
+        error = function(e) withinobj(dx)
+    )
 
     if (identical(class(x), "formula")) {
         return(withinobj(dx))

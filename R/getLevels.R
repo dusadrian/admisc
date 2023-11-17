@@ -1,10 +1,10 @@
 `getLevels` <- function(data) {
     data <- as.data.frame(data)
-    
+
     colnames <- paste("V", ncol(data), sep = ".")
-    
-    pN <- unlist(lapply(data, possibleNumeric))
-    
+
+    pN <- sapply(data, possibleNumeric)
+
     noflevels <- rep(NA, ncol(data))
     ulevels <- rep(NA, ncol(data))
 

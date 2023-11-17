@@ -1,27 +1,32 @@
-`getInfo` <- function(data) {
-    
+`getInfo` <- function(data, ...) {
+
+    dots <- list(...)
+
     if (is.matrix(data)) {
         data <- as.data.frame(data)
     }
 
     dc.code <- unique(unlist(lapply(data, function(x) {
-        if (is.numeric(x)) {
+        if (is.numeric(x) && wholeNumeric(x)) {
             return(x[x < 0])
         }
         else {
             return(as.character(x[is.element(x, c("-", "dc"))]))
         }
     })))
-    
-    if (length(dc.code) > 1) {
-        stopError("Multiple \"don't care\" codes found.")
+
+    ## TODO: remove this after QCA >= 3.22
+    if (!isTRUE(dots$no_column_info)) {
+        if (length(dc.code) > 1) {
+            stopError("Multiple \"don't care\" codes found.")
+        }
     }
-    
+
     fuzzy.cc <- logical(ncol(data))
     hastime <- logical(ncol(data))
     factor <- sapply(data, is.factor)
     declared <- sapply(data, function(x) inherits(x, "declared"))
-    
+
     noflevels <- getLevels(data)
     attributes(noflevels) <- NULL
 
@@ -29,12 +34,12 @@
         cc <- data[, i]
         label <- attr(cc, "label", exact = TRUE)
         labels <- attr(cc, "labels", exact = TRUE)
-        
+
         if (is.factor(cc)) {
             cc <- as.character(cc)
         }
 
-        if (length(dc.code) > 0 && is.element(dc.code, cc)) {
+        if (length(dc.code) > 0 && any(is.element(cc, dc.code))) {
             cc[is.element(cc, dc.code)] <- -1
         }
 
@@ -59,17 +64,17 @@
                 attr(cc, "labels") <- labels
                 class(cc) <- c("declared", class(cc))
             }
-            
+
             data[[i]] <- cc
         }
     }
-    
+
 
     factor <- factor & !hastime
 
     categories <- list()
     columns <- colnames(data)
-    
+
     if (any(factor | declared)) {
         for (i in which(factor | declared)) {
             if (factor[i]) {
@@ -78,7 +83,7 @@
                 data[, i] <- as.numeric(data[, i]) - 1
             }
             else {
-                
+
                 x <- data[, i]
                 labels <- attr(x, "labels", exact = TRUE)
 
@@ -102,7 +107,7 @@
             }
         }
     }
-    
+
     return(
         list(
             data = data,
