@@ -55,6 +55,7 @@ export(
     prettyTable,
     deMorgan,
     objRDA,
+    overwrite,
     negate,
     numdec,
     recode,
@@ -86,7 +87,7 @@ export(
     write.clipboard,
     writePrimeimp,
     unlockEnvironment,
-    
+
         splitMainComponents,
         splitBrackets,
         removeSingleStars,
