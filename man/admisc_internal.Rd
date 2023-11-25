@@ -4,6 +4,7 @@
 \alias{checkSubset}
 \alias{classify}
 \alias{dashes}
+\alias{doublequotes}
 \alias{expandBrackets}
 \alias{getInfo}
 \alias{getLevels}
@@ -32,6 +33,8 @@
 \alias{solveBrackets}
 \alias{sortExpressions}
 \alias{simplifyList}
+\alias{singlequotes}
+\alias{spaces}
 \alias{stopError}
 \alias{tildae}
 \alias{trimstr}
