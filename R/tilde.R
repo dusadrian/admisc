@@ -1,7 +1,3 @@
-`tildae` <- function() {
-    return(c("\u007e", "\u223c", "\u00ac", "\u223d"))
-}
-
 `tilde1st` <- function(x) {
     is.element(
         substring(
