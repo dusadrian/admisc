@@ -6,6 +6,14 @@
 }
 
 `using.default` <- function(data, expr, ...) {
+    if (missing(expr)) {
+        args <- unlist(lapply(match.call(), deparse)[-1])
+        args <- args[setdiff(names(args), c("data", "expr"))]
+        if (length(args) > 1) {
+            stopError("Missing or ambiguous expression")
+        }
+        expr <- str2lang(paste(names(args), args[[1]], sep = "<-"))
+    }
     eval(substitute(expr), data, enclos = parent.frame())
 }
 
@@ -14,9 +22,8 @@
     if (nrow(data) == 0) {
         stopError("There are no rows in the data.")
     }
-    
+
     ### TODO: see evalq() from within.data.frame
-    ### TODO: check if expr contains "=" instead of "<-"
 
     split.by <- substitute(split.by)
     sby <- all.vars(split.by)
@@ -38,7 +45,14 @@
     # }
     ###------------------------------------------------------------
 
-
+    if (missing(expr)) {
+        args <- unlist(lapply(match.call(), deparse)[-1])
+        args <- args[setdiff(names(args), c("data", "expr", "split.by"))]
+        if (length(args) > 1) {
+            stopError("Missing or ambiguous expression")
+        }
+        expr <- str2lang(paste(names(args), args[[1]], sep = "<-"))
+    }
     expr <- substitute(expr)
     vexpr <- all.vars(expr)
     vexpr <- vexpr[is.element(vexpr, names(data))]
@@ -56,18 +70,18 @@
     }
 
 
-    
+
     csby <- setdiff(as.character(split.by), c("c", "+", "&"))
 
     test <- unlist(lapply(seq(length(csby)), function(i) {
         tryCatchWEM(eval(parse(text = csby[i]), envir = data, enclos = parent.frame()))
     }))
-    
+
 
     if (length(test) > 0) {
         stopError(test[1])
     }
-    
+
     sbylist <- lapply(
         lapply(csby, function(x) {
             eval(parse(text = x), envir = data, enclos = parent.frame())
@@ -139,7 +153,7 @@
 
             return(as.character(x))
         }
-        
+
         # if (is.factor(x)) {
             return(levels(x))
         # }
@@ -150,7 +164,7 @@
 
     noflevels <- unlist(lapply(sl, length))
     mbase <- c(rev(cumprod(rev(noflevels))), 1)[-1]
-    
+
     orep  <- cumprod(
         rev(
             c(rev(noflevels)[-1], 1)
@@ -166,7 +180,7 @@
             orep[x]
         )
     })
-    
+
     # slexp <- expand.grid(sl, stringsAsFactors = FALSE)
 
     slexp <- retmat
@@ -199,7 +213,7 @@
                     nms <- names(na_index)
                     x[na_index] <- nms
                 }
-                
+
                 labels <- attrx[["labels"]]
                 if (!is.null(labels)) {
                     havelabels <- is.element(x, labels)
@@ -233,7 +247,7 @@
         # if one subset has NAs and others not
         lengths <- unlist(lapply(res, length))
         result <- matrix(NA, nrow = length(res), ncol = max(lengths))
-        
+
         for (i in seq(length(res))) {
             if (!is.null(res[[i]])) {
                 result[i, seq(length(res[[i]]))] <- res[[i]]
@@ -252,7 +266,7 @@
         }
 
         res <- result
-        
+
         class(res) <- c("admisc_fobject", "matrix")
 
     }
@@ -261,6 +275,6 @@
         attr(res, "split") <- slexp
         class(res) <- c("admisc_fobject", class(res))
     }
-    
+
     return(res)
 }

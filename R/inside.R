@@ -7,6 +7,14 @@
     dataname <- deparse(substitute(data))
     parent <- parent.frame()
     e <- evalq(environment(), data, parent)
+    if (missing(expr)) {
+        args <- unlist(lapply(match.call(), deparse)[-1])
+        args <- args[setdiff(names(args), c("data", "expr"))]
+        if (length(args) > 1) {
+            stopError("Missing or ambiguous expression")
+        }
+        expr <- str2lang(paste(names(args), args[[1]], sep = "<-"))
+    }
     eval(substitute(expr), e)
     l <- as.list(e, all.names = TRUE)
     l <- l[!vapply(l, is.null, NA, USE.NAMES = FALSE)]
@@ -37,6 +45,14 @@
     parent <- parent.frame()
     dataname <- deparse(substitute(data))
     e <- evalq(environment(), data, parent)
+    if (missing(expr)) {
+        args <- unlist(lapply(match.call(), deparse)[-1])
+        args <- args[setdiff(names(args), c("data", "expr", "keepAttrs"))]
+        if (length(args) > 1) {
+            stopError("Missing or ambiguous expression")
+        }
+        expr <- str2lang(paste(names(args), args[[1]], sep = "<-"))
+    }
     eval(substitute(expr), e)
     if (keepAttrs) { # names() kept in original order; also other attributes
         l <- as.list(e, all.names=TRUE)
