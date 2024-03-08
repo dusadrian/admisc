@@ -1,3 +1,9 @@
+Version 0.35
+    o Fixed recode() for the more recent treatment that c() is NULL
+    o Improved function change() with respect to QCA truth tables
+    o Function recreate() now recognizes "-.>" as a sufficiency operator
+    o Small code improvements
+
 Version 0.34
     o New function overwrite()
     o New function change()
