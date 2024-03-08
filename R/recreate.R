@@ -1,38 +1,46 @@
-`recreate` <- function(x, snames = NULL) {
+`recreate` <- function(x, snames = NULL, ...) {
+
+    ## srcref is planned to arrive via three dots ... (see pof())
+    ## TODO: how to make use of it, still unclear
+    # nz <- nzchar(srcref[i])
+    # if (length(nz) && nz && !identical(srcref[i], x[i])) {
+    #     x[i] <- srcref[i]
+    # }
 
     if (is.null(x) | is.logical(x) | is.character(x)) return(x)
 
     withinobj <- function(x) {
         x <- gsub("\"|[[:space:]]", "", x)
         for (i in seq(length(x))) {
-            if (!grepl("<=|<-|->|=>", x[i])) {
-                x[i] <- gsub(">", "->", gsub("<", "<-", x[i]))
+
+            # in unquoted expressions, at the command prompt,
+            # => will never occur here because it is not allowed by the parser
+            # -> is also inversed into <- by the parser
+
+            if (!grepl("<-|->", x[i])) {
+                x[i] <- gsub(">|=>|-\\.>", "->", gsub("<|<=|<\\.-", "<-", x[i]))
             }
 
-            arrows <- c("<=", "<-", "=>", "->")
-            # => will never occur here because it is not allowed by the parser
+            arrows <- c("<-", "->")
+            found <- sapply(arrows, grepl, x[i])
 
-            for (j in seq(length(arrows))) {
-                xs <- unlist(strsplit(x, split = arrows[j]))
+            if (sum(found) > 0) {
+                if (sum(found) > 1) {
+                    stopError("Ambiguous expression, more than one relation sign.")
+                }
+
+                xs <- unlist(strsplit(x[i], split = arrows[found]))
 
                 if (length(xs) == 2) {
                     if (all(grepl("\\*|\\+", xs))) {
                         stopError("The outcome should be a single condition.")
                     }
 
-                    if (j < 3) { # necessity
-                        if (grepl("\\*|\\+", xs[2])) {
-                            # is in fact sufficiency
-                            x[i] <- paste(xs[2], arrows[j + 2], xs[1], sep = "")
-                            break
-                        }
-                    }
-                    else { # sufficiency
-                        if (grepl("\\*|\\+", xs[1])) {
-                            # is in fact necessity
-                            x[i] <- paste(xs[2], arrows[j - 2], xs[1], sep = "")
-                            break
-                        }
+                    # TODO: X*Y <- A*B + C
+                    if (grepl("\\*|\\+", xs[2]) & !grepl("\\*|\\+", xs[1]) & which(found) == 1) {
+                        # this appears to be necessity , but it is in fact sufficiency
+                        # e.g. parsed as Y <- A*B + C, but originally A*B + C -> Y
+                        x[i] <- paste(rev(xs), collapse = "->")
                     }
                 }
             }
