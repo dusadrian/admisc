@@ -4,16 +4,17 @@
 \title{Facilitate expression substitution}
 
 \description{
-Utility function based on \code{substitute()}, to recover an unquoted input. 
+Utility function based on \code{substitute()}, to recover an unquoted input.
 }
 
 \usage{
-recreate(x, snames = NULL)
+recreate(x, snames = NULL, ...)
 }
 
 \arguments{
   \item{x}{A substituted input.}
   \item{snames}{A character string containing set names.}
+  \item{...}{Other arguments, mainly for internal use.}
 }
 
 \details{

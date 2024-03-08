@@ -3,8 +3,8 @@
 \alias{change}
 
 \title{
-Change the structure of an object, function of the (changed) parameters used to
-create it.
+Generic function to change the structure of an object, function of the (changed)
+parameters used to create it.
 }
 
 \description{
@@ -19,6 +19,11 @@ change(x, ...)
 \arguments{
     \item{x}{An object of a particular class.}
     \item{...}{Arguments to be passed to a specific method.}
+}
+
+\details{
+For the time being, this function is designed to change truth table objects (only).
+Future versions will likely add class methods for different other objects.
 }
 
 \value{
