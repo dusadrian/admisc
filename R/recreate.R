@@ -141,13 +141,24 @@
         return(withinobj(dx))
     }
 
+    negated <- tilde1st(dx)
+    if (negated) {
+        dx <- notilde(dx)
+    }
+
     x <- tryCatch(
         eval(
-            x,
+            parse(text = dx),
             envir = parent.frame(n = 2)
         ),
-        error = function(e) withinobj(dx)
+        error = function(e) {
+            withinobj(dx)
+        }
     )
+
+    if (negated && is.numeric(x)) {
+        x <- 1 - x
+    }
 
     if (identical(class(x), "formula")) {
         return(withinobj(dx))
