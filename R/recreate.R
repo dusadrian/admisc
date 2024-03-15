@@ -141,7 +141,7 @@
         return(withinobj(dx))
     }
 
-    negated <- tilde1st(dx)
+    negated <- tilde1st(dx) & !grepl("\\+|\\*", dx)
     if (negated) {
         dx <- notilde(dx)
     }
