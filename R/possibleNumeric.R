@@ -23,7 +23,7 @@
 
     if (inherits(x, "haven_labelled") || inherits(x, "declared")) {
         num <- Recall(unclass(x), each = each)
-        
+
         labels <- attr(x, "labels", exact = TRUE)
         if (!is.null(labels) && !each && num) {
             return(Recall(labels))
@@ -44,21 +44,28 @@
     if (is.factor(x)) {
         x <- as.character(x)
     }
-
     x <- gsub("\u00a0", " ", x) # multibyte space
 
     multibyte <- grepl("[^!-~ ]", x)
+
     if (any(multibyte)) {
         isna[multibyte] <- TRUE
         result[multibyte] <- FALSE
         x[multibyte] <- NA
     }
 
+    eachx <- suppressWarnings(as.numeric(na.omit(x)))
+    result[!isna] <- !is.na(eachx)
+
     if (each) {
-        x <- suppressWarnings(as.numeric(na.omit(x)))
-        result[!isna] <- !is.na(x)
         return(result)
     }
+
+    result <- result[!is.na(result)]
+    if (length(result) == 0) {
+        return(FALSE)
+    }
+    return(all(result))
 
     return(!any(is.na(suppressWarnings(as.numeric(na.omit(x))))))
 }
