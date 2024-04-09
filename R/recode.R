@@ -202,7 +202,7 @@
                 torecode <- getFromRange(from[i], to[i], uniques, xisnumeric)
                 if (!is.null(torecode)) {
                     vals <- uniques[torecode]
-                    temp[x %in% vals] <- newval[i]
+                    temp[is.element(x, vals)] <- newval[i]
                     recoded <- c(recoded, vals)
                 }
 
