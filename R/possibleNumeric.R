@@ -1,9 +1,9 @@
 `possibleNumeric` <- function(x, each = FALSE) {
 
     result <- rep(NA, length(x))
-    isna <- is.na(x)
+    nax <- is.na(x)
 
-    if (all(isna)) {
+    if (all(nax)) {
         if (each) {
             return(result)
         }
@@ -14,7 +14,7 @@
     if (is.logical(x)) {
         if (each) {
             result <- logical(length(x))
-            result[isna] <- NA
+            result[nax] <- NA
             return(result)
         }
 
@@ -34,7 +34,7 @@
 
     if (is.numeric(x)) {
         if (each) {
-            result[!isna] <- TRUE
+            result[!nax] <- TRUE
             return(result)
         }
 
@@ -49,23 +49,18 @@
     multibyte <- grepl("[^!-~ ]", x)
 
     if (any(multibyte)) {
-        isna[multibyte] <- TRUE
+        nax[multibyte] <- TRUE
         result[multibyte] <- FALSE
-        x[multibyte] <- NA
     }
 
-    eachx <- suppressWarnings(as.numeric(na.omit(x)))
-    result[!isna] <- !is.na(eachx)
+    if (sum(nax) < length(x)) {
+        eachx <- suppressWarnings(as.numeric(x[!nax]))
+        result[!nax] <- !is.na(eachx)
+    }
 
     if (each) {
         return(result)
     }
 
-    result <- result[!is.na(result)]
-    if (length(result) == 0) {
-        return(FALSE)
-    }
     return(all(result))
-
-    return(!any(is.na(suppressWarnings(as.numeric(na.omit(x))))))
 }
