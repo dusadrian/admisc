@@ -1,3 +1,8 @@
+Version 0.36
+    o Function recreate() now captures a tilde for global objects
+    o Buf fix in possibleNumeric(), where diacritics are detected as
+      multi-byte characters
+
 Version 0.35
     o Fixed recode() for the more recent treatment that c() is NULL
     o Improved function change() with respect to QCA truth tables
