@@ -12,7 +12,7 @@ but more flexible. It also has similarities with the function
 }
 
 \usage{
-recode(x, rules, cut, values = NULL, ...)
+recode(x, rules = NULL, cut = NULL, values = NULL, ...)
 }
 
 \arguments{
@@ -134,18 +134,18 @@ recode(x, "a, c:f = A; g:hi = B; else = C", labels = "A, B, C")
 
 recode(x, "a, c:f = 1; g:hi = 2; else = 3",
        labels = c("one", "two", "three"), ordered = TRUE)
-#  [1] two   one   one   two   one   one   one   three two   one  
-# [11] two   one   one   two   one   one   one   two   one   two  
-# Levels: one < two < three  
+#  [1] two   one   one   two   one   one   one   three two   one
+# [11] two   one   one   two   one   one   one   two   one   two
+# Levels: one < two < three
 
 set.seed(1234)
 categories <- c("An", "example", "that has", "spaces")
 x <- factor(sample(categories, 20, replace = TRUE),
             levels = categories, ordered = TRUE)
 sort(x)
-#  [1] An       An       An       example  example  example  example 
+#  [1] An       An       An       example  example  example  example
 #  [8] example  example  example  example  that has that has that has
-# [15] spaces   spaces   spaces   spaces   spaces   spaces  
+# [15] spaces   spaces   spaces   spaces   spaces   spaces
 # Levels: An < example < that has < spaces
 
 recode(sort(x), "An : that has = 1; spaces = 2")

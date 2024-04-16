@@ -3,25 +3,47 @@
 }
 
 
-`recode.declared` <- function(x, rules, cut, values = NULL, ..., na_values = TRUE) {
+`recode.declared` <- function(x, rules = NULL, cut = NULL, values = NULL, ...) {
+
+    dots <- list(...)
     na_index <- attr(x, "na_index")
+    na_values <- attr(x, "na_values")
+    na_range <- attr(x, "na_range")
+    xlabels <- attr(x, "labels", exact = TRUE)
     attributes(x) <- NULL
 
-    if (!is.null(na_index) & isTRUE(na_values)) {
-        nms <- names(na_index)
+    labels <- dots$labels
 
-        if (possibleNumeric(nms)) {
-            nms <- asNumeric(nms)
+    x <- recode(x = x, rules = rules, cut = cut, values = values)
+
+    if (is.null(names(labels))) {
+        values <- sort(unique(x))
+        if (length(values) == length(labels)) {
+            names(values) <- labels
+            labels <- values
         }
-
-        x[na_index] <- nms
     }
 
-    NextMethod()
+    attr(x, "na_index") <- na_index
+    attr(x, "na_values") <- na_values
+    attr(x, "na_range") <- na_range
+
+    if (!is.null(xlabels)) {
+        if (!is.null(na_values)) {
+            xlabels <- xlabels[is.element(labels, na_values)]
+        }
+        else if (!is.null(na_range)) {
+            xlabels <- xlabels[xlabels >= na_range[1] & xlabels <= na_range[2]]
+        }
+    }
+
+    attr(x, "labels") <- c(labels, xlabels)
+    class(x) <- c("declared", class(x))
+    return(x)
 }
 
 
-`recode.default` <- function(x, rules, cut, values = NULL, ...) {
+`recode.default` <- function(x, rules = NULL, cut = NULL, values = NULL, ...) {
 
     if (missing(x)) {
         stopError("Argument 'x' is missing.")
@@ -41,8 +63,6 @@
     factor.levels     <- splitstr(dots$levels)
     factor.labels     <- splitstr(dots$labels)
     factor.ordered    <- FALSE
-
-    declared <- inherits(x, "declared")
 
     if (is.element("ordered", names(dots))) {
         factor.ordered <- dots$ordered
@@ -95,7 +115,10 @@
         return(seq(seqfrom, seqto))
     }
 
-    if (missing(cut)) {
+    if (is.null(cut)) {
+        if (is.null(rules)) {
+            stopError("At least one argument 'rules' or 'cut' should be provided.")
+        }
 
         rules <- gsub(
             "\n|\t", "", gsub(
@@ -306,27 +329,16 @@
             }
         }
         else {
-            sx <- sort(x)
-            minx <- sx[1]
-            maxx <- sx[length(x)]
-
             if (is.character(x) & is.numeric(cut)) {
                 insidex <- FALSE
             }
             else {
-                insidex <- logical(length(cut))
-                for (i in seq(length(cut))) {
-                    insidex[i] <- cut[i] >= minx & cut[i] <= maxx
-                }
+                insidex <- all(is.element(cut, x[!is.na(x)]))
             }
         }
 
-
         if (!all(insidex)) {
             message <- "Cut value(s) outside the input vector."
-            if (declared) {
-                message <- paste(message, "Consider using undeclare() before recoding.")
-            }
             stopError(message)
         }
 

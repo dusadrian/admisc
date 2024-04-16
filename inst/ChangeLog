@@ -2,6 +2,7 @@ Version 0.36
     o Function recreate() now captures a tilde for global objects
     o Buf fix in possibleNumeric(), where diacritics are detected as
       multi-byte characters
+    o Improved function recode() for objects of class "declared"
 
 Version 0.35
     o Fixed recode() for the more recent treatment that c() is NULL
