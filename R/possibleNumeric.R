@@ -44,15 +44,14 @@
     if (is.factor(x)) {
         x <- as.character(x)
     }
-    x <- gsub("\u00a0", " ", x) # multibyte space
 
+    x <- gsub("\u00a0", " ", x) # multibyte space
     multibyte <- grepl("[^!-~ ]", x)
 
     if (any(multibyte)) {
         nax[multibyte] <- TRUE
         result[multibyte] <- FALSE
     }
-
     if (sum(nax) < length(x)) {
         eachx <- suppressWarnings(as.numeric(x[!nax]))
         result[!nax] <- !is.na(eachx)
@@ -62,5 +61,5 @@
         return(result)
     }
 
-    return(all(result))
+    return(all(result[!nax]))
 }
