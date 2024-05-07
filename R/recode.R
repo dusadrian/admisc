@@ -1,4 +1,4 @@
-`recode` <- function(x, rules, cut, values = NULL, ...) {
+`recode` <- function(x, rules = NULL, cut = NULL, values = NULL, ...) {
     UseMethod("recode")
 }
 
@@ -332,8 +332,10 @@
             if (is.character(x) & is.numeric(cut)) {
                 insidex <- FALSE
             }
-            else {
-                insidex <- all(is.element(cut, x[!is.na(x)]))
+            else if (is.character(x) & is.character(cut)) {
+                insidex <- is.element(cut, x[!is.na(x)])
+            } else {
+                insidex <- cut >= min(x, na.rm = TRUE) & cut <= max(x, na.rm = TRUE)
             }
         }
 
