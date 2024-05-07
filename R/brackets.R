@@ -1,23 +1,41 @@
-`insideBrackets` <- function(x, type = "[", invert = FALSE, regexp = NULL) {
+`betweenBrackets` <- function(x, type = "[", invert = FALSE, regexp = NULL) {
     x <- recreate(substitute(x))
     typematrix <- matrix(c("{", "[", "(", "}", "]", ")", "{}", "[]", "()"), nrow = 3)
-    
+
     tml <- which(typematrix == type, arr.ind = TRUE)[1]
 
     if (is.na(tml)) {
         tml <- 1
     }
-    
+
     tml <- typematrix[tml, 1:2]
     if (is.null(regexp)) {
         regexp <- "[[:alnum:]|,]*"
     }
-    result <- gsub(paste("\\", tml, sep = "", collapse = "|"), "",
-        regmatches(x, gregexpr(paste("\\", tml, sep = "", collapse = regexp), x), invert = invert)[[1]])
+
+    result <- gsub(
+        paste("\\", tml, sep = "", collapse = "|"),
+        "",
+        regmatches(
+            x,
+            gregexpr(
+                paste("\\", tml, sep = "", collapse = regexp),
+                x
+            ),
+            invert = invert
+        )[[1]]
+    )
     # return(trimstr(result[result != ""]))
     result <- gsub("\\*|\\+", "", unlist(strsplit(gsub("\\s+", " ", result), split = " ")))
     return(result[result != ""])
 }
+
+
+`insideBrackets` <- function(...) {
+    .Deprecated(msg = "Function insideBrackets() is deprecated, use betweenBrackets().\n")
+    betweenBrackets(...)
+}
+
 
 
 `outsideBrackets` <- function(x, type = "[", regexp = NULL) {
@@ -54,7 +72,7 @@
     x <- recreate(substitute(x))
     # just in case it was previously split
     x <- paste(x, collapse = "+")
-    
+
     if (is.null(regexp)) {
         regexp <- "\\{[[:alnum:]|,|;]+\\}"
     }
@@ -118,7 +136,7 @@
 `expandBrackets` <- function(
     expression, snames = "", noflevels = NULL, scollapse = FALSE
 ) {
-    
+
     expression <- recreate(substitute(expression))
     snames <- splitstr(snames)
     star <- any(grepl("[*]", expression))
@@ -172,7 +190,7 @@
         return(bl)
     }
 
-    
+
     bl <- getbl(expression, snames = snames, noflevels = noflevels)
     if (length(bl) == 0) return("")
 
@@ -191,7 +209,7 @@
     snames <- colnames(expressions)
 
     redundant <- logical(nrow(expressions))
-    
+
     if (nrow(expressions) > 1) {
         for (i in seq(nrow(expressions) - 1)) {
             if (!redundant[i]) {
@@ -212,11 +230,11 @@
 
         expressions <- expressions[!redundant, , drop = FALSE]
         if (possibleNumeric(expressions)) {
-            
+
             mat <- matrix(asNumeric(expressions) + 1, nrow = nrow(expressions))
             colnames(mat) <- colnames(expressions)
             expressions <- sortExpressions(mat) - 1
-            
+
         }
         else {
             eorder <- order(
@@ -232,8 +250,8 @@
         }
     }
 
-    
-    
+
+
     # this is different from writePrimeimp() in package QCA because the entry matrix
     # is not necessarily numeric, it can contain "1,2" for instance
     expressions <- unlist(apply(expressions, 1, function(x) {
@@ -264,7 +282,7 @@
         }
         return(paste(result, collapse = collapse))
     }))
-    
+
 
     return(paste(expressions, collapse = " + "))
 }

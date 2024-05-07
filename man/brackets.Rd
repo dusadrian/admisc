@@ -1,6 +1,7 @@
 \name{Brackets}
 
 \alias{insideBrackets}
+\alias{betweenBrackets}
 \alias{outsideBrackets}
 \alias{curlyBrackets}
 \alias{squareBrackets}
@@ -16,7 +17,7 @@ brackets.
 }
 
 \usage{
-insideBrackets(x, type = "[", invert = FALSE, regexp = NULL)
+betweenBrackets(x, type = "[", invert = FALSE, regexp = NULL)
 outsideBrackets(x, type = "[", regexp = NULL)
 curlyBrackets(x, outside = FALSE, regexp = NULL)
 squareBrackets(x, outside = FALSE, regexp = NULL)
@@ -43,12 +44,12 @@ They are also used to draw Venn diagrams with the package \bold{\code{venn}}, wh
 kind of set intersection (conjunction) based on a custom SOP expression.
 
 The functions \bold{\code{curlyBrackets}}, \bold{\code{squareBrackets}} and
-\bold{\code{roundBrackets}} are just special cases of the functions \bold{\code{insideBrackets}}
+\bold{\code{roundBrackets}} are just special cases of the functions \bold{\code{betweenBrackets}}
 and \bold{\code{outsideBrackets}}, using the argument \bold{\code{type}} as either
 \code{"{"}, \code{"["}  or \code{"("}.
 
 The function \bold{\code{outsideBrackets}} itself can be considered a special case of the
-function \bold{\code{insideBrackets}}, when it uses the argument \bold{\code{invert = TRUE}}.
+function \bold{\code{betweenBrackets}}, when it uses the argument \bold{\code{invert = TRUE}}.
 
 SOP expressions are usually written using curly brackets for multi-value conditions but to allow
 the evaluation of unquoted expressions, they first needs to get past R's internal parsing system.
@@ -68,15 +69,15 @@ Adrian Dusa
 \examples{
 sop <- "A[1] + B[2]*C[0]"
 
-insideBrackets(sop) # 1, 2, 0
+betweenBrackets(sop) # 1, 2, 0
 
-insideBrackets(sop, invert = TRUE) # A, B, C
+betweenBrackets(sop, invert = TRUE) # A, B, C
 
 # unquoted (valid) SOP expressions are allowed, same result
-insideBrackets(A[1] + B[2]*C[0]) # the default type is "["
+betweenBrackets(A[1] + B[2]*C[0]) # the default type is "["
 
 # curly brackets are also valid in quoted expressions
-insideBrackets("A{1} + B{2}*C{0}", type = "{")
+betweenBrackets("A{1} + B{2}*C{0}", type = "{")
 
 # or
 curlyBrackets("A{1} + B{2}*C{0}")
