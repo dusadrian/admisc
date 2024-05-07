@@ -3,6 +3,8 @@ Version 0.36
     o Buf fix in possibleNumeric(), where diacritics are detected as
       multi-byte characters
     o Improved function recode() for objects of class "declared"
+    o Function insideBrackets() is now deprecated, replaced by betweenBrackets()
+    o New function betweenQuotes()
 
 Version 0.35
     o Fixed recode() for the more recent treatment that c() is NULL
