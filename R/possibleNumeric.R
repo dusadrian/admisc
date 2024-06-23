@@ -49,13 +49,12 @@
     multibyte <- grepl("[^!-~ ]", x)
 
     if (any(multibyte)) {
-        nax[multibyte] <- TRUE
         result[multibyte] <- FALSE
     }
 
-    if (sum(nax) < length(x) & length(x) > 1) {
-        eachx <- suppressWarnings(as.numeric(x[!nax]))
-        result[!nax] <- !is.na(eachx)
+    if (sum(nax) < length(x)) {
+        eachx <- suppressWarnings(as.numeric(x[!nax & !multibyte]))
+        result[!nax & !multibyte] <- !is.na(eachx)
     }
 
     if (each | length(x) == 1) {
