@@ -52,12 +52,13 @@
         nax[multibyte] <- TRUE
         result[multibyte] <- FALSE
     }
-    if (sum(nax) < length(x)) {
+
+    if (sum(nax) < length(x) & length(x) > 1) {
         eachx <- suppressWarnings(as.numeric(x[!nax]))
         result[!nax] <- !is.na(eachx)
     }
 
-    if (each) {
+    if (each | length(x) == 1) {
         return(result)
     }
 
