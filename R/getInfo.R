@@ -55,10 +55,13 @@
             }
 
             if (declared[i]) {
-                if (min(cc) != 0 && !fuzzy.cc[i]) {
-                    # the data MUST begin with 0 and MUST be incremented by 1 for each level...!
-                    cc <- recode(cc, paste(sort(labels), seq(noflevels[i]) - 1, sep = "=", collapse = ";"))
-                }
+                ## TODO: decide what to do with multi-value columns that have only one or two values
+                ## (generally fewer values than the number of labels / theoretical categories)
+
+                # if (min(cc) != 0 && !fuzzy.cc[i]) {
+                #     # the data MUST begin with 0 and MUST be incremented by 1 for each level...!
+                #     cc <- recode(cc, paste(sort(labels), seq(noflevels[i]) - 1, sep = "=", collapse = ";"))
+                # }
 
                 attr(cc, "label") <- label
                 attr(cc, "labels") <- labels
@@ -86,21 +89,12 @@
 
                 x <- data[, i]
                 labels <- attr(x, "labels", exact = TRUE)
-
-                if (is.null(labels)) {
-                    stopError("Declared columns should have labels.")
-                }
-                else {
-                    if (noflevels[i] == 2) {
-                        if (length(labels) == 1) {
-                            stopError("Binary crisp columns should have labels for both presence and absence.")
-                        }
+                if (fuzzy.cc[i]) {
+                    if (length(setdiff(0:1, labels) > 0)) {
+                        stopError("Declared fuzzy columns should have labels for the end points.")
                     }
-                    else { # noflevels > 2 (impossible less than 2)
-                        if (length(labels) != noflevels[i]) {
-                            stopError("All multi-values should have declared labels.")
-                        }
-                    }
+                } else if (length(setdiff(x, labels)) > 0) {
+                    stopError("Declared columns should have labels for all values.")
                 }
 
                 categories[[columns[i]]] <- names(sort(labels))
