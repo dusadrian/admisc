@@ -54,6 +54,9 @@
     callx <- identical(class(x), "call")
 
     dx <- deparse(x)
+    if (is.character(dx) && length(dx) == 2 && dx[1] == "~") {
+        dx <- paste(dx, collapse = "")
+    }
 
     if (callx) {
         typev <- is.name(x[[1]]) & identical(as.character(x[[1]]), "c")
@@ -136,19 +139,19 @@
         }
     }
 
-
     if (identical(class(x), "<-")) {
         return(withinobj(dx))
     }
 
+    ntdx <- dx
     negated <- tilde1st(dx) & !grepl("\\+|\\*", dx)
     if (negated) {
-        dx <- notilde(dx)
+        ntdx <- notilde(dx)
     }
 
     x <- tryCatch(
         eval(
-            parse(text = dx),
+            parse(text = ntdx),
             envir = parent.frame(n = 2)
         ),
         error = function(e) {
@@ -156,8 +159,11 @@
         }
     )
 
-    if (negated && is.numeric(x)) {
-        x <- 1 - x
+    if (is.numeric(x)) {
+        if (negated) {
+            return(1 - x)
+        }
+        return(x)
     }
 
     if (identical(class(x), "formula")) {
