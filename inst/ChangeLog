@@ -1,10 +1,12 @@
 Version 0.36
     o Function recreate() now captures a tilde for global objects
-    o Buf fixes in possibleNumeric(), where diacritics are detected as
-      multi-byte characters, or when x has length 1
-    o Improved function recode() for objects of class "declared"
+    o Improved functions recode() and getInfo() for objects of class "declared"
     o Function insideBrackets() is now deprecated, replaced by betweenBrackets()
     o New function betweenQuotes()
+    o Buf fixes in possibleNumeric(), where diacritics are detected as
+      multi-byte characters, or when x has length 1
+    o Buf fixes in strsplit() and replaceText(), to avoid infinite loops
+      calling each other
 
 Version 0.35
     o Fixed recode() for the more recent treatment that c() is NULL
