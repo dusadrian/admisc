@@ -5,7 +5,6 @@
     ) {
 
         dots <- list(...)
-
         if (!is.character(target)) {
             stopError("The argument <target> should be character.")
         }
@@ -14,9 +13,15 @@
             stopError("The argument <replacement> should be character.")
         }
 
-        if (length(target) == 1) target <- splitstr(target)
-        if (length(replacement) == 1) replacement <- splitstr(replacement)
-        if (length(protect) == 1) protect <- splitstr(protect)
+        if (!isTRUE(dots$checknone)) {
+            if (length(target) == 1 && !isFALSE(dots$checktarget)) {
+                target <- splitstr(target)
+            }
+
+            if (length(replacement) == 1) replacement <- splitstr(replacement)
+
+            if (length(protect) == 1) protect <- splitstr(protect)
+        }
 
         if (length(target) != length(replacement)) {
             stopError("Length of target different from the length of replacement.")
@@ -41,7 +46,7 @@
             ruplow <- rep(toupper(ruplow), each = 2)
             tuplow[seq(2, length(tuplow), by = 2)] <- tolower(tuplow[seq(2, length(tuplow), by = 2)])
             ruplow[seq(2, length(ruplow), by = 2)] <- tolower(ruplow[seq(2, length(ruplow), by = 2)])
-            
+
             torder <- order(nchar(tuplow), decreasing = TRUE)
             tuplow <- tuplow[torder]
             ruplow <- ruplow[torder]
@@ -54,7 +59,7 @@
 
             positions <- vector(mode = "list", length = 0)
             pos <- 0
-            
+
             for (i in seq(length(tuplow))) {
                 etuplow <- gsub("\\[", "\\\\[", tuplow[i])
                 etuplow <- gsub("\\]", "\\\\]", etuplow)
@@ -63,9 +68,9 @@
                 etuplow <- gsub("\\*", "\\\\*", etuplow)
                 etuplow <- gsub("\\.", "\\\\.", etuplow)
                 locations <- gregexpr(etuplow, expression)[[1]]
-                
+
                 # temp <- gsub(tuplow[i], paste(rep(ruplow[i], nchar(tuplow[i])), collapse = ""), expression)
-                
+
                 if (any(locations > 0)) {
                     diffs <- c()
                     for (l in seq(length(locations))) {
@@ -74,7 +79,7 @@
                             diffs <- c(diffs, tempd)
                         }
                     }
-                    
+
                     # diffs <- setdiff(diffs, unlist(positions))
 
                     if (length(diffs) > 0) {
