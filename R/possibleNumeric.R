@@ -45,7 +45,15 @@
         x <- as.character(x)
     }
 
-    x <- gsub("\u00a0", " ", x) # multibyte space
+    x <- gsub(
+        "\u00a0", # multibyte space
+        " ",
+        gsub(
+            "\u009d", # weird zero length character
+            "",
+            x
+        )
+    )
     multibyte <- grepl("[^!-~ ]", x)
 
     if (any(multibyte)) {
