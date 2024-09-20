@@ -91,7 +91,6 @@ export(
     wholeNumeric,
     write.clipboard,
     writePrimeimp,
-    unlockEnvironment,
 
         splitMainComponents,
         splitBrackets,

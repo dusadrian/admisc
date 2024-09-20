@@ -4,21 +4,6 @@
 #include <R_ext/Rdynload.h>
 
 
-// copied from: https://gist.github.com/wch/3280369#file-unlockenvironment-r
-#define FRAME_LOCK_MASK (1<<14)
-#define FRAME_IS_LOCKED(e) (ENVFLAGS(e) & FRAME_LOCK_MASK)
-#define UNLOCK_FRAME(e) SET_ENVFLAGS(e, ENVFLAGS(e) & (~ FRAME_LOCK_MASK))
-
-SEXP _unlockEnvironment(SEXP env) {
-    UNLOCK_FRAME(env);
-    
-    SEXP result = PROTECT( Rf_allocVector(LGLSXP, 1) );
-    LOGICAL(result)[0] = FRAME_IS_LOCKED(env) == 0;
-    UNPROTECT(1);
-    return result;
-}
-
-
 typedef union {
     double value;
     char byte[16];
@@ -37,21 +22,21 @@ const int TAG_BYTE = 4;
 
 
 static R_INLINE Rboolean hasDimnames(SEXP matrix) {
-    
+
     return !Rf_isNull(getAttrib(matrix, R_DimNamesSymbol));
-    
+
 }
 
 static R_INLINE Rboolean hasColnames(SEXP matrix) {
-    
+
     return hasDimnames(matrix) ? !Rf_isNull(VECTOR_ELT(getAttrib(matrix, R_DimNamesSymbol), 1)) : FALSE;
-    
+
 }
 
 static R_INLINE Rboolean hasRownames(SEXP matrix) {
-    
+
     return hasDimnames(matrix) ? !Rf_isNull(VECTOR_ELT(getAttrib(matrix, R_DimNamesSymbol), 0)) : FALSE;
-    
+
 }
 
 SEXP C_setDimnames(SEXP tt, SEXP dimnames) {
@@ -62,11 +47,11 @@ SEXP C_setDimnames(SEXP tt, SEXP dimnames) {
 SEXP C_setColnames(SEXP matrix, SEXP colnames) {
     SEXP dimnames = PROTECT(allocVector(VECSXP, 2));
     SET_VECTOR_ELT(dimnames, 1, colnames);
-    
+
     if (hasRownames(matrix)) {
         SET_VECTOR_ELT(dimnames, 0, VECTOR_ELT(getAttrib(matrix, R_DimNamesSymbol), 0));
     }
-    
+
     setAttrib(matrix, R_DimNamesSymbol, dimnames);
     UNPROTECT(1);
     return(R_NilValue);
@@ -75,11 +60,11 @@ SEXP C_setColnames(SEXP matrix, SEXP colnames) {
 SEXP C_setRownames(SEXP matrix, SEXP rownames) {
     SEXP dimnames = PROTECT(allocVector(VECSXP, 2));
     SET_VECTOR_ELT(dimnames, 0, rownames);
-    
+
     if (hasColnames(matrix)) {
         SET_VECTOR_ELT(dimnames, 1, VECTOR_ELT(getAttrib(matrix, R_DimNamesSymbol), 1));
     }
-    
+
     setAttrib(matrix, R_DimNamesSymbol, dimnames);
     UNPROTECT(1);
     return(R_NilValue);
@@ -97,7 +82,7 @@ SEXP _tag(SEXP x) {
         if (nchars > 2 + firstminus) {
             nchars = 2 + firstminus;
         }
-        
+
         ieee_double y;
         y.value = NA_REAL;
 
@@ -116,7 +101,7 @@ SEXP _tag(SEXP x) {
                 bytepos += 1;
             }
         }
-        
+
         REAL(out)[i] = y.value;
     }
 
@@ -130,7 +115,7 @@ SEXP _any_tagged(SEXP x) {
     LOGICAL(out)[0] = 0;
 
     int i = 0;
-    
+
     while (!LOGICAL(out)[0] && i < n) {
         if (TYPEOF(x) == REALSXP) {
             double xi = REAL(x)[i];
@@ -139,7 +124,7 @@ SEXP _any_tagged(SEXP x) {
                 y.value = xi;
 
                 Rboolean firstminus = signbit(xi);
-                
+
                 char test[16 + 8 * firstminus];
                 if (firstminus) {
                     test[0] = CHAR(mkChar("-"))[0];
@@ -165,7 +150,7 @@ SEXP _has_tag(SEXP x, SEXP tag_) {
             LOGICAL(out)[i] = 0;
         }
     }
-    else {    
+    else {
 
         for (int i = 0; i < n; ++i) {
             double xi = REAL(x)[i];
@@ -178,7 +163,7 @@ SEXP _has_tag(SEXP x, SEXP tag_) {
                 char tag = y.byte[TAG_BYTE];
 
                 Rboolean test = true;
-                
+
                 if (tag == '\0') {
                     LOGICAL(out)[i] = false;
                 }
@@ -187,23 +172,23 @@ SEXP _has_tag(SEXP x, SEXP tag_) {
 
                         int nchars = Rf_length(STRING_ELT(tag_, 0));
                         Rboolean firstminus = CHAR(STRING_ELT(tag_, 0))[0] == CHAR(mkChar("-"))[0];
-                        
+
                         if ((firstminus && !signbit(xi)) || (!firstminus && signbit(xi))) {
                             LOGICAL(out)[i] = false;
                         }
                         else {
-                            
+
                             if (nchars > 2 + firstminus) {
                                 nchars = 2 + firstminus;
                             }
 
                             test = test && tag == CHAR(STRING_ELT(tag_, 0))[firstminus];
                             char tag = y.byte[(TAG_BYTE == 4) ? 5 : 2];
-                            
+
                             if (Rf_length(STRING_ELT(tag_, 0)) > 1 && tag != '\0') {
                                 test = test && tag == CHAR(STRING_ELT(tag_, 0))[firstminus + 1];
                             }
-                            
+
                             LOGICAL(out)[i] = test;
                         }
                     }
@@ -220,7 +205,7 @@ SEXP _has_tag(SEXP x, SEXP tag_) {
 }
 
 SEXP _get_tag(SEXP x) {
-    
+
     int n = Rf_length(x);
     SEXP out = PROTECT(Rf_allocVector(STRSXP, n));
 
@@ -231,12 +216,12 @@ SEXP _get_tag(SEXP x) {
             SET_STRING_ELT(out, i, NA_STRING);
         }
         else {
-            
+
             ieee_double y;
             y.value = xi;
 
             Rboolean firstminus = signbit(xi);
-            
+
             char test[16 + 8 * firstminus];
             if (firstminus) {
                 test[0] = CHAR(mkChar("-"))[0];
@@ -250,7 +235,7 @@ SEXP _get_tag(SEXP x) {
             else {
                 char tag2 = y.byte[(TAG_BYTE == 4) ? 5 : 2];
                 int nchars = 1 + (strlen(&tag2) > 0) + firstminus;
-                
+
                 test[firstminus + 1] = tag2;
                 SET_STRING_ELT(out, i, Rf_mkCharLenCE(test, nchars, CE_UTF8));
             }
