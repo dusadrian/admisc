@@ -2,7 +2,7 @@
 #include <Rinternals.h>
 #include <R_ext/Rdynload.h>
 
-void R_init_admisc(DllInfo* info) {
-  R_registerRoutines(info, NULL, NULL, NULL, NULL);
-  R_useDynamicSymbols(info, TRUE);
+void R_init_admisc(DllInfo *dll) {
+  R_registerRoutines(dll, NULL, NULL, NULL, NULL);
+  R_useDynamicSymbols(dll, TRUE);
 }
