@@ -71,7 +71,7 @@
     }
 
 
-
+    cexpr <- as.character(expr)
     csby <- setdiff(as.character(split.by), c("c", "+", "&"))
 
     test <- unlist(lapply(seq(length(csby)), function(i) {
@@ -162,7 +162,6 @@
 
     names(sl) <- sby
 
-
     noflevels <- unlist(lapply(sl, length))
     mbase <- c(rev(cumprod(rev(noflevels))), 1)[-1]
 
@@ -188,6 +187,7 @@
     for (i in seq(length(sl))) {
         slexp[, i] <- sl[[i]][retmat[, i]]
     }
+
 
     ###--------------------------------
     # mandatory, otherwise subset() below will take a LOT of time
@@ -239,14 +239,14 @@
         sapply(res, function(x) class(x)[1] == "w_table")
     )
 
-    if (all(unlist(lapply(res, is.atomic))) & !any_w_table) {
+    if (all(sapply(res, is.atomic)) & !any_w_table) {
 
         classes <- unique(unlist(lapply(res, class)))
         classes <- setdiff(classes, c("integer", "double", "character", "numeric", "complex"))
 
         # all are vectors (e.g. from summary) but lengths can differ
         # if one subset has NAs and others not
-        lengths <- unlist(lapply(res, length))
+        lengths <- sapply(res, length)
         result <- matrix(NA, nrow = length(res), ncol = max(lengths))
 
         for (i in seq(length(res))) {
@@ -263,7 +263,17 @@
             colnames(result) <- as.character(as.list(expr)[[1]])
         }
         else {
-            colnames(result) <- names(res[[which.max(lengths)]])
+            nms <- names(res[[which.max(lengths)]])
+            if (is.null(nms)) {
+                expr <- as.list(expr)
+                if (as.character(expr[[1]]) == "c" && max(lengths) == length(expr) - 1) {
+                    nms <- sapply(expr[-1], function(x) as.character(as.list(x)[[1]]))
+                }
+                else {
+                    nms <- rep(" ", max(lengths))
+                }
+            }
+            colnames(result) <- nms
         }
 
         res <- result
