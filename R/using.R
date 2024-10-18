@@ -259,25 +259,42 @@
 
         rownames(result) <- apply(slexp, 1, function(x) paste(x, collapse = ", "))
 
+        expr <- as.list(expr)
+
         if (max(lengths) == 1) {
-            colnames(result) <- as.character(as.list(expr)[[1]])
+            colnames(result) <- as.character(expr[[1]])
         }
         else {
+            # something like:
+            # using(aa, c(mean(A), sd(A)), split.by = group)
+
+            expr <- sapply(expr, function(x) as.character(as.list(x))[[1]])
             nms <- names(res[[which.max(lengths)]])
+
             if (is.null(nms)) {
-                expr <- as.list(expr)
-                if (as.character(expr[[1]]) == "c" && max(lengths) == length(expr) - 1) {
-                    nms <- sapply(expr[-1], function(x) as.character(as.list(x)[[1]]))
+                if (as.character(expr) == "c" && max(lengths) == length(expr) - 1) {
+                    nms <- expr[-1]
                 }
                 else {
                     nms <- rep(" ", max(lengths))
                 }
             }
+
+            # something like:
+            # using(aa, c(mean(A), sd(A), summary(A)), split.by = group)
+            if (
+                any(nms == "") &&
+                expr[1] == "c" &&
+                is.element("summary", expr) &&
+                sum(nms == "") == length(expr) - 2
+            ) {
+                nms[nms == ""] <- setdiff(expr, c("c", "summary"))
+            }
+
             colnames(result) <- nms
         }
 
         res <- result
-
         class(res) <- c("admisc_fobject", "matrix")
 
     }
