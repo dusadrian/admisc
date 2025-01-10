@@ -1,10 +1,11 @@
 Package: admisc
-Version: 0.36.1
+Version: 0.37
 Title: Adrian Dusa's Miscellaneous
-Authors@R: person(given = "Adrian", family = "Dusa",
-                  role = c("aut", "cre", "cph"),
-                  email = "dusa.adrian@unibuc.ro",
-                  comment = c(ORCID = "0000-0002-3525-9253"))
+Authors@R: person(
+    given = "Adrian", family = "Dusa",
+    role = c("aut", "cre", "cph"),
+    email = "dusa.adrian@unibuc.ro",
+    comment = c(ORCID = "0000-0002-3525-9253"))
 Depends: R (>= 3.5.0)
 Imports: methods
 Suggests: QCA (>= 3.7)
