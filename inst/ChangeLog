@@ -1,3 +1,9 @@
+Version 0.37
+    o Better output for function using() with a vector of expressions
+    o Function export() is now generic, allowing for class extensions
+    o New S3 class extension for function update() to update a file
+      (for the moment, specific to package DDIwR updating a DDI Codebook)
+
 Version 0.36
     o Function recreate() now captures a tilde for global objects
     o Improved functions recode() and getInfo() for objects of class "declared"
