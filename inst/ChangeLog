@@ -1,3 +1,6 @@
+Version 0.38
+    o Bug fix in function recode() treating NA values using the argument cut
+
 Version 0.37
     o Better output for function using() with a vector of expressions
     o Function export() is now generic, allowing for class extensions
