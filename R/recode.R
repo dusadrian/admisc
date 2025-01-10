@@ -354,9 +354,13 @@
             }
         }
         else {
+            nax <- which(is.na(x))
             temp <- rep(values[1], length(x))
             for (i in seq(length(cut))) {
                 temp[x > cut[i]] = values[i + 1]
+            }
+            if (length(nax) > 0) {
+                temp[nax] <- NA
             }
         }
 
