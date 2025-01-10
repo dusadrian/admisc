@@ -2,27 +2,25 @@
 
 \alias{export}
 
-\title{Export a dataframe to a file or a connection}
+\title{Export an object to a file or a connection}
 
 \description{
-This function is a wrapper to \bold{\code{\link[utils]{write.table}()}}, to overcome
-possible issues with the row names.
+This is a generic function, usually a wrapper to \bold{\code{\link[utils]{write.table}()}}.
 }
 
 \usage{
-export(x, file = "", ...)
+export(what, ...)
 }
 
 \arguments{
-    \item{x}{The object to be written (matrix or dataframe)}
-    \item{file}{A character string containing the path to the file to be created}
-    \item{...}{Same arguments that are used in \bold{\code{\link[utils]{write.table}()}}}
+    \item{what}{The object to be written (matrix or dataframe)}
+    \item{...}{Specific arguments to class functions.}
 }
 
 \details{
 The default convention for \bold{\code{\link[utils]{write.table}()}} is to add a blank column
 name for the row names, but (despite it is a standard used for CSV files) that doesn't work
-with all spreadsheets or other programs that attempt to import the result of 
+with all spreadsheets or other programs that attempt to import the result of
 \bold{\code{\link[utils]{write.table}()}}.
 
 This function acts as if \bold{\code{\link[utils]{write.table}()}} was called, with only one

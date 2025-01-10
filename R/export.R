@@ -1,47 +1,75 @@
-`export` <-
-function(x, file = "", ...) {
-    
-    export.args <- list(...)
+
+export <- function (what, ...) {
+    UseMethod ("export")
+}
+
+
+`export.default` <- function (what, ...) {
+    # do nothing
+    return(NULL)
+}
+
+
+`export.data.frame` <- function(what, ...) {
+
+    dots <- list(...)
     Call <- as.list(match.call(expand.dots = TRUE))[-1]
-    
+
     caseid <- "cases"
-    if (any(names(export.args) == "caseid")) {
-        caseid <- export.args[["caseid"]]
+    if (any(names(dots) == "caseid")) {
+        caseid <- dots[["caseid"]]
         Call[["caseid"]] <- NULL
     }
-    
-    if (!missing(x)) {
-        if (is.data.frame(x) | is.matrix(x)) {
-            if (any(rownames(x) != seq(nrow(x)))) {
-                if (all(colnames(x) != caseid)) {
-                    x <- cbind("cases" = rownames(x), x)
-                    names(x)[1] <- caseid
-                }
-            }
+
+    if (any(rownames(what) != seq(nrow(what)))) {
+        if (all(colnames(what) != caseid)) {
+            what <- cbind("cases" = rownames(what), what)
+            names(what)[1] <- caseid
         }
     }
-    
-    Call[["x"]] <- x
-    
-    if (any(names(export.args) == "sep")) {
-        if (export.args[["sep"]] == "tab") {
-            export.args[["sep"]] <- "\t"
+
+    Call[["x"]] <- what
+    Call[["what"]] <- NULL
+
+    if (any(names(dots) == "sep")) {
+        if (dots[["sep"]] == "tab") {
+            dots[["sep"]] <- "\t"
         }
-        Call[["sep"]] <- export.args[["sep"]]
+        Call[["sep"]] <- dots[["sep"]]
     }
     else {
         Call[["sep"]] <- ","
     }
-    
-    if (any(names(export.args) == "col.names")) {
-        Call[["col.names"]] <- export.args[["col.names"]]
+
+    if (any(names(dots) == "col.names")) {
+        Call[["col.names"]] <- dots[["col.names"]]
     }
-    
-    if (any(names(export.args) == "row.names")) {
+
+    if (any(names(dots) == "row.names")) {
         message("The argument 'row.names' is always set to FALSE, by default.")
     }
-    
+
     Call[["row.names"]] <- FALSE
-    
+
     do.call("write.table", Call)
+
+}
+
+`export.list` <- function(what, ...) {
+    dots <- list(...)
+    Call <- as.list(match.call(expand.dots = TRUE))[-1]
+
+    DDIwR <- eval(parse(text = "requireNamespace('DDIwR', quietly = TRUE)"))
+
+    if (!DDIwR) {
+        stopError("Package DDIwR needs to be installed.")
+    }
+
+    if (is.null(what$.extra)) {
+        return(NULL)
+    }
+
+    names(Call)[1] <- "codeBook"
+
+    eval(parse(text = "do.call('exportCodebook', Call)"))
 }
