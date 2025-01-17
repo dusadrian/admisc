@@ -108,9 +108,14 @@
                     x[is.element(x), na_values] <- NA
                 }
 
-                labels <- labels[!is.element(labels, na_values)]
-                uniques <- sort(unique(c(undeclareit(x, drop = TRUE), labels)))
+                uniques <- sort(
+                    setdiff(
+                        c(undeclareit(x, drop = TRUE), labels),
+                        na_values
+                    )
+                )
                 names(uniques) <- uniques
+                labels <- labels[is.element(labels, uniques)]
                 names(uniques)[match(labels, uniques)] <- names(labels)
                 attributes(x) <- NULL
                 return(factor(x, levels = uniques, labels = names(uniques)))
@@ -137,28 +142,7 @@
     }
 
     # split by (non-missing-declared) levels
-    sl <- lapply(sbylist, function(x) {
-
-        if (inherits(x, "declared") | inherits(x, "haven_labelled_spss")) {
-            na_values <- attr(x, "na_values", exact = TRUE)
-            labels <- attr(x, "labels", exact = TRUE)
-            attributes(x) <- NULL
-
-            x <- sort(unique(x)) # this gets rid of the NAs because of sort()
-            x <- x[!is.element(x, na_values)]
-
-            if (!is.null(labels)) {
-                havelabels <- is.element(x, labels)
-                x[havelabels] <- names(labels)[match(x[havelabels], labels)]
-            }
-
-            return(as.character(x))
-        }
-
-        # if (is.factor(x)) {
-            return(levels(x))
-        # }
-    })
+    sl <- lapply(sbylist, function(x) levels(x))
 
     names(sl) <- sby
 
