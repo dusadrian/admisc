@@ -70,21 +70,17 @@
         return(eval(expr = expr, envir = data, enclos = parent.frame()))
     }
 
+    nms <- names(data)
+    existing <- sapply(sby, function(x) {
+        is.element(x, nms) || exists(x, envir = parent.frame(), inherits = TRUE)
+    })
 
-    cexpr <- as.character(expr)
-    csby <- setdiff(as.character(split.by), c("c", "+", "&"))
-
-    test <- unlist(lapply(seq(length(csby)), function(i) {
-        tryCatchWEM(eval(parse(text = csby[i]), envir = data, enclos = parent.frame()))
-    }))
-
-
-    if (length(test) > 0) {
-        stopError(test[1])
+    if (any(!existing)) {
+        stopError("Split by variables do not exist in the data.")
     }
 
     sbylist <- lapply(
-        lapply(csby, function(x) {
+        lapply(sby, function(x) {
             eval(parse(text = x), envir = data, enclos = parent.frame())
         }),
         function(x) {
@@ -125,15 +121,7 @@
         }
     )
 
-    names(sbylist) <- csby
-
-    # test <- unlist(lapply(sbylist, function(x) {
-    #     is.factor(x) | inherits(x, "declared") | inherits(x, "haven_labelled_spss")
-    # }))
-
-    # if (sum(test) < length(test)) {
-    #     stopError("Split variables should be factors or a declared / labelled objects.")
-    # }
+    names(sbylist) <- sby
 
     test <- table(sapply(sbylist, length))
 
@@ -219,9 +207,15 @@
         }
     }
 
+    empty <- sapply(res, is.null)
+
+    res <- res[!empty]
+
     any_w_table <- any(
         sapply(res, function(x) class(x)[1] == "w_table")
     )
+
+    slexp <- slexp[!empty, ]
 
     if (all(sapply(res, is.atomic)) & !any_w_table) {
 
@@ -241,7 +235,7 @@
 
         result[] <- coerceMode(round(result, 3))
 
-        rownames(result) <- apply(slexp, 1, function(x) paste(x, collapse = ", "))
+        rownames(result) <- apply(slexp, 1, function(x) paste(x, collapse = ","))
 
         expr <- as.list(expr)
 
@@ -251,15 +245,30 @@
         else {
             # something like:
             # using(aa, c(mean(A), sd(A)), split.by = group)
+            if (as.character(expr[1]) == "c") {
+                expr <- expr[-1]
+            }
 
-            expr <- sapply(expr, function(x) as.character(as.list(x))[[1]])
+            cexpr <- sapply(expr, as.character)
+
+            if (is.matrix(cexpr) && nrow(cexpr) == 2) {
+                if (length(unique(cexpr[1, ])) == 1) {
+                    cexpr <- cexpr[2, ]
+                } else if (length(unique(cexpr[2, ])) == 1) {
+                    cexpr <- cexpr[1, ]
+                }
+            }
+
             nms <- names(res[[which.max(lengths)]])
 
             if (is.null(nms)) {
-                if (as.character(expr) == "c" && max(lengths) == length(expr) - 1) {
-                    nms <- expr[-1]
-                }
-                else {
+                if (max(lengths) == length(expr) && !is.element("table", expr)) {
+                    if (max(lengths) == length(cexpr)) {
+                        nms <- cexpr
+                    } else {
+                        nms <- sapply(expr, deparse)
+                    }
+                } else {
                     nms <- rep(" ", max(lengths))
                 }
             }
@@ -268,11 +277,10 @@
             # using(aa, c(mean(A), sd(A), summary(A)), split.by = group)
             if (
                 any(nms == "") &&
-                expr[1] == "c" &&
-                is.element("summary", expr) &&
-                sum(nms == "") == length(expr) - 2
+                is.element("summary", cexpr) &&
+                sum(nms == "") == length(expr) - 1
             ) {
-                nms[nms == ""] <- setdiff(expr, c("c", "summary"))
+                nms[nms == ""] <- setdiff(cexpr, "summary")
             }
 
             colnames(result) <- nms
@@ -290,3 +298,4 @@
 
     return(res)
 }
+
