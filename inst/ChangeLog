@@ -1,6 +1,8 @@
 Version 0.38
     o Bug fix in function recode() treating NA values using the argument cut
     o Improved function using() treating split.by argument and result printing
+    o Function expand() now returns the snames as an attribute, if provided,
+      and function translate() now detects it in the expression's attributes
 
 Version 0.37
     o Better output for function using() with a vector of expressions
