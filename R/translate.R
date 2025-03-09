@@ -2,6 +2,7 @@
     expression = "", snames = "", noflevels = NULL, data = NULL, ...
 ) {
 
+    attrs <- attributes(expression)
     expression <- recreate(substitute(expression))
     snames <- recreate(substitute(snames))
     dots <- list(...)
@@ -32,6 +33,10 @@
 
     if (!is.vector(drop(snames))) {
         stopError("Set names should be a single string or a vector of names.")
+    }
+
+    if (identical(snames, "") & !is.null(attrs$snames)) {
+        snames <- attrs$snames
     }
 
     if (!is.null(data)) {
