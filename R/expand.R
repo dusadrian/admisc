@@ -12,9 +12,9 @@
     snames <- recreate(substitute(snames))
 
     dots <- list(...)
-    
+
     multivalue <- FALSE
-    
+
     scollapse <- ifelse(is.element("scollapse", names(dots)), dots$scollapse, FALSE) # internal collapse method
     scollapse <- scollapse | grepl("[*]", expression)
 
@@ -29,9 +29,9 @@
         # function to remove redundant terms
 
         if (nrow(x) > 1) {
-                
+
             redundant <- logical(nrow(x))
-            
+
             for (i in seq(nrow(x) - 1)) {
                 if (!redundant[i]) {
                     for (j in seq(i + 1, nrow(x))) {
@@ -44,13 +44,13 @@
                     }
                 }
             }
-            
+
             x <- x[!redundant, , drop = FALSE]
         }
 
         return(x)
     }
-    
+
     `dnf` <- function(x, noflevels = NULL, partial = FALSE) {
         if (is.null(noflevels)) {
             noflevels <- rep(2, ncol(x))
@@ -67,7 +67,7 @@
 
         result <- matrix(nrow = 0, ncol = ncol(x))
         rmin <- min(apply(x, 1, function(x) sum(x == 0)))
-        
+
         for (i in seq(nrow(x))) {
             xi <- x[i, ]
             rxi <- sum(xi == 0)
@@ -107,7 +107,7 @@
 
         return(unique(result))
     }
-    
+
     if (is.character(expression)) {
 
         if (length(expression) > 1) {
@@ -122,7 +122,7 @@
                     unlist(strsplit(gsub(usingwith, "", syscalls), split = ","))[1],
                     envir = length(syscalls) - tail(which(usingdata), 1)
                 )
-                
+
                 if (is.data.frame(data) | is.matrix(data)) {
                     snames <- colnames(data)
                 }
@@ -131,15 +131,15 @@
 
         snames <- splitstr(snames)
         multivalue <- any(grepl("\\[|\\]|\\{|\\}", expression))
-        
+
         if (multivalue) {
             expression <- gsub("[*]", "", expression)
             # return(list(expression = expression, snames = snames, noflevels = noflevels))
             checkMV(expression, snames = snames, noflevels = noflevels) # , data = data)
         }
-        
+
         if (!grepl("[+]", expression) & grepl("[,]", expression)) {
-            
+
             if (multivalue) {
                 values <- squareBrackets(expression)
                 atvalues <- paste("@", seq(length(values)), sep = "")
@@ -158,14 +158,14 @@
                 }
             }
         }
-        
+
         if (any(grepl("[(|)]", expression))) {
             bl <- expandBrackets(expression, snames = snames, noflevels = noflevels)
         }
         else {
             bl <- expression
         }
-        
+
         if (identical(bl, "")) {
             return(classify("", "admisc_simplify"))
         }
@@ -175,7 +175,7 @@
         if (!is.null(noflevels)) {
             tlist$noflevels <- noflevels
         }
-        
+
         bl <- tryCatch(do.call(translate, tlist), error = function(e) e)
 
         if (is.list(bl)) {
@@ -190,14 +190,14 @@
                 asNumeric(splitstr(x)) + 1
             }))))
         }
-        
+
     }
     else if (!is.matrix(expression)) {
         stopError("The input should be either a character expression or a matrix.")
     }
 
     if (is.null(noflevels)) noflevels <- rep(2, ncol(expression))
-    
+
     # return(list(x = remred(expression), noflevels = noflevels, partial = partial))
     expression <- dnf(remred(expression), noflevels = noflevels, partial = partial)
 
@@ -206,7 +206,7 @@
             expression <- expression[order(expression[, i]), , drop = FALSE]
         }
         rownames(expression) <- NULL
-        
+
         return(expression)
     }
 
@@ -217,6 +217,8 @@
     scollapse <- scollapse | any(nchar(snames) > 1)
     expression <- writePrimeimp(expression, multivalue, collapse = ifelse(scollapse, "*", ""))
     expression <- paste(expression, collapse = " + ")
-
+    if (!identical(snames, "")) {
+        attr(expression, "snames") <- snames
+    }
     return(classify(expression, "admisc_simplify"))
 }
