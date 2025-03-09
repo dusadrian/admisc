@@ -1,4 +1,6 @@
 `classify` <- function(x, class = "admisc_simplify") {
-    class(x) <- c("character", class)
+    attrx <- attributes(x)
+    attrx$class <- c("character", class)
+    attributes(x) <- attrx
     return(x)
 }
