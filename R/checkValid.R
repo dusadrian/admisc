@@ -7,7 +7,7 @@
     }
 
     allnames <- splitstr(snames)
-    
+
     if (!is.null(data)) {
         allnames <- colnames(data)
         infodata <- getInfo(data)
@@ -18,12 +18,17 @@
     else if (length(categories) > 0) {
         allnames <- c(allnames, names(unlist(categories)))
     }
-        
-    expression <- replaceText(
-        expression,
-        allnames,
-        rep("", length(allnames))
-    )
+
+    allnames <- allnames[order(nchar(allnames), decreasing = TRUE)]
+    for (n in allnames) {
+        expression <- gsub(n, "", expression)
+    }
+
+    # expression <- replaceText(
+    #     expression,
+    #     allnames,
+    #     rep("", length(allnames))
+    # )
 
     if (any(grepl(":alpha:", expression))) { # is it not [:alpha:] ???
         stopError(
