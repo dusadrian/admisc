@@ -52,30 +52,32 @@
             ruplow <- ruplow[torder]
         }
 
-        getPositions <- function(expression, tuplow, ruplow = NULL, protect = NULL) {
-            if (identical(tuplow, "")) {
+        getPositions <- function(expression, x, y = NULL, protect = NULL) {
+            if (identical(x, "")) {
                 return(NULL)
             }
 
             positions <- vector(mode = "list", length = 0)
             pos <- 0
 
-            for (i in seq(length(tuplow))) {
-                etuplow <- gsub("\\[", "\\\\[", tuplow[i])
-                etuplow <- gsub("\\]", "\\\\]", etuplow)
-                etuplow <- gsub("\\{", "\\\\{", etuplow)
-                etuplow <- gsub("\\}", "\\\\}", etuplow)
-                etuplow <- gsub("\\*", "\\\\*", etuplow)
-                etuplow <- gsub("\\.", "\\\\.", etuplow)
-                locations <- gregexpr(etuplow, expression)[[1]]
+            for (i in seq(length(x))) {
+                escx <- gsub("([][{}*\\.])", "\\\\\\1", x[i]) # escape [ ] { } * and .
+                locations <- gregexpr(escx, expression)[[1]]
 
-                # temp <- gsub(tuplow[i], paste(rep(ruplow[i], nchar(tuplow[i])), collapse = ""), expression)
+                # temp <- gsub(x[i], paste(rep(y[i], nchar(x[i])), collapse = ""), expression)
 
                 if (any(locations > 0)) {
                     diffs <- c()
                     for (l in seq(length(locations))) {
-                        tempd <- seq(locations[l], locations[l] + nchar(tuplow[i]) - 1)
-                        if (!any(is.element(tempd, c(unlist(positions), unlist(protect))))) {
+                        tempd <- seq(locations[l], locations[l] + nchar(x[i]) - 1)
+                        if (
+                            !any(
+                                is.element(
+                                    tempd,
+                                    c(unlist(positions), unlist(protect))
+                                )
+                            )
+                        ) {
                             diffs <- c(diffs, tempd)
                         }
                     }
@@ -86,7 +88,7 @@
                         if (length(diffs) == 1) {
                             pos <- pos + 1
                             positions[[pos]] <- diffs
-                            names(positions)[pos] <- ruplow[i]
+                            names(positions)[pos] <- y[i]
                         }
                         else {
                             # the same condition can be found in multiple locations of the expression
@@ -95,8 +97,8 @@
                                 if ((diffs[v] - diffs[v - 1]) > 1) {
                                     pos <- pos + 1
                                     positions[[pos]] <- seq(start, diffs[v - 1])
-                                    if (!is.null(ruplow)) {
-                                        names(positions)[pos] <- ruplow[i]
+                                    if (!is.null(y)) {
+                                        names(positions)[pos] <- y[i]
                                     }
                                     start <- diffs[v]
                                 }
@@ -104,8 +106,8 @@
 
                             pos <- pos + 1
                             positions[[pos]] <- seq(start, diffs[length(diffs)])
-                            if (!is.null(ruplow)) {
-                                names(positions)[pos] <- ruplow[i]
+                            if (!is.null(y)) {
+                                names(positions)[pos] <- y[i]
                             }
                         }
                     }
@@ -119,12 +121,26 @@
         posprotect <- NULL
         if (!identical(protect, "")) {
             larger <- tuplow[nchar(tuplow) > max(nchar(protect))]
-            posprotect <- getPositions(expression, larger)
+            if (length(larger) > 0) {
+                posprotect <- getPositions(
+                    expression,
+                    x = larger
+                )
+            }
         }
 
+        posprotect <- getPositions(
+            expression,
+            x = protect,
+            protect = posprotect
+        )
 
-        posprotect <- getPositions(expression, protect, protect = posprotect)
-        positions <- getPositions(expression, tuplow, ruplow, posprotect)
+        positions <- getPositions(
+            expression,
+            x = tuplow,
+            y = ruplow,
+            protect = posprotect
+        )
 
         # positions <- lapply(positions, function(x) range(x))
 
