@@ -1,13 +1,13 @@
-`writePrimeimp` <- function(
+`writePIs` <- function(
     impmat, mv = FALSE, collapse = "*", snames = "", curly = FALSE,
     use.labels = FALSE, categories = list(), ...
 ) {
     ### ... is to allow calls having "use dot tilde" which is now deprecated
-    
+
     if (any(impmat > 2)) {
         mv <- TRUE
     }
-    
+
     dots <- list(...)
 
     if (is.element("categorical", names(dots))) {
@@ -22,9 +22,9 @@
         # ... therefore impmat needs to be transposed
         impmat <- t(impmat)
     }
-    
+
     chars <- matrix(snames[col(impmat)], nrow = nrow(impmat))
-    
+
     if (mv) {
         chars <- matrix(
             paste(
@@ -58,7 +58,7 @@
             }
         }
     }
-    
+
     keep <- impmat > 0L
     return(
         as.vector(
@@ -71,5 +71,11 @@
             )
         )
     )
-    
+
+}
+
+
+`writePrimeimp` <- function(...) {
+    .Deprecated(msg = "Function writePrimeimp() is deprecated, use writePIs().\n")
+    writePIs(...)
 }
