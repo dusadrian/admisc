@@ -2,6 +2,7 @@
 
 \alias{negate}
 \alias{invert}
+\alias{sopos}
 \alias{deMorgan}
 
 \title{Negate Boolean expressions}
@@ -12,9 +13,9 @@ a POS to a negated SOP.
 }
 
 \usage{
-negate(input, snames = "", noflevels, simplify = TRUE, ...)
+invert(input, snames = "", noflevels, simplify = TRUE, ...)
 
-invert(input, snames = "", noflevels)
+sopos(input, snames = "", noflevels)
 }
 
 \arguments{
@@ -59,7 +60,7 @@ To negate multilevel expressions, the argument \bold{\code{noflevels}} is requir
 It is entirely possible to obtain multiple negations of a single expression, since
 the result of the negation is passed to function \bold{\code{\link{simplify}()}}.
 
-Function \bold{\code{invert}()} simply transforms an expression from a sum of
+Function \bold{\code{sopos}()} simply transforms an expression from a sum of
 products (SOP) to a negated product of sums (POS), and the other way round.
 }
 
@@ -74,7 +75,7 @@ Adrian Dusa
 }
 
 \references{
-Ragin, Charles C. 1987. \emph{The Comparative Method: Moving beyond Qualitative 
+Ragin, Charles C. 1987. \emph{The Comparative Method: Moving beyond Qualitative
 and Quantitative Strategies}. Berkeley: University of California Press.
 }
 
@@ -83,13 +84,13 @@ and Quantitative Strategies}. Berkeley: University of California Press.
 \examples{
 
 # example from Ragin (1987, p.99)
-negate(AC + B~C, simplify = FALSE)
+invert(AC + B~C, simplify = FALSE)
 
 # the simplified, logically equivalent negation
-negate(AC + B~C)
+invert(AC + B~C)
 
 # with different intersection operators
-negate(AB*EF + ~CD*EF)
+invert(AB*EF + ~CD*EF)
 
 # invert to POS
 invert(a*b + ~c*d)
@@ -100,13 +101,13 @@ invert(a*b + ~c*d)
 library(QCA)
 cLC <- minimize(LC, outcome = SURV)
 
-negate(cLC)
+invert(cLC)
 
 
 # parsimonious solution
 pLC <- minimize(LC, outcome = SURV, include = "?")
 
-negate(pLC)
+invert(pLC)
 }
 }
 
