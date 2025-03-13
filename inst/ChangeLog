@@ -3,6 +3,10 @@ Version 0.38
     o Improved function using() treating split.by argument and result printing
     o Function expand() now returns the snames as an attribute, if provided,
       and function translate() now detects it in the expression's attributes
+    o Function writePrimeimp() renamed to writePIs()
+    o Function negate() renamed to invert()
+    o Former function invert() renamed to sopos()
+    o Function finvert() renamed to frev()
 
 Version 0.37
     o Better output for function using() with a vector of expressions
