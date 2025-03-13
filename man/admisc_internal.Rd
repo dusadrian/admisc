@@ -44,6 +44,7 @@
 \alias{validateNames}
 \alias{verify}
 \alias{writePrimeimp}
+\alias{writePIs}
 
 
 \title{Internal Functions}
