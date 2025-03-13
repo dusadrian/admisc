@@ -234,8 +234,11 @@
         }
 
         result[] <- coerceMode(round(result, 3))
-
-        rownames(result) <- apply(slexp, 1, function(x) paste(x, collapse = ","))
+        if (is.matrix(slexp)) {
+            rownames(result) <- apply(slexp, 1, function(x) paste(x, collapse = ","))
+        } else {
+            rownames(result) <- slexp
+        }
 
         expr <- as.list(expr)
 
