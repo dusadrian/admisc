@@ -215,7 +215,7 @@
     }
 
     scollapse <- scollapse | any(nchar(snames) > 1)
-    expression <- writePrimeimp(expression, multivalue, collapse = ifelse(scollapse, "*", ""))
+    expression <- writePIs(expression, multivalue, collapse = ifelse(scollapse, "*", ""))
     expression <- paste(expression, collapse = " + ")
     if (!identical(snames, "")) {
         attr(expression, "snames") <- snames

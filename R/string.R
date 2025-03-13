@@ -83,11 +83,9 @@
             names(values) <- gsub("[+|-]", "", y)
         }
         return(values)
-    }
-    else if (metacall == "decreasing") {
+    } else if (metacall == "decreasing") {
         return(as.logical(y))
-    }
-    else if (metacall == "thresholds") {
+    } else if (metacall == "thresholds") {
         if (any(grepl("[=]", y))) {
             y <- t(as.data.frame(strsplit(gsub("[[:space:]]", "", y), split = "=")))
             values <- y[, 2]
@@ -102,8 +100,7 @@
             }
         }
         return(values)
-    }
-    else {
+    } else {
         if (possibleNumeric(y)) {
             y <- asNumeric(y)
         }

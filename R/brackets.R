@@ -252,7 +252,7 @@
 
 
 
-    # this is different from writePrimeimp() in package QCA because the entry matrix
+    # this is different from writePIs() because the entry matrix
     # is not necessarily numeric, it can contain "1,2" for instance
     expressions <- unlist(apply(expressions, 1, function(x) {
         result <- c()
