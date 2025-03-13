@@ -1,16 +1,17 @@
-\name{finvert}
+\name{frev}
+\alias{frev}
 \alias{finvert}
 
 \title{Inverts the values of a factor}
 \description{
-  Useful function to invert the values from a categorical variable, for instance
-  a Likert response scale.}
+  Provides a reversed version of the values from a factor, for instance
+  a Likert type response scale.}
 \usage{
-finvert(x, levels = FALSE)
+frev(x, levels = FALSE)
 }
 
 \arguments{
-  \item{x}{A categorical variable (a factor)}
+  \item{x}{A factor}
   \item{levels}{Logical, invert the levels as well}
 }
 
@@ -23,10 +24,10 @@ words <- c("ini", "mini", "miny", "moe")
 variable <- factor(words, levels = words)
 
 # inverts the value, preserving the levels
-finvert(variable)
+frev(variable)
 
 # inverts both values and levels
-finvert(variable, levels = TRUE)
+frev(variable, levels = TRUE)
 
 }
 
