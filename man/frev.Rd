@@ -7,12 +7,16 @@
   Provides a reversed version of the values from a factor, for instance
   a Likert type response scale.}
 \usage{
-frev(x, levels = FALSE)
+frev(x, labels = FALSE)
 }
 
 \arguments{
   \item{x}{A factor}
-  \item{levels}{Logical, invert the levels as well}
+  \item{labels}{Logical, invert the labels as well}
+}
+
+\details{
+  The argument \code{labels} can also be used for the levels of a factor.
 }
 
 \value{A factor of the same length as the original one.}
@@ -21,13 +25,13 @@ frev(x, levels = FALSE)
 
 \examples{
 words <- c("ini", "mini", "miny", "moe")
-variable <- factor(words, levels = words)
+variable <- factor(words, labels = words)
 
-# inverts the value, preserving the levels
+# inverts the values, preserving the labels' order
 frev(variable)
 
-# inverts both values and levels
-frev(variable, levels = TRUE)
+# inverts both values and labels
+frev(variable, labels = TRUE)
 
 }
 
