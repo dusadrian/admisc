@@ -34,7 +34,7 @@ export(
     expand,
     export,
     factorize,
-    finvert,
+    frev,
     frelevel,
     getInfo,
     getLevels,
