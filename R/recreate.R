@@ -37,7 +37,19 @@
                     }
 
                     # TODO: X*Y <- A*B + C
-                    if (grepl("\\*|\\+", xs[2]) & !grepl("\\*|\\+", xs[1]) & which(found) == 1) {
+                    if (
+                        (
+                            (
+                                grepl("\\*|\\+", xs[2]) &
+                                !grepl("\\*|\\+", xs[1])
+                            ) |
+                            (
+                                grepl("~", ifelse(tilde1st(xs[2]), substring(xs[2], 2), xs[2])) &
+                                !grepl("~", ifelse(tilde1st(xs[1]), substring(xs[1], 2), xs[1]))
+                            )
+                        ) &
+                        which(found) == 1
+                    ) {
                         # this appears to be necessity , but it is in fact sufficiency
                         # e.g. parsed as Y <- A*B + C, but originally A*B + C -> Y
                         x[i] <- paste(rev(xs), collapse = "->")
