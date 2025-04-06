@@ -1,15 +1,15 @@
 
 `print.admisc_deMorgan` <- function(x, ...) {
-    
+
     prettyNums <- formatC(seq(length(x)), digits = nchar(length(x)) - 1, flag = 0)
     pM <- paste("M", prettyNums, sep = "")
-    
+
     if (!is.null(isol <- attr(x, "isol"))) {
         pM <- paste(pM, isol, sep = "-")
     }
-    
+
     pM <- paste(pM, ": ", sep = "")
-    
+
     cat("\n")
 
     if (length(x) == 1 & !attr(x, "minimized")) {
@@ -34,7 +34,7 @@
         for (i in seq(length(x))) {
             cat(paste(pM[i], names(x)[i], sep = ""), "\n")
             fx <- x[[i]]
-            
+
             if (is.null(fx)) {
                 cat("No negation possible.\n")
             }
@@ -53,41 +53,41 @@
 }
 
 `print.admisc_intersection` <- function(x, ...) {
-    
+
     prettyNums <- formatC(seq(length(x)), digits = nchar(length(x)) - 1, flag = 0)
-    
+
     pI <- paste("E", prettyNums, sep="")
     pO <- paste("  I", prettyNums, sep="")
-    
+
     if (!is.null(isol <- attr(x, "isol"))) {
         pI <- paste(pI, isol, sep = "-")
         pO <- paste(pO, isol, sep = "-")
     }
-    
+
     pI <- paste(pI, ": ", sep = "")
     pO <- paste(pO, ": ", sep = "")
-    
-    
-    
+
+
+
     expressions <- attr(x, "expressions")
     ncharSI <- max(nchar(pI))
-    
-    
+
+
     for (i in seq(length(x))) {
-        
+
         cat("\n", pI[i], sep = "")
         cat(prettyString(expressions[i], getOption("width") - ncharSI, ncharSI, "+"))
         cat("\n", pO[i], sep = "")
         cat(prettyString(x[i], getOption("width") - ncharSI, ncharSI, "+"))
         cat("\n")
     }
-    
+
     cat("\n")
 }
 
 `print.admisc_simplify` <- function(x, ...) {
     prettyNums <- formatC(seq(length(x)), digits = nchar(length(x)) - 1, flag = 0)
-    
+
     cat("\n")
 
     if (all(x == "")) {
@@ -106,16 +106,16 @@
 }
 
 `print.admisc_factorize` <- function(x, ...) {
-    
+
     prettyNums <- formatC(seq(length(x)), digits = nchar(length(x)) - 1, flag = 0)
     pM <- paste("M", prettyNums, sep = "")
-    
+
     if (!is.null(isol <- attr(x, "isol"))) {
         pM <- paste(pM, isol, sep = "-")
     }
-    
+
     pM <- paste(pM, ": ", sep = "")
-    
+
     cat("\n")
 
     if (length(x) == 1) {
@@ -140,7 +140,7 @@
         for (i in seq(length(x))) {
             cat(paste(pM[i], names(x)[i], sep = ""), "\n")
             fx <- x[[i]]
-            
+
             if (is.null(fx)) {
                 cat("No factorization possible.\n")
             }
@@ -159,11 +159,11 @@
 }
 
 `print.admisc_translate` <- function(x, ...) {
-    
+
     dots <- list(...)
     cat("\n")
     original <- FALSE
-    
+
     y <- matrix(as.vector(x), nrow = nrow(x))
 
     if (is.element("original", names(dots))) {
@@ -171,10 +171,10 @@
             original <- dots$original[1]
         }
     }
-    
+
     cols <- colnames(x)
     colnames(y) <- cols
-    
+
     if (original) {
         minus <- any(y < 0)
         if (minus) {
@@ -192,7 +192,7 @@
     # if (!is.null(original)) {
     #     rownames(x) <- original
     # }
-    
+
     rownames(y) <- paste(rownames(x), " ")
     print(prettyTable(y))
     cat("\n")
@@ -201,17 +201,21 @@
 `print.admisc_fobject` <- function(x, startend = TRUE, ...) {
 
     class(x) <- setdiff(class(x), "admisc_fobject")
-
     if (is.list(x)) {
-        nms <- apply(attr(x, "split", exact = TRUE), 1, function(x) {
-            paste(x, collapse = ", ")
-        })
+        split <- attr(x, "split")
+        if (is.matrix(split)) {
+            nms <- apply(attr(x, "split", exact = TRUE), 1, function(x) {
+                paste(x, collapse = ", ")
+            })
+        } else {
+            nms <- split
+        }
 
         cat(ifelse(startend, "\n", ""))
         for (i in seq(length(x))) {
             cat(nms[i], "\n")
             cat(paste(c(rep("-", nchar(nms[i])), "\n"), collapse = ""))
-            
+
             if (is.null(x[[i]])) {
                 cat("No data.\n")
             }
@@ -222,7 +226,7 @@
                 class(x[[i]]) <- setdiff(class(x[[i]]), "admisc_fobject")
                 print(x[[i]], startend = FALSE)
             }
-            
+
             if (i < length(x)) {
                 cat("\n")
             }
@@ -236,9 +240,9 @@
             if (!all(dim(x) > 0)) {
                 stopError("Incorrect _fobject_ to print, in package admisc.")
             }
-            
+
             rnms <- rownames(x)
-            
+
             max.nchar.rnms <- max(nchar(encodeString(rnms)), na.rm = TRUE)
             for (i in seq(length(rnms))) {
                 if (nchar(rnms[i]) < max.nchar.rnms) {
@@ -267,7 +271,7 @@
             xc <- x[, c]
             max.nchar.nc <- max(nchar(xc), na.rm = TRUE)
             ndec <- 0
-            
+
             if (pN[c]) {
                 ndec <- min(numdec(xc), 3)
                 x[, c] <- sprintf(
