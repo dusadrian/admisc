@@ -211,13 +211,13 @@
 
     res <- res[!empty]
 
-    any_w_table <- any(
-        sapply(res, function(x) class(x)[1] == "w_table")
+    any_wtable <- any(
+        sapply(res, function(x) class(x)[1] == "wtable" | class(x)[1] == "w_table")
     )
 
     slexp <- slexp[!empty, ]
 
-    if (all(sapply(res, is.atomic)) & !any_w_table) {
+    if (all(sapply(res, is.atomic)) & !any_wtable) {
 
         classes <- unique(unlist(lapply(res, class)))
         classes <- setdiff(classes, c("integer", "double", "character", "numeric", "complex"))
