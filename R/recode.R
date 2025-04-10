@@ -12,7 +12,7 @@
     xlabels <- attr(x, "labels", exact = TRUE)
     attributes(x) <- NULL
 
-    labels <- dots[["labels"]]
+    labels <- splitstr(dots[["labels"]])
     label <- dots[["label"]]
 
     x <- recode(x = x, rules = rules, cut = cut, values = values)
@@ -68,7 +68,7 @@
     as.factor.result  <- isTRUE(dots$as.factor.result)
     as.numeric.result <- !isFALSE(dots$as.numeric.result)
     factor.levels     <- splitstr(dots$levels)
-    factor.labels     <- splitstr(dots$labels)
+    factor.labels     <- splitstr(dots[["labels"]])
     factor.ordered    <- FALSE
 
     if (is.element("ordered", names(dots))) {
@@ -87,7 +87,7 @@
         factor.labels <- character(0)
     }
 
-    if (is.null(values) && (!is.null(factor.levels) || !is.null(factor.labels))) {
+    if (!is.null(factor.levels) || !is.null(factor.labels)) {
         as.factor.result  <- TRUE
     }
 
