@@ -1,3 +1,17 @@
+Version 0.39
+    o Improved detection of sufficiency, in function recreate()
+    o Fixed printing bug in objects of class "admisc_fobject", when expressions
+      are evaluated using the "split.by" argument for a single variable
+    o Function recode() now correctly preserves the labels for the declared
+      missing values, if existing in the input data
+    o If the input is a declared object, function recode() now allows providing
+      a variable label for the resulting declared object, using the argument
+      "label" (see also the argument "label" in function declared() from the
+      package declared)
+    o Function recode() now discards the labels for declared missing values,
+      if no such declared values are found in the input data, for instance
+      because of drop_na()
+
 Version 0.38
     o Bug fix in function recode() treating NA values using the argument cut
     o Improved function using() treating split.by argument and result printing
