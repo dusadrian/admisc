@@ -13,6 +13,7 @@
     attributes(x) <- NULL
 
     labels <- dots$labels
+    label <- dots$label
 
     x <- recode(x = x, rules = rules, cut = cut, values = values)
 
@@ -38,6 +39,7 @@
     }
 
     attr(x, "labels") <- c(labels, xlabels)
+    attr(x, "label") <- label
     class(x) <- c("declared", class(x))
     return(x)
 }
