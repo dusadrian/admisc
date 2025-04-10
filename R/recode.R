@@ -25,9 +25,13 @@
         }
     }
 
-    attr(x, "na_index") <- na_index
-    attr(x, "na_values") <- na_values
-    attr(x, "na_range") <- na_range
+    if (is.null(na_index)) { # because of drop_na() for instance
+        xlabels <- NULL
+    } else {
+        attr(x, "na_index") <- na_index
+        attr(x, "na_values") <- na_values
+        attr(x, "na_range") <- na_range
+    }
 
     if (!is.null(xlabels)) {
         if (!is.null(na_values)) {
@@ -41,6 +45,7 @@
     attr(x, "labels") <- c(labels, xlabels)
     attr(x, "label") <- label
     class(x) <- c("declared", class(x))
+
     return(x)
 }
 
