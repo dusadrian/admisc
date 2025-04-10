@@ -12,8 +12,8 @@
     xlabels <- attr(x, "labels", exact = TRUE)
     attributes(x) <- NULL
 
-    labels <- dots$labels
-    label <- dots$label
+    labels <- dots[["labels"]]
+    label <- dots[["label"]]
 
     x <- recode(x = x, rules = rules, cut = cut, values = values)
 
