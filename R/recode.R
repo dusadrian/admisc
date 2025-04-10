@@ -30,7 +30,7 @@
 
     if (!is.null(xlabels)) {
         if (!is.null(na_values)) {
-            xlabels <- xlabels[is.element(labels, na_values)]
+            xlabels <- xlabels[is.element(xlabels, na_values)]
         }
         else if (!is.null(na_range)) {
             xlabels <- xlabels[xlabels >= na_range[1] & xlabels <= na_range[2]]
