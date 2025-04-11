@@ -22,6 +22,8 @@
         if (length(values) == length(labels)) {
             names(values) <- labels
             labels <- values
+        } else {
+            stopError("The number of labels should be equal to the number of recodings.")
         }
     }
 
@@ -150,8 +152,14 @@
 
         rulsplit <- strsplit(rules, split = "=")
 
-        oldval <- unlist(lapply(lapply(rulsplit, trimstr), "[", 1))
-        newval <- unlist(lapply(lapply(rulsplit, trimstr), "[", 2))
+        oldval <- trimws(sapply(rulsplit, "[", 1))
+        newval <- trimws(sapply(rulsplit, "[", 2))
+
+        if (!is.null(factor.labels)) {
+            if (length(factor.labels) != length(newval)) {
+                stopError("The number of labels should be equal to the number of recodings.")
+            }
+        }
 
         temp <- rep(NA, length(x))
 
@@ -320,6 +328,12 @@
                         ifelse(length(cut) == 1, "", "s"), "."
                     )
                 )
+            }
+        }
+
+        if (!is.null(factor.labels)) {
+            if (length(factor.labels) != length(values)) {
+                stopError("The number of labels should be equal to the number of recodings.")
             }
         }
 
