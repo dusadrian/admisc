@@ -14,16 +14,17 @@
 
     labels <- splitstr(dots[["labels"]])
     label <- dots[["label"]]
-
     x <- recode(x = x, rules = rules, cut = cut, values = values)
 
     if (is.null(names(labels))) {
         values <- sort(unique(x))
-        if (length(values) == length(labels)) {
-            names(values) <- labels
-            labels <- values
-        } else {
-            stopError("The number of labels should be equal to the number of recodings.")
+        if (!is.null(labels)) {
+            if (length(values) == length(labels)) {
+                names(values) <- labels
+                labels <- values
+            } else {
+                stopError("The number of labels should be equal to the number of recodings.")
+            }
         }
     }
 
