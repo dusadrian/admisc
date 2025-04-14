@@ -156,7 +156,8 @@
     }
 
     ntdx <- dx
-    negated <- tilde1st(dx) & !grepl("\\+|\\*", dx)
+    negated <- all(tilde1st(dx) & !grepl("\\+|\\*", dx))
+
     if (negated) {
         ntdx <- notilde(dx)
     }
