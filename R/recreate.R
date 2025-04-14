@@ -7,7 +7,8 @@
     #     x[i] <- srcref[i]
     # }
 
-    if (is.null(x) | is.logical(x) | is.character(x)) return(x)
+    # is.list() can sometimes happen if recreate(list(...)) is called
+    if (is.null(x) | is.logical(x) | is.character(x) | is.list(x)) return(x)
 
     withinobj <- function(x) {
         x <- gsub("\"|[[:space:]]", "", x)
@@ -156,6 +157,9 @@
     }
 
     ntdx <- dx
+
+    # all() to prevent longer vectors
+    # it should not happen but failsafe just in case
     negated <- all(tilde1st(dx) & !grepl("\\+|\\*", dx))
 
     if (negated) {
