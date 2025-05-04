@@ -90,7 +90,6 @@ export(
     verify,
     wholeNumeric,
     write.clipboard,
-    writePrimeimp,
     writePIs,
 
         splitMainComponents,
@@ -129,3 +128,4 @@ S3method(inside, list)
 S3method(update, character)
 S3method(using, default)
 S3method(using, data.frame)
+S3method(using, matrix)

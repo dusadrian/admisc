@@ -11,6 +11,9 @@ Version 0.39
     o Function recode() now discards the labels for declared missing values,
       if no such declared values are found in the input data, for instance
       because of drop_na()
+    o Bug fix in function recode(), the number of labels is now checked to be
+      equal to the number of recodings
+    o New class method for matrices (coerced to data frames) in function using()
 
 Version 0.38
     o Bug fix in function recode() treating NA values using the argument cut

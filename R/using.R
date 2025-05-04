@@ -14,10 +14,36 @@
         }
         expr <- str2lang(paste(names(args), args[[1]], sep = "<-"))
     }
-    eval(substitute(expr), data, enclos = parent.frame())
+
+    test <- tryCatchWEM(
+        result <- eval(substitute(expr), envir = data, enclos = parent.frame())
+    )
+
+    if (is.null(test$error)) {
+        return(result)
+    }
+
+    stopError(test$error)
 }
 
-`using.data.frame` <- function(data, expr, split.by = NULL, ...) {
+`using.matrix` <- function(data, expr, split.by = NULL, ...) {
+    if (missing(expr)) {
+        args <- unlist(lapply(match.call(), deparse)[-1])
+        args <- args[setdiff(names(args), c("data", "expr"))]
+        if (length(args) > 1) {
+            stopError("Missing or ambiguous expression")
+        }
+        expr <- str2lang(paste(names(args), args[[1]], sep = "<-"))
+    }
+
+    expr <- substitute(expr)
+
+    return( # forward to using.data.frame
+        using(as.data.frame(data), expr, split.by = split.by, ... = ...)
+    )
+}
+
+`using.data.frame` <- function(data, expr = expr, split.by = NULL, ...) {
 
     if (nrow(data) == 0) {
         stopError("There are no rows in the data.")
@@ -25,7 +51,13 @@
 
     ### TODO: see evalq() from within.data.frame
 
-    split.by <- substitute(split.by)
+
+    test <- substitute(split.by) # to capture forwarding from using.matrix
+    split.by <- NULL
+    if (!identical(as.character(test), "split.by")) {
+        split.by <- test
+    }
+
     sby <- all.vars(split.by)
     nsby <- all.names(split.by)
 
@@ -53,7 +85,12 @@
         }
         expr <- str2lang(paste(names(args), args[[1]], sep = "<-"))
     }
-    expr <- substitute(expr)
+
+    test <- substitute(expr) # to capture forwarding from using.matrix
+    if (!identical(as.character(test), "expr")) {
+        expr <- test
+    }
+
     vexpr <- all.vars(expr)
 
     # capture the use of "all variables" in a formula, for instance lm(y ~ .)
@@ -67,7 +104,16 @@
         # ret <- eval(expr = expr, envir = data, enclos = parent.frame())
         # class(ret) <- c("admisc_fobject", class(ret))
         # return(ret)
-        return(eval(expr = expr, envir = data, enclos = parent.frame()))
+
+        test <- tryCatchWEM(
+            result <- eval(expr, envir = data, enclos = parent.frame())
+        )
+
+        if (is.null(test$error)) {
+            return(result)
+        }
+
+        stopError(gsub("object", "column", test$error))
     }
 
     nms <- names(data)
