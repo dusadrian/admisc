@@ -1,7 +1,43 @@
 `compute` <-
 function(expression = "", data = NULL, separate = FALSE, ...) { # na.rm = FALSE
 
+    # funargs <- lapply(
+    #     lapply(match.call(), deparse)[-1],
+    #     function(x) gsub(paste0("'|\"|[[:space:]|", "\u00a0", "]"), "", x)
+    # )
+
+    # expression <- funargs$expression
     expression <- recreate(substitute(expression))
+
+    syscalls <- as.character(sys.calls())
+    usingwith <- "admisc::using\\(|using\\(|with\\("
+
+    if (is.null(data)) {
+        if (any(usingdata <- grepl(usingwith, syscalls))) {
+            dataname <- unlist(strsplit(gsub(usingwith, "", syscalls), split = ","))[1]
+            data <- eval.parent(parse(text = dataname, n = 1))
+        }
+    }
+
+    if (!is.element(expression, colnames(data))) { # this works even if data is NULL
+        # check if the expression is a single object name from the parent environment
+        if (exists(expression, envir = parent.frame())) {
+            # expression might be an object name such as D
+            # but D might also a function in the global environment: D() so a false positive
+            temp <- eval.parent(parse(text = expression, n = 1))
+            if (!is.function(temp)) {
+                expression <- temp
+            }
+        } else if (grepl("\\$", expression)) {
+            # for instance: compute(foo$expression, data = bar)
+            expression <- eval(parse(text = expression), envir = parent.frame())
+        }
+
+        if (!is.atomic(expression) || length(expression) > 1 || !is.character(expression)) {
+            stopError("The function compute() expects a single character string for an expression.")
+        }
+    }
+
     if (grepl("<-|<=|=>|->", expression)) {
         stopError("This function is not intended to calculate parameters of fit.")
     }
@@ -18,41 +54,29 @@ function(expression = "", data = NULL, separate = FALSE, ...) { # na.rm = FALSE
     expression <- gsub("1-", "", expression)
 
     if (is.null(data)) {
-        syscalls <- as.character(sys.calls())
-        usingwith <- "admisc::using\\(|using\\(|with\\("
-        if (any(usingdata <- grepl(usingwith, syscalls))) {
-            dataname <- unlist(strsplit(gsub(usingwith, "", syscalls), split = ","))[1]
-            data <- eval.parent(parse(text = dataname, n = 1))
-            # data <- get(
-            #     dataname,
-            #     envir = length(syscalls) - tail(which(usingdata), 1)
-            # )
-        }
-        else {
-
-            colnms <- colnames(
-                validateNames(
-                    notilde(expression),
-                    sort(eval.parent(parse(text = "ls()", n = 1)))
-                )
+        # argument data is still NULL, despite being checked above
+        # this means compute() works with separate objects from the global environment
+        # e.g. compute(DEV + URB) where both DEV and URB are separate objects
+        colnms <- colnames(
+            validateNames(
+                notilde(expression),
+                sort(eval.parent(parse(text = "ls()", n = 1)))
             )
+        )
 
-            data <- vector(mode = "list", length = length(colnms))
-            for (i in seq(length(data))) {
-                data[[i]] <- eval.parent(
-                    parse(text = sprintf("get(\"%s\")", colnms[i]), n = 1)
-                )
-            }
-
-            # TODO: ?model.frame
-
-            if (length(unique(unlist(lapply(data, length)))) > 1) {
-                stopError("Objects should be vectors of the same length.")
-            }
-
-            names(data) <- colnms
-            data <- as.data.frame(data)
+        data <- vector(mode = "list", length = length(colnms))
+        for (i in seq(length(data))) {
+            data[[i]] <- eval.parent(
+                parse(text = sprintf("get(\"%s\")", colnms[i]), n = 1)
+            )
         }
+
+        if (length(unique(sapply(data, length))) > 1) {
+            stopError("Objects should be vectors of the same length.")
+        }
+
+        names(data) <- colnms
+        data <- as.data.frame(data)
     }
 
     multivalue <- grepl("\\{|\\}|\\[|\\]", expression)
