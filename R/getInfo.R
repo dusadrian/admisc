@@ -15,13 +15,6 @@
         }
     })))
 
-    ## TODO: remove this after QCA >= 3.22
-    if (!isTRUE(dots$no_column_info)) {
-        if (length(dc.code) > 1) {
-            stopError("Multiple \"don't care\" codes found.")
-        }
-    }
-
     fuzzy.cc <- logical(ncol(data))
     hastime <- logical(ncol(data))
     factor <- sapply(data, is.factor)
@@ -50,7 +43,7 @@
             if (!fuzzy.cc[i] & !anyNA(cc)) {
                 if (any(na.omit(cc) < 0)) {
                     hastime[i] <- TRUE
-                    cc[cc < 0] <- max(cc) + 1 # TODO if declared...?
+                    cc[cc < 0] <- max(cc) + 1
                 }
             }
 

@@ -2,7 +2,6 @@
 
     # TO DO: capture and error the usage of both "cD" and "D*E" in the same expression
 
-    # return(substitute(input))
     input <- recreate(substitute(input))
     snames <- recreate(substitute(snames))
     dots <- list(...)

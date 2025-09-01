@@ -173,8 +173,7 @@
 
         if (!is.null(data)) {
             # getInfo() not getLevels() because some data might have time information
-            ## TODO: remove "no_column_info" after QCA >= 3.22
-            infodata <- getInfo(data, no_column_info = TRUE)
+            infodata <- getInfo(data)
             noflevels <- infodata$noflevels
         }
     }
