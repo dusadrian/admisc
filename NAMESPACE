@@ -90,6 +90,7 @@ export(
     verify,
     wholeNumeric,
     write.clipboard,
+    writePrimeimp,
     writePIs,
 
         splitMainComponents,
