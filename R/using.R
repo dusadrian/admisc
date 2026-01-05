@@ -15,12 +15,23 @@
         expr <- str2lang(paste(names(args), args[[1]], sep = "<-"))
     }
 
-    test <- tryCatchWEM(
-        result <- eval(substitute(expr), envir = data, enclos = parent.frame())
-    )
+    visible <- TRUE
+    result <- NULL
+
+    test <- tryCatchWEM({
+        tmp <- withVisible(
+            eval(substitute(expr), envir = data, enclos = parent.frame())
+        )
+        visible <- tmp$visible
+        result <- tmp$value
+    })
 
     if (is.null(test$error)) {
-        return(result)
+        if (visible) {
+            return(result)
+        }
+
+        return(invisible(result))
     }
 
     stopError(test$error)
@@ -105,12 +116,23 @@
         # class(ret) <- c("admisc_fobject", class(ret))
         # return(ret)
 
-        test <- tryCatchWEM(
-            result <- eval(expr, envir = data, enclos = parent.frame())
-        )
+        visible <- TRUE
+        result <- NULL
+
+        test <- tryCatchWEM({
+            tmp <- withVisible(
+                eval(expr, envir = data, enclos = parent.frame())
+            )
+            visible <- tmp$visible
+            result <- tmp$value
+        })
 
         if (is.null(test$error)) {
-            return(result)
+            if (visible) {
+                return(result)
+            }
+
+            return(invisible(result))
         }
 
         stopError(gsub("object", "column", test$error))
@@ -214,6 +236,7 @@
     ###--------------------------------
 
     res <- vector(mode = "list", length = nrow(slexp))
+    visible <- TRUE
 
     for (r in seq(nrow(slexp))) {
         selection <- rep(TRUE, nrow(data))
@@ -244,11 +267,15 @@
         }
 
         if (sum(selection, na.rm = TRUE) > 0) {
-            res[[r]] <- eval(
-                expr = expr,
-                envir = subset(data, selection),
-                enclos = parent.frame()
+            tmp <- withVisible(
+                eval(
+                    expr = expr,
+                    envir = subset(data, selection),
+                    enclos = parent.frame()
+                )
             )
+            visible <- tmp$visible
+            res[[r]] <- tmp$value
             # res[[r]] <- with(subset(data, selection), eval(expr))
         }
     }
@@ -345,6 +372,10 @@
         class(res) <- c("admisc_fobject", class(res))
     }
 
-    return(res)
+    if (visible) {
+        return(res)
+    }
+
+    return(invisible(res))
 }
 
