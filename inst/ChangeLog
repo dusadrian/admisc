@@ -1,3 +1,6 @@
+Version 0.40
+    o Function using() now correctly detects invisibly returned values
+
 Version 0.39
     o Improved detection of sufficiency, in function recreate()
     o Fixed printing bug in objects of class "admisc_fobject", when expressions
