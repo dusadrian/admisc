@@ -379,3 +379,26 @@
     return(invisible(res))
 }
 
+
+`[.admisc_fobject` <- function(x, i, j, drop = FALSE, ...) {
+    class(x) <- setdiff(class(x), "admisc_fobject")
+    if (is.matrix(x)) {
+        dims <- dimnames(x)
+        if (!is.null(dims)) {
+            if (!is.null(dims[[1]]) && !missing(i) && !is.null(i)) {
+                dims[[1]] <- dims[[1]][i]
+            }
+            if (!is.null(dims[[2]]) && !missing(j) && !is.null(j)) {
+                dims[[2]] <- dims[[2]][j]
+            }
+        }
+        x <- NextMethod()
+        x <- as.matrix(x)
+        dimnames(x) <- dims
+    } else {
+        x <- NextMethod()
+    }
+
+    class(x) <- c("admisc_fobject", class(x))
+    return(x)
+}

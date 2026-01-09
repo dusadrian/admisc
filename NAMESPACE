@@ -113,6 +113,7 @@ S3method(print, "admisc_translate")
 S3method(print, "admisc_deMorgan")
 S3method(print, "admisc_simplify")
 S3method(print, "admisc_fobject")
+S3method("[", "admisc_fobject")
 
 S3method(export, default)
 S3method(export, data.frame)
