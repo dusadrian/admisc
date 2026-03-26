@@ -1,3 +1,4 @@
+#' @export
 `getInfo` <- function(data, ...) {
 
     dots <- list(...)

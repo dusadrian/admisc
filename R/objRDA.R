@@ -1,3 +1,4 @@
+#' @export
 `objRDA` <- function(.filename) {
     attached_filename <- paste0("file:", .filename, "")
     suppressMessages(do.call("attach", list(what = .filename, name = attached_filename)))

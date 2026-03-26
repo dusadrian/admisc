@@ -1,3 +1,4 @@
+#' @export
 `trimstr` <- function(x, what = " ", side = "both") {
     # as once identified with grepl("[^!-~ ]", x) on students' emails from the
     # secretariat, containing a multibyte space
@@ -22,6 +23,7 @@
 }
 
 
+#' @export
 `splitstr` <- function(x) {
 
     if (identical(x, "") || is.null(x)) return(x)
@@ -110,6 +112,7 @@
 }
 
 
+#' @export
 `splitMainComponents` <- function(expression) {
 
     expression <- gsub("[[:space:]]", "", expression)
@@ -268,6 +271,7 @@
 
 #####
 # split each main component by separating brackets components
+#' @export
 `splitBrackets` <- function(big.list) {
     # big.list <- as.vector(unlist(big.list))
     # result <- vector(mode="list", length = length(big.list))
@@ -285,6 +289,7 @@
 
 #####
 # remove individual components with single "*" signs
+#' @export
 `removeSingleStars` <- function(big.list) {
     return(lapply(big.list, function(x) {
         single.stars <- unlist(lapply(x, function(y) {
@@ -298,6 +303,7 @@
 
 #####
 # split by "+"
+#' @export
 `splitPluses` <- function(big.list) {
     return(lapply(big.list, function(x) {
         lapply(x, function(y) {
@@ -311,6 +317,7 @@
 
 #####
 # split by "*"
+#' @export
 `splitStars` <- function(big.list, prod.split) {
     return(lapply(big.list, function(x) {
         lapply(x, function(y) {
@@ -339,6 +346,7 @@
 
 #####
 # split by "~"
+#' @export
 `splitTildas` <- function (big.list) {
     return(lapply(big.list, function(x) {
         lapply(x, function(y) {
@@ -366,6 +374,7 @@
 
 ######
 # determine if and which main components have brackets, and SOLVE them
+#' @export
 `solveBrackets` <- function(big.list) {
 
 
@@ -405,6 +414,7 @@
 
 
 
+#' @export
 `simplifyList` <- function(big.list) {
     lengths <- unlist(lapply(big.list, function(x) length(x[[1]])))
 
@@ -436,6 +446,7 @@
 
 
 
+#' @export
 `getNonChars` <- function(x) {
     # split by "+", incluging the trimming of the white space
     x <- gsub("^[[:space:]]+|[[:space:]]+$", "", unlist(strsplit(x, "\\+")))

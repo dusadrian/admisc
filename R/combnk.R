@@ -1,3 +1,52 @@
+#' Generate all combinations of n numbers, taken k at a time
+#'
+#' A fast function to generate all possible combinations of n numbers, taken k at a time,
+#' starting from the first k numbers or starting from a combination that contain a
+#' certain number.
+#'
+#' @name combnk
+#' @rdname combnk
+#' @rawRd
+#' \usage{
+#' combnk(n, k, ogte = 0, zerobased = FALSE)
+#' }
+#'
+#' \arguments{
+#'     \item{n}{Vector of any kind, or a numerical scalar.}
+#'     \item{k}{Numeric scalar.}
+#'     \item{ogte}{At least one value greater than or equal to this number.}
+#'     \item{zerobased}{Logical, zero or one based.}
+#' }
+#'
+#' \details{
+#' When a scalar, argument \code{n} should be numeric, otherwise when a vector its
+#' length should not be less than \code{k}.
+#'
+#' When the argument \bold{\code{ogte}} is specified, the combinations will sequentially
+#' be incremented from those which contain a certain number, or a certain position from
+#' \code{n} when specified as a vector.
+#' }
+#'
+#'
+#' \value{
+#' A matrix with \code{k} rows and \code{choose(n, k)} columns.
+#' }
+#'
+#' \author{
+#' Adrian Dusa
+#' }
+#'
+#' \examples{
+#' combnk(5, 2)
+#'
+#' combnk(5, 2, ogte = 3)
+#'
+#' combnk(letters[1:5], 2)
+#' }
+#'
+#' \keyword{functions}
+NULL
+#' @export
 `combnk` <- function(n, k, ogte = 0, zerobased = FALSE) {
     
     if (!is.numeric(k)) {
@@ -35,57 +84,16 @@
         n <- len
     }
     
-    if (requireNamespace("QCA", quietly = TRUE)) {
-        resmat <- QCA::combint(n = n, k = k, ogte = ogte, zerobased = zerobased)
-    }
-    else {
-        e <- 0L
-        ncols <- choose(n, k)
-        h <- k - ncols == 1
-        
-        out <- vector(mode = "list", length = ncols)
-        
-        comb <- seq.int(k) - zerobased # subtract 1 if zero based
-        comb[k] <- comb[k] - 1L
-        
-        last <- n == k
-        i <- 1
-        
-        while (comb[1] != n - k + 1 || last) {
-            last <- FALSE
-            if (e < n - h) {
-                h <- 1L
-                e <- comb[k] + zerobased # add 1 if zero based
-                comb[k] <- comb[k] + 1L
-                
-                if (comb[k] < ogte) {
-                    comb[k] <- ogte
-                    e <- ogte - 1
-                }
-            }
-            else {
-                e <- comb[k - h] + zerobased # add 1 if zero based
-                h <- h + 1L
-                
-                under <- logical(h)
-                for (j in seq(h)) {
-                    under[j] <- (e + j - zerobased < ogte) # subtract 1 if zero based
-                    comb[k - h + j] <- e + j - zerobased  # subtract 1 if zero based
-                }
-                
-                if (all(under)) {
-                    comb[k] <- ogte
-                    e <- ogte - 1
-                    h <- 1L
-                }
-            }
-            
-            out[[i]] <- comb
-            i <- i + 1
-        }
-        
-        resmat <- do.call("cbind", out[!unlist(lapply(out, is.null))])
-    }
+    resmat <- .Call(
+        "C_ombnk",
+        list(
+            n = as.integer(n),
+            k = as.integer(k),
+            ogte = as.integer(ogte),
+            zerobased = as.integer(zerobased)
+        ),
+        PACKAGE = "admisc"
+    )
 
     if (lngt1) {
         resmat <- matrix(copyn[resmat], nrow = nrow(resmat))

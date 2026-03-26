@@ -1,3 +1,4 @@
+#' @export
 `verify` <- function(data) {
     if (is.data.frame(data)) {
         if (is.null(colnames(data))) {

@@ -1,3 +1,4 @@
+#' @export
 `asSOP` <- function(
     expression = "", snames = "", noflevels = NULL
 ) {

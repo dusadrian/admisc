@@ -1,3 +1,81 @@
+#' Extract information from a multi-value SOP/DNF expression
+#'
+#' Functions to extract information from an expression written in SOP, or in the
+#' canonical DNF, for multi-value causal conditions. They extract either the
+#' values within brackets, or the causal condition names outside the brackets.
+#'
+#' @name betweenBrackets
+#' @rdname brackets
+#' @aliases insideBrackets
+#' @aliases outsideBrackets
+#' @aliases curlyBrackets
+#' @aliases squareBrackets
+#' @aliases roundBrackets
+#'
+#' @param x A DNF/SOP expression.
+#' @param type Brackets type: curly, round or square.
+#' @param invert Logical, if activated returns whatever is not within the
+#' brackets.
+#' @param outside Logical, if activated returns the condition names outside the
+#' brackets.
+#' @param regexp Optional regular expression to extract information with.
+#' @param expression A DNF/SOP expression.
+#' @param snames A string containing the sets' names, separated by commas.
+#' @param noflevels Numerical vector containing the number of levels for each
+#' set.
+#' @param simplify Logical, remove redundant expressions after expansion.
+#'
+#' @details
+#' Expressions written in SOP are used in Boolean logic, signaling a
+#' disjunction of conjunctions.
+#'
+#' These expressions are useful in Qualitative Comparative Analysis, a social
+#' science methodology used to search for causal configurations associated with
+#' a certain outcome.
+#'
+#' They are also used to draw Venn diagrams with package `venn`, which draws
+#' any kind of set intersection based on a custom SOP expression.
+#'
+#' `curlyBrackets()`, `squareBrackets()` and `roundBrackets()` are special cases
+#' of `betweenBrackets()` and `outsideBrackets()`, using curly, square or round
+#' brackets through the `type` argument.
+#'
+#' `outsideBrackets()` can also be seen as a special case of
+#' `betweenBrackets(invert = TRUE)`.
+#'
+#' SOP expressions are usually written using curly brackets for multi-value
+#' conditions but, to allow evaluation of unquoted expressions through R's
+#' parser, unquoted expressions should use square brackets and conjunctions
+#' should always use the product `*` sign.
+#'
+#' Sufficiency is recognized as `"=>"` in quoted expressions but this does not
+#' pass over R's parsing system in unquoted expressions. To overcome this
+#' problem, it is best to use the single arrow `"->"` notation. Necessity is
+#' recognized as either `"<="` or `"<-"`, both being valid in quoted and
+#' unquoted expressions.
+#'
+#' @author Adrian Dusa
+#'
+#' @examples
+#' sop <- "A[1] + B[2]*C[0]"
+#'
+#' betweenBrackets(sop)
+#' betweenBrackets(sop, invert = TRUE)
+#'
+#' # unquoted (valid) SOP expressions are allowed, same result
+#' betweenBrackets(A[1] + B[2]*C[0])
+#'
+#' # curly brackets are also valid in quoted expressions
+#' betweenBrackets("A{1} + B{2}*C{0}", type = "{")
+#' curlyBrackets("A{1} + B{2}*C{0}")
+#' curlyBrackets("A{1} + B{2}*C{0}", outside = TRUE)
+#'
+#' squareBrackets(A[1] + B[2]*C[0])
+#' squareBrackets(A[1] + B[2]*C[0], outside = TRUE)
+#'
+#' @keywords functions
+NULL
+#' @export
 `betweenBrackets` <- function(x, type = "[", invert = FALSE, regexp = NULL) {
     x <- recreate(substitute(x))
     typematrix <- matrix(c("{", "[", "(", "}", "]", ")", "{}", "[]", "()"), nrow = 3)
@@ -31,6 +109,7 @@
 }
 
 
+#' @export
 `insideBrackets` <- function(...) {
     .Deprecated(msg = "Function insideBrackets() is deprecated, use betweenBrackets().\n")
     betweenBrackets(...)
@@ -38,6 +117,7 @@
 
 
 
+#' @export
 `outsideBrackets` <- function(x, type = "[", regexp = NULL) {
     x <- recreate(substitute(x))
     typematrix <- matrix(c("{", "[", "(", "}", "]", ")", "{}", "[]", "()"), nrow = 3)
@@ -68,6 +148,7 @@
 }
 
 
+#' @export
 `curlyBrackets` <- function(x, outside = FALSE, regexp = NULL) {
     x <- recreate(substitute(x))
     # just in case it was previously split
@@ -93,6 +174,7 @@
 }
 
 
+#' @export
 `squareBrackets` <- function(x, outside = FALSE, regexp = NULL) {
     x <- recreate(substitute(x))
     # just in case it was previously split
@@ -116,6 +198,7 @@
 }
 
 
+#' @export
 `roundBrackets` <- function(x, outside = FALSE, regexp = NULL) {
     x <- recreate(substitute(x))
     if (is.null(regexp)) {
@@ -133,6 +216,7 @@
 }
 
 
+#' @export
 `expandBrackets` <- function(
     expression, snames = "", noflevels = NULL, scollapse = FALSE
 ) {

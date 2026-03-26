@@ -1,3 +1,4 @@
+#' @export
 `checkValid` <- function(
     expression = "", snames = "", data = NULL, categories = list()
 ) {

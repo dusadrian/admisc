@@ -1,4 +1,5 @@
 
+#' @export
 `print.admisc_deMorgan` <- function(x, ...) {
 
     prettyNums <- formatC(seq(length(x)), digits = nchar(length(x)) - 1, flag = 0)
@@ -52,6 +53,7 @@
     }
 }
 
+#' @export
 `print.admisc_intersection` <- function(x, ...) {
 
     prettyNums <- formatC(seq(length(x)), digits = nchar(length(x)) - 1, flag = 0)
@@ -85,6 +87,7 @@
     cat("\n")
 }
 
+#' @export
 `print.admisc_simplify` <- function(x, ...) {
     prettyNums <- formatC(seq(length(x)), digits = nchar(length(x)) - 1, flag = 0)
 
@@ -105,6 +108,7 @@
     cat("\n")
 }
 
+#' @export
 `print.admisc_factorize` <- function(x, ...) {
 
     prettyNums <- formatC(seq(length(x)), digits = nchar(length(x)) - 1, flag = 0)
@@ -158,6 +162,7 @@
     }
 }
 
+#' @export
 `print.admisc_translate` <- function(x, ...) {
 
     dots <- list(...)
@@ -198,6 +203,7 @@
     cat("\n")
 }
 
+#' @export
 `print.admisc_fobject` <- function(x, startend = TRUE, ...) {
 
     class(x) <- setdiff(class(x), "admisc_fobject")

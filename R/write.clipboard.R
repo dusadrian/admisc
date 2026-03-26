@@ -1,3 +1,4 @@
+#' @export
 write.clipboard <- function (x) {
     ### TODO: special treatment for the wtable() objects
     if (Sys.info()[['sysname']] == "Darwin") {

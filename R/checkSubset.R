@@ -1,3 +1,4 @@
+#' @export
 `checkSubset` <- function(mat, implicants = TRUE) {
     for (i in 1:2) {
         eqz <- mat[i, ] == ifelse(implicants, 0, -1)

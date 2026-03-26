@@ -1,3 +1,5 @@
+#' @export
+#' @noRd
 `compute` <-
 function(expression = "", data = NULL, separate = FALSE, ...) { # na.rm = FALSE
 

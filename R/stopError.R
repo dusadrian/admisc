@@ -1,3 +1,4 @@
+#' @export
 `stopError` <- function(message, enter = "\n", ...) {
 
     dots <- list(...)

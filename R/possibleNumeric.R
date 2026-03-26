@@ -1,3 +1,4 @@
+#' @export
 `possibleNumeric` <- function(x, each = FALSE) {
 
     result <- rep(NA, length(x))

@@ -1,3 +1,4 @@
+#' @export
 `expand` <- function(expression = "", snames = "", noflevels = NULL,
     partial = FALSE, implicants = FALSE, ...) {
 # `expand` <- function(x, noflevels = NULL) {

@@ -1,10 +1,79 @@
-# http://adv-r.had.co.nz/Computing-on-the-language.html
-# https://developer.r-project.org/nonstandard-eval.pdf
+#' Evaluate an expression in a data environment
+#'
+#' A function almost identical to the base function \code{with()}, but allowing
+#' to evaluate the expression in every subset of a split file.
+#'
+#' @name using
+#' @rdname using
+#' @aliases using.data.frame
+#' @rawRd
+#' \usage{
+#' using(data, expr, split.by = NULL, ...)
+#' }
+#'
+#' \arguments{
+#'     \item{data}{A data frame.}
+#'     \item{expr}{Expression to evaluate}
+#'     \item{split.by}{A factor variable from the \code{data}, or a \code{declared}/\code{labelled} variable}
+#'     \item{...}{Other internal arguments.}
+#' }
+#'
+#' \value{
+#' A list of results, or a matrix if each separate result is a vector.
+#' }
+#'
+#'
+#' \author{
+#' Adrian Dusa
+#' }
+#'
+#' \examples{
+#' set.seed(123)
+#' DF <- data.frame(
+#'     Area = factor(sample(c("Rural", "Urban"), 123, replace = TRUE)),
+#'     Gender = factor(sample(c("Female", "Male"), 123, replace = TRUE)),
+#'     Age = sample(18:90, 123, replace = TRUE),
+#'     Children = sample(0:5, 123, replace = TRUE)
+#' )
+#'
+#'
+#' # table of frequencies for Gender
+#' table(DF$Gender)
+#'
+#' # same with
+#' using(DF, table(Gender))
+#'
+#' # same, but split by Area
+#' using(DF, table(Gender), split.by = Area)
+#'
+#' # calculate the mean age by gender
+#' using(DF, mean(Age), split.by = Gender)
+#'
+#' # same, but select cases from the urban area
+#' using(subset(DF, Area == "Urban"), mean(Age), split.by = Gender)
+#'
+#' # mean age by gender and area
+#' using(DF, mean(Age), split.by = Area & Gender)
+#'
+#' # same with
+#' using(DF, mean(Age), split.by = c(Area, Gender))
+#'
+#' # average number of children by Area
+#' using(DF, mean(Children), split.by = Area)
+#'
+#' # frequency tables by Area
+#' using(DF, table(Children), split.by = Area)
+#' }
+#'
+#' \keyword{functions}
+NULL
 
+#' @export
 `using` <- function(data, expr, split.by = NULL, ...) {
     UseMethod("using")
 }
 
+#' @export
 `using.default` <- function(data, expr, ...) {
     if (missing(expr)) {
         args <- unlist(lapply(match.call(), deparse)[-1])
@@ -37,6 +106,7 @@
     stopError(test$error)
 }
 
+#' @export
 `using.matrix` <- function(data, expr, split.by = NULL, ...) {
     if (missing(expr)) {
         args <- unlist(lapply(match.call(), deparse)[-1])
@@ -54,6 +124,7 @@
     )
 }
 
+#' @export
 `using.data.frame` <- function(data, expr = expr, split.by = NULL, ...) {
 
     if (nrow(data) == 0) {
@@ -380,6 +451,7 @@
 }
 
 
+#' @export
 `[.admisc_fobject` <- function(x, i, j, drop = FALSE, ...) {
     class(x) <- setdiff(class(x), "admisc_fobject")
     if (is.matrix(x)) {

@@ -1,3 +1,4 @@
+#' @export
 `reload` <- function(package, silent = TRUE) {
     package <- as.character(substitute(package))
     unload(package)

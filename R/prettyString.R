@@ -1,3 +1,5 @@
+#' @export
+#' @noRd
 `prettyString` <-
 function(string.vector, string.width = 80, repeat.space = 5, separator = ",", sufnec = "",
          outcome = "", cases = FALSE) {
@@ -58,5 +60,3 @@ function(string.vector, string.width = 80, repeat.space = 5, separator = ",", su
     }
     return(string)
 }
-
-

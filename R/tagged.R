@@ -1,3 +1,4 @@
+#' @export
 `makeTag` <- function(...) {
     x <- as.character(c(...))
     
@@ -7,6 +8,7 @@
     return(x)
 }
 
+#' @export
 `hasTag` <- function(x, tag = NULL) {
     if (!is.double(x)) {
         return(logical(length(x)))
@@ -23,6 +25,7 @@
     return(.Call("_has_tag", x, tag, PACKAGE = "admisc"))
 }
 
+#' @export
 `getTag` <- function(x) {
     if (is.double(x)) {
         x <- .Call("_get_tag", x, PACKAGE = "admisc")
@@ -37,6 +40,7 @@
     }
 }
 
+#' @export
 `anyTagged` <- function(x) {
     if (is.data.frame(x)) {
         i <- 1

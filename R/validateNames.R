@@ -1,3 +1,5 @@
+#' @export
+#' @noRd
 `validateNames` <-
 function(expression = "", snames = "", data = NULL) {
 

@@ -1,3 +1,4 @@
+#' @export
 `getLevels` <- function(data) {
     data <- as.data.frame(data)
 

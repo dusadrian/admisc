@@ -1,3 +1,4 @@
+#' @export
 `mvSOP` <- function(
     expression = "", snames = "", data = NULL, keep.tilde = TRUE, ...
 ) {

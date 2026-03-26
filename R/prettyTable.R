@@ -1,3 +1,5 @@
+#' @export
+#' @noRd
 `prettyTable` <-
 function(input) {
     
@@ -28,4 +30,3 @@ function(input) {
     
     return(noquote(input))
 }
-

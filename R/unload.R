@@ -1,3 +1,4 @@
+#' @export
 `unload` <- function(package) {
     package <- recreate(substitute(package))
     

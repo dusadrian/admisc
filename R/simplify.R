@@ -1,3 +1,4 @@
+#' @export
 `simplify` <- function(expression = "", snames = "", noflevels = NULL, ...) {
     
     expression <- recreate(substitute(expression))
@@ -49,16 +50,25 @@
         noflevels <- rep(2, ncol(implicants))
     }
 
-    version <- -1
-    if (requireNamespace("QCA", quietly = TRUE)) {
-        version <- compareVersion(
-            packageDescription("QCA")$Version,
-            "3.7"
+    qca_version <- tryCatch(
+        if (requireNamespace("QCA", quietly = TRUE)) {
+            packageDescription("QCA")$Version
+        }
+        else {
+            NULL
+        },
+        error = function(e) NULL
+    )
+
+    if (is.null(qca_version) || compareVersion(qca_version, "3.7") < 0) {
+        message(
+            paste(
+                enter,
+                "Package QCA (>= 3.7) is needed to simplify this expression.",
+                enter,
+                sep = ""
+            )
         )
-    }
-    
-    if (version < 0) {
-        message(paste(enter, "Error: Package QCA (>= 3.7) is needed to make this work, please install it.", enter, sep = ""))
         return(invisible(character(0)))
     }
     
@@ -74,6 +84,15 @@
             if (grepl("All truth table", test$error)) {
                 return("")
             }
+            message(
+                paste(
+                    enter,
+                    "QCA minimization failed.",
+                    enter,
+                    sep = ""
+                )
+            )
+            return(invisible(character(0)))
         }
     }
 
@@ -109,6 +128,7 @@
 
 
 
+#' @export
 `sop` <- function(...) {
     .Deprecated(msg = "Function sop() is deprecated, and has been renamed to simplify()\n")
     simplify(...)

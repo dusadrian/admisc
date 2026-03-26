@@ -1,3 +1,4 @@
+#' @export
 `getMatrix` <- function(noflevels, depth = 0) {
     # old version of the createMatrix() code in package QCA
     

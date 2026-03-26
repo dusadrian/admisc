@@ -1,3 +1,4 @@
+#' @export
 `update.character` <- function(object, ...) {
     dots <- list(...)
     Call <- as.list(match.call(expand.dots = TRUE))[-1]

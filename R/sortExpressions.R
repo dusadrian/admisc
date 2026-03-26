@@ -1,3 +1,4 @@
+#' @export
 `sortExpressions` <- function(x) {
 
     if (is.matrix(x)) {

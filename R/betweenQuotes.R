@@ -1,3 +1,32 @@
+#' Extract information between quotes in a string
+#'
+#' Functions to extract the between the (escaped) quotes, in a string.
+#'
+#' @name betweenQuotes
+#' @rdname betweenQuotes
+#' @rawRd
+#' \usage{
+#' betweenQuotes(x)
+#' }
+#'
+#' \arguments{
+#'   \item{x}{A string.}
+#' }
+#'
+#'
+#' \author{
+#' Adrian Dusa
+#' }
+#'
+#' \examples{
+#' x <- "An example of \"quoted\" text."
+#'
+#' betweenQuotes(x)
+#' }
+#'
+#' \keyword{functions}
+NULL
+#' @export
 `betweenQuotes` <- function(x) {
     pos <- gregexpr("\"", x)
     lpos <- length(pos[[1]])

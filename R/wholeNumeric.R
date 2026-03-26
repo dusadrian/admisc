@@ -1,3 +1,4 @@
+#' @export
 `wholeNumeric` <- function(x, each = FALSE) {
     if (inherits(x, "haven_labelled") || inherits(x, "declared")) {
         return(Recall(unclass(x), each = each))

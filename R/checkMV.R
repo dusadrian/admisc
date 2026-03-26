@@ -1,3 +1,4 @@
+#' @export
 `checkMV` <- function(
     expression, snames = "", noflevels = NULL, data = NULL, use.labels = FALSE, categories = list(), ...
 ) {

@@ -1,3 +1,4 @@
+#' @export
 `uninstall` <- function(package) {
     package <- gsub("\\\"", "", deparse(substitute(package)))
     admisc::unload(package)

@@ -1,3 +1,4 @@
+#' @export
 `writePIs` <- function(
     impmat, mv = FALSE, collapse = "*", snames = "", curly = FALSE,
     use.labels = FALSE, categories = list(), ...
@@ -73,7 +74,3 @@
     )
 }
 
-
-`writePrimeimp` <- function(...) {
-    writePIs(...)
-}
