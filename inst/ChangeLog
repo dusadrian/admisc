@@ -1,5 +1,7 @@
 Version 0.40
     o Function using() now correctly detects invisibly returned values
+    o Package documentation now uses roxygen2
+    o Fixed situations when package QCA is needed but not installed
 
 Version 0.39
     o Improved detection of sufficiency, in function recreate()
