@@ -1,8 +1,23 @@
 #include <R.h>
-#include <Rinternals.h>
 #include <stdbool.h>
 #include <R_ext/Rdynload.h>
+#include "admisc.h"
 
+#ifdef _OPENMP
+    /* <Rinternals.h> defines macro match that seems to break <omp.h> on some versions of Clang.
+    See https://github.com/Bioconductor/SparseArray/blob/533a86a5fee60e5bcb2f5cd8c16f2019eca8ac04/src/thread_control.c#L7-L10 */
+    #undef match
+
+    #include <omp.h>
+    // a la package collapse
+    #define OMP_NUM_PROCS omp_get_num_procs()
+    #define OMP_THREAD_LIMIT omp_get_thread_limit()
+    #define OMP_MAX_THREADS omp_get_max_threads()
+#else
+    #define OMP_NUM_PROCS 1
+    #define OMP_THREAD_LIMIT 1
+    #define OMP_MAX_THREADS 1
+#endif
 
 typedef union {
     double value;
@@ -246,3 +261,5 @@ SEXP _get_tag(SEXP x) {
     UNPROTECT(1);
     return out;
 }
+
+
