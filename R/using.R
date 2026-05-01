@@ -103,7 +103,7 @@ NULL
         return(invisible(result))
     }
 
-    stopError(test$error)
+    stopError(test$error, prenter = FALSE)
 }
 
 #' @export
@@ -206,7 +206,7 @@ NULL
             return(invisible(result))
         }
 
-        stopError(gsub("object", "column", test$error))
+        stopError(gsub("object", "column", test$error), prenter = FALSE)
     }
 
     nms <- names(data)

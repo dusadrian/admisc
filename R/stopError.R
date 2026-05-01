@@ -3,11 +3,17 @@
 
     dots <- list(...)
     
+    message <- trimws(message)
+
+    message <- unlist(
+        strsplit(message, split = "\\n")
+    )
+
+    message <- message[nzchar(message)]
+
     message <- paste0(
         "Error: ",
-        unlist(
-            strsplit(message, split = "\\n")
-        )
+        message
     )
 
     for (i in seq(length(message))) {
