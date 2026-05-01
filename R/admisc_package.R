@@ -26,8 +26,8 @@
 #' \tabular{ll}{
 #'   Package: \tab admisc\cr
 #'   Type: \tab Package\cr
-#'   Version: \tab 0.40\cr
-#'   Date: \tab 2026-03-26\cr
+#'   Version: \tab 0.40.1\cr
+#'   Date: \tab 2026-05-01\cr
 #'   License: \tab GPL (>= 3)\cr
 #' }
 #'

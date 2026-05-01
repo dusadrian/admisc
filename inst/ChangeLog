@@ -1,3 +1,7 @@
+Version 0.41
+    o Functions using() and stopError() now work better together
+    o Function inside() now detects duplicated variables names
+
 Version 0.40
     o Function using() now correctly detects invisibly returned values
     o Package documentation now uses roxygen2
