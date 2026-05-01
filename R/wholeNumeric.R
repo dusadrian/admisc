@@ -15,7 +15,7 @@
     if (all(isna) || is.logical(x)) {
         # each is certainly TRUE because if they are all missing or all logical
         # it would not be numeric, which means the only condition continuing the
-        # function on line 6 is each = TRUE otherwise line 7 would stop
+        # function on line 7 is each = TRUE otherwise line 8 would stop
         return(result)
     }
     
