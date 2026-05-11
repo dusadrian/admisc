@@ -32,6 +32,12 @@ scan.clipboard <- function (...) {
         sep <- ifelse(is.null(dots$sep), "\t", dots$sep)
         clipboard <- unlist(strsplit(clipboard, split = sep))
     } else if (Sys.info()[['sysname']] == "Windows") {
+        if (is.null(dots$sep)) {
+            dots$sep <- "\t"
+        }
+        if (is.null(dots$what)) {
+            dots$what <- character()
+        }
         dots$file <- "clipboard"
         clipboard <- do.call("scan", dots)
     }
