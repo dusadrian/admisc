@@ -1,5 +1,5 @@
 Package: admisc
-Version: 0.40.1
+Version: 0.40.2
 SystemRequirements: OpenMP (optional)
 Title: Adrian Dusa's Miscellaneous
 Authors@R: person(
