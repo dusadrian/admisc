@@ -25,7 +25,7 @@ inside(data, expr, ...)
                 rm(unused1, temp)
             }
         }}
-    
+
     \item{keepAttrs}{For the \code{\link{list}} method of \code{inside()},
         a \code{\link{logical}} specifying if the resulting list should keep
         the \code{\link{attributes}} from \code{data} and have its

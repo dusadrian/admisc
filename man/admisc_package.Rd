@@ -2,7 +2,6 @@
 % Please edit documentation in R/admisc_package.R
 \name{admisc_package}
 \alias{admisc_package}
-\alias{admisc-package}
 \title{Adrian Dusa's Miscellaneous}
 \description{
 Contains functions used across packages 'DDIwR', 'QCA' and 'venn'.
@@ -21,8 +20,8 @@ in the Imports field, due to circular dependency issues.
 \tabular{ll}{
 Package: \tab admisc\cr
 Type: \tab Package\cr
-Version: \tab 0.40\cr
-Date: \tab 2026-03-26\cr
+Version: \tab 0.40.2\cr
+Date: \tab 2026-05-12\cr
 License: \tab GPL (>= 3)\cr
 }
 }
@@ -31,5 +30,3 @@ Adrian Dusa
 
 Maintainer: Adrian Dusa (dusa.adrian@unibuc.ro)
 }
-\keyword{"_PACKAGE"}
-\keyword{internal}

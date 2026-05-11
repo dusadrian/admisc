@@ -1,8 +1,6 @@
 #' @keywords internal
-#' "_PACKAGE"
-#'
+"_PACKAGE"
 #' @name admisc_package
-#' @aliases admisc-package
 #'
 #' @title Adrian Dusa's Miscellaneous
 #'
