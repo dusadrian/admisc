@@ -5,3 +5,5 @@
 ^\.git$
 ^\.github$
 CITESTE.md
+^\.positai$
+^\.claude$
