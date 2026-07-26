@@ -11,6 +11,12 @@
 #' @aliases curlyBrackets
 #' @aliases squareBrackets
 #' @aliases roundBrackets
+#' @usage
+#' betweenBrackets(x, type = "[", invert = FALSE, regexp = NULL)
+#' outsideBrackets(x, type = "[", regexp = NULL)
+#' curlyBrackets(x, outside = FALSE, regexp = NULL)
+#' squareBrackets(x, outside = FALSE, regexp = NULL)
+#' roundBrackets(x, outside = FALSE, regexp = NULL)
 #'
 #' @param x A DNF/SOP expression.
 #' @param type Brackets type: curly, round or square.

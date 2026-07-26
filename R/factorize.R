@@ -9,6 +9,7 @@
 #'
 #' @name factorize
 #' @rdname factorize
+#' @usage factorize(input, snames = "", noflevels = NULL, pos = FALSE, ...)
 #'
 #' @param input A string representing a SOP expression, or a minimization
 #'   object of class `"qca"`.

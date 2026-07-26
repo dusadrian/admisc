@@ -8,6 +8,13 @@
 \alias{squareBrackets}
 \alias{roundBrackets}
 \title{Extract information from a multi-value SOP/DNF expression}
+\usage{
+betweenBrackets(x, type = "[", invert = FALSE, regexp = NULL)
+outsideBrackets(x, type = "[", regexp = NULL)
+curlyBrackets(x, outside = FALSE, regexp = NULL)
+squareBrackets(x, outside = FALSE, regexp = NULL)
+roundBrackets(x, outside = FALSE, regexp = NULL)
+}
 \arguments{
 \item{x}{A DNF/SOP expression.}
 

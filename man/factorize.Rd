@@ -3,6 +3,9 @@
 \name{factorize}
 \alias{factorize}
 \title{Factorize Boolean expressions}
+\usage{
+factorize(input, snames = "", noflevels = NULL, pos = FALSE, ...)
+}
 \arguments{
 \item{input}{A string representing a SOP expression, or a minimization
 object of class \code{"qca"}.}
