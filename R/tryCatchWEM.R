@@ -49,26 +49,59 @@ NULL
 #' @export
 `tryCatchWEM` <- function(expr, capture = FALSE) {
     toreturn <- list()
-    output <- withVisible(withCallingHandlers(
-        tryCatch(expr, error = function(e) {
-            toreturn$error <<- e$message
-            NULL
-        }),
-        warning = function(w) {
-            toreturn$warning <<- c(toreturn$warning, w$message)
-            invokeRestart("muffleWarning")
-        },
-        message = function(m) {
-            toreturn$message <<- paste(toreturn$message, m$message, sep = "")
-            invokeRestart("muffleMessage")
+
+    # Safe muffle handler for R < 4.0.0 compatibility
+    safeMuffle <- function(restart_name) {
+        if (exists("tryInvokeRestart", envir = baseenv())) {
+            tryInvokeRestart(restart_name)
+        } else {
+            restarts <- computeRestarts()
+            if (any(sapply(restarts, function(r) r$name == restart_name))) {
+                invokeRestart(restart_name)
+            }
         }
-    ))
-    
-    if (capture && output$visible && !is.null(output$value)) {
-        toreturn$output <- capture.output(output$value)
-        toreturn$value <- output$value
     }
-    
+
+    evaluate_code <- function() {
+        withVisible(withCallingHandlers(
+            tryCatch(expr,
+                error = function(e) {
+                    toreturn$error <<- e$message
+                    NULL
+                },
+                interrupt = function(i) {
+                    toreturn$interrupted <<- TRUE
+                    NULL
+                }
+            ),
+            warning = function(w) {
+                toreturn$warning <<- c(toreturn$warning, w$message)
+                safeMuffle("muffleWarning")
+            },
+            message = function(m) {
+                toreturn$message <<- paste(toreturn$message, m$message, sep = "")
+                safeMuffle("muffleMessage")
+            }
+        ))
+    }
+
+    if (capture) {
+        captured <- capture.output({
+            output <- evaluate_code()
+            if (output$visible && !is.null(output$value)) {
+                print(output$value)
+            }
+        })
+        if (length(captured) > 0) {
+            toreturn$output <- captured
+        }
+        if (exists("output") && !is.null(output$value)) {
+            toreturn$value <- output$value
+        }
+    } else {
+        evaluate_code()
+    }
+
     if (length(toreturn) > 0) {
         return(toreturn)
     }
