@@ -25,11 +25,6 @@
 #' @param outside Logical, if activated returns the condition names outside the
 #' brackets.
 #' @param regexp Optional regular expression to extract information with.
-#' @param expression A DNF/SOP expression.
-#' @param snames A string containing the sets' names, separated by commas.
-#' @param noflevels Numerical vector containing the number of levels for each
-#' set.
-#' @param simplify Logical, remove redundant expressions after expansion.
 #'
 #' @details
 #' Expressions written in SOP are used in Boolean logic, signaling a

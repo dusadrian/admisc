@@ -1,6 +1,8 @@
 Version 0.41
     o Functions using() and stopError() now work better together
     o Function inside() now detects duplicated variables names
+    o Fixed function scan.clipboard() for Windows
+    o Dropped OpenMP in favor of pthreads
 
 Version 0.40
     o Function using() now correctly detects invisibly returned values

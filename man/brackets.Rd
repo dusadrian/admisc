@@ -27,15 +27,6 @@ brackets.}
 brackets.}
 
 \item{regexp}{Optional regular expression to extract information with.}
-
-\item{expression}{A DNF/SOP expression.}
-
-\item{snames}{A string containing the sets' names, separated by commas.}
-
-\item{noflevels}{Numerical vector containing the number of levels for each
-set.}
-
-\item{simplify}{Logical, remove redundant expressions after expansion.}
 }
 \description{
 Functions to extract information from an expression written in SOP, or in the

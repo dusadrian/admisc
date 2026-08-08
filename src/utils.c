@@ -1,12 +1,21 @@
 #include <R.h>
 #include <Rinternals.h>
-#include <R_ext/Memory.h>
 #include <limits.h>
+#include <pthread.h>
+#include <stdlib.h>
 #include <string.h>
+#ifdef _WIN32
+    #include <windows.h>
+#else
+    #include <unistd.h>
+#endif
 #include "utils.h"
 
 
-static R_INLINE unsigned long long int nchoosek(int n, int k) {
+#define MIN_TASKS_PER_THREAD 1024
+
+
+static inline unsigned long long int nchoosek(int n, int k) {
     if (k > n) return 0;
     if (k == 0 || k == n) return 1;
 
@@ -31,6 +40,92 @@ static R_INLINE unsigned long long int nchoosek(int n, int k) {
     }
 
     return result;
+}
+
+
+typedef struct {
+    int id;
+    int nthreads;
+    int nconds;
+    int k;
+    int nck;
+    int ogte;
+    int zerobased;
+    int *out;
+    int found;
+} combination_job;
+
+
+static int available_threads(void) {
+    long nthreads = 1;
+
+    #ifdef _WIN32
+        SYSTEM_INFO info;
+        GetSystemInfo(&info);
+        nthreads = (long) info.dwNumberOfProcessors;
+    #else
+        long detected = sysconf(_SC_NPROCESSORS_ONLN);
+        if (detected > 0) {
+            nthreads = detected;
+        }
+    #endif
+
+    if (nthreads > INT_MAX) {
+        nthreads = INT_MAX;
+    }
+    if (nthreads < 1) {
+        nthreads = 1;
+    }
+
+    return (int) nthreads;
+}
+
+
+static void *generate_combinations(void *data) {
+    combination_job *job = (combination_job *) data;
+    int tempk[job->k > 0 ? job->k : 1];
+
+    job->found = 0;
+
+    for (int task = job->id; task < job->nck; task += job->nthreads) {
+        unsigned long long int combination = (unsigned long long int) task;
+        int x = 0;
+
+        for (int i = 0; i < job->k; i++) {
+            while (1) {
+                unsigned long long int cval = nchoosek(
+                    job->nconds - (x + 1),
+                    job->k - (i + 1)
+                );
+                if (cval == 0 || cval > combination) {
+                    break;
+                }
+                combination -= cval;
+                x++;
+            }
+
+            if (x < 0) {
+                x = 0;
+            }
+            if (x >= job->nconds) {
+                x = job->nconds - 1;
+            }
+
+            tempk[i] = x;
+            x++;
+        }
+
+        int keep = (job->ogte <= 0) || (tempk[job->k - 1] >= job->ogte);
+        if (job->ogte > 0) {
+            job->found += keep;
+        }
+
+        for (int i = 0; i < job->k; i++) {
+            job->out[task * job->k + i] = tempk[i] + 1 - job->zerobased;
+        }
+    }
+
+    return NULL;
 }
 
 
@@ -97,58 +192,80 @@ SEXP C_ombnk(SEXP list) {
     int *p_out = INTEGER(out);
 
     int found = nck;
-    int *valid = NULL;
 
     if (ogte > 0) {
-        valid = (int *) R_Calloc(nck, int);
         found = 0;
     }
 
-    #ifdef _OPENMP
-        #pragma omp parallel for schedule(static, 1) reduction(+:found)
-    #endif
-    for (int task = 0; task < nck; task++) {
-        #ifndef _OPENMP
-            if (task > 0 && task % 1024 == 0) {
-                R_CheckUserInterrupt();
-            }
-        #endif
+    int nthreads = available_threads();
+    int useful_threads = nck / MIN_TASKS_PER_THREAD;
+    if (useful_threads < 1) {
+        useful_threads = 1;
+    }
+    if (nthreads > useful_threads) {
+        nthreads = useful_threads;
+    }
 
-        int tempk[k];
-        unsigned long long int combination = (unsigned long long int) task;
-        int x = 0;
+    combination_job *jobs = (combination_job *) calloc(
+        (size_t) nthreads,
+        sizeof(combination_job)
+    );
+    pthread_t *threads = (pthread_t *) calloc(
+        (size_t) nthreads,
+        sizeof(pthread_t)
+    );
+    int *started = (int *) calloc((size_t) nthreads, sizeof(int));
 
-        for (int i = 0; i < k; i++) {
-            while (1) {
-                unsigned long long int cval = nchoosek(nconds - (x + 1), k - (i + 1));
-                if (cval == 0 || cval > combination) {
-                    break;
-                }
-                combination -= cval;
-                x++;
-            }
+    if (jobs == NULL || threads == NULL || started == NULL) {
+        free(started);
+        free(threads);
+        free(jobs);
+        UNPROTECT(1);
+        Rf_error("Unable to allocate pthread worker data.");
+    }
 
-            if (x < 0) {
-                x = 0;
-            }
-            if (x >= nconds) {
-                x = nconds - 1;
-            }
+    for (int i = 0; i < nthreads; i++) {
+        jobs[i].id = i;
+        jobs[i].nthreads = nthreads;
+        jobs[i].nconds = nconds;
+        jobs[i].k = k;
+        jobs[i].nck = nck;
+        jobs[i].ogte = ogte;
+        jobs[i].zerobased = zerobased;
+        jobs[i].out = p_out;
 
-            tempk[i] = x;
-            x++;
-        }
-
-        Rboolean keep = (ogte <= 0) || (tempk[k - 1] >= ogte);
-        if (ogte > 0) {
-            valid[task] = keep;
-            found += keep;
-        }
-
-        for (int i = 0; i < k; i++) {
-            p_out[task * k + i] = tempk[i] + 1 - zerobased;
+        if (i > 0 && pthread_create(
+            &threads[i],
+            NULL,
+            generate_combinations,
+            &jobs[i]
+        ) == 0) {
+            started[i] = 1;
         }
     }
+
+    generate_combinations(&jobs[0]);
+
+    for (int i = 1; i < nthreads; i++) {
+        if (started[i]) {
+            pthread_join(threads[i], NULL);
+        }
+        else {
+            generate_combinations(&jobs[i]);
+        }
+
+        if (ogte > 0) {
+            found += jobs[i].found;
+        }
+    }
+
+    if (ogte > 0) {
+        found += jobs[0].found;
+    }
+
+    free(started);
+    free(threads);
+    free(jobs);
 
     R_CheckUserInterrupt();
 
@@ -164,19 +281,15 @@ SEXP C_ombnk(SEXP list) {
             if (task > 0 && task % 1024 == 0) {
                 R_CheckUserInterrupt();
             }
-            if (valid[task]) {
+            int last = p_copy[task * k + k - 1] + zerobased - 1;
+            if (last >= ogte) {
                 memcpy(&p_out[col * k], &p_copy[task * k], (size_t) k * sizeof(int));
                 col++;
             }
         }
 
-        R_Free(valid);
         UNPROTECT(3);
         return(out);
-    }
-
-    if (valid) {
-        R_Free(valid);
     }
 
     UNPROTECT(1);
