@@ -309,6 +309,15 @@ NULL
     res <- vector(mode = "list", length = nrow(slexp))
     visible <- TRUE
 
+    block <- as.list(expr)
+    printed_block <- identical(block[[1]], as.name("{")) && any(
+        vapply(
+            block[-1],
+            function(x) is.call(x) && identical(x[[1]], as.name("print")),
+            logical(1)
+        )
+    )
+
     for (r in seq(nrow(slexp))) {
         selection <- rep(TRUE, nrow(data))
 
@@ -338,6 +347,16 @@ NULL
         }
 
         if (sum(selection, na.rm = TRUE) > 0) {
+            if (printed_block) {
+                split_name <- paste(slexp[r, ], collapse = ", ")
+                cat("\n", split_name, "\n", sep = "")
+                cat(
+                    paste(rep("-", nchar(split_name)), collapse = ""),
+                    "\n",
+                    sep = ""
+                )
+            }
+
             tmp <- withVisible(
                 eval(
                     expr = expr,
@@ -347,8 +366,16 @@ NULL
             )
             visible <- tmp$visible
             res[[r]] <- tmp$value
+
+            if (printed_block && visible) {
+                print(res[[r]])
+            }
             # res[[r]] <- with(subset(data, selection), eval(expr))
         }
+    }
+
+    if (printed_block) {
+        cat("\n")
     }
 
     empty <- sapply(res, is.null)
@@ -443,7 +470,7 @@ NULL
         class(res) <- c("admisc_fobject", class(res))
     }
 
-    if (visible) {
+    if (visible && !printed_block) {
         return(res)
     }
 
