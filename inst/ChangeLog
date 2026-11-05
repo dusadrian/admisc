@@ -1,3 +1,7 @@
+Version 0.42
+    o New function addCases() appends data frames with selectable variables
+      and missing-value padding
+
 Version 0.41
     o Functions using() and stopError() now work better together
     o Function inside() now detects duplicated variables names
