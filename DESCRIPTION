@@ -1,5 +1,5 @@
 Package: admisc
-Version: 0.41
+Version: 0.41.1
 SystemRequirements: POSIX threads
 Title: Adrian Dusa's Miscellaneous
 Authors@R: person(
