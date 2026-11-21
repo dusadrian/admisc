@@ -152,8 +152,15 @@
             }
 
             if (!is.null(data)) {
-                colnames(data) <- snamesr[match(colnames(data), snames)]
-                info <- getInfo(data)
+                columns <- snamesr[match(colnames(data), snames)]
+                colnames(data) <- columns
+                colnames(info$data) <- columns
+                names(info$factor) <- columns
+                names(info$declared) <- columns
+                if (length(info$categories)) {
+                    positions <- match(names(info$categories), snames)
+                    names(info$categories) <- snamesr[positions]
+                }
                 # positions <- c()
                 # # this code makes sure that column names
                 # # don't get overwritten multiple times
