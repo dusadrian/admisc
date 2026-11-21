@@ -12,3 +12,5 @@
 *.Rproj
 CITESTE.md
 .positai
+/internal/releases/
+AGENTS.md

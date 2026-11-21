@@ -7,3 +7,6 @@
 CITESTE.md
 ^\.positai$
 ^\.claude$
+^internal$
+^tests$
+^AGENTS\.md$
