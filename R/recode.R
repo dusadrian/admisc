@@ -416,6 +416,15 @@ NULL
         }
 
 
+        index <- NULL
+        if (length(from) > 1L && length(uniques) < length(x) / 2 &&
+            !any(elsecopy) && is.null(dim(x)) && (is.factor(x) || !is.object(x))) {
+            observed <- unique(x)
+            index <- match(x, observed)
+            x <- observed
+            temp <- rep(NA, length(x))
+        }
+
         for (i in seq(length(from))) {
             if (!is.na(to[i])) { # a range
                 torecode <- getFromRange(from[i], to[i], uniques, xisnumeric)
@@ -446,6 +455,8 @@ NULL
                 recoded <- c(recoded, from[i])
             }
         }
+        if (!is.null(index)) temp <- temp[index]
+
     }
     else {
 
@@ -546,24 +557,18 @@ NULL
             stopError(message)
         }
 
-        if (is.factor(x)) {
-            nx <- as.numeric(x)
-            nlx <- seq(length(lx))
-            nc <- match(cut, lx)
-            temp <- rep(values[1], length(x))
-            for (i in seq(length(cut))) {
-                temp[nx > nc[i]] = values[i + 1]
+        input <- if (is.factor(x)) as.integer(x) else x
+        boundaries <- if (is.factor(x)) match(cut, lx) else cut
+        if (is.numeric(input) && is.numeric(boundaries) && is.null(names(values)) && !is.unsorted(boundaries)) {
+            bins <- findInterval(input, boundaries, left.open = TRUE) + 1L
+            if (is.factor(x)) bins[is.na(input)] <- 1L
+            temp <- unname(values[bins])
+        } else {
+            temp <- rep(values[1], length(input))
+            for (i in seq_along(boundaries)) {
+                temp[input > boundaries[i]] <- values[i + 1L]
             }
-        }
-        else {
-            nax <- which(is.na(x))
-            temp <- rep(values[1], length(x))
-            for (i in seq(length(cut))) {
-                temp[x > cut[i]] = values[i + 1]
-            }
-            if (length(nax) > 0) {
-                temp[nax] <- NA
-            }
+            if (!is.factor(x)) temp[is.na(input)] <- NA
         }
 
         if (!is.null(factor.labels) && length(factor.labels) == 0 && is.numeric(cut)) {

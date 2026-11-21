@@ -44,6 +44,11 @@ NULL
         stopError("One or more levels do not exist in the input variable.")
     }
     
+    if (length(levels) && is.character(levels) && identical(class(variable), "factor")) {
+        order <- c(unique(levels), setdiff(levels(variable), levels))
+        return(factor(variable, levels = order, exclude = NULL))
+    }
+
     for (i in seq_len(length(levels))) {
         variable <- relevel(variable, ref = rev(levels)[i])
     }
