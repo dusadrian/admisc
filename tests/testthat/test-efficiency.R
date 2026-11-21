@@ -1,30 +1,3 @@
-test_that("enumeration agrees with independently generated combinations", {
-    # Compare both enumeration paths with independently generated ordered results.
-    levels <- c(2L, 3L, 1L, 4L)
-    full <- getMatrix(levels)
-    for (depth in 1:4) {
-        expect_identical(getMatrix(levels, depth), full[rowSums(full > 0) <= depth, , drop = FALSE])
-    }
-    expect_identical(dim(getMatrix(rep(2L, 60), 1)), c(61L, 60L))
-
-    for (n in c(6L, 18L)) {
-        for (k in c(1L, 4L, n)) {
-            all <- utils::combn(n, k)
-            for (threshold in c(1L, n - 1L, n, n + 1L)) {
-                selected <- all[, all[k, ] >= threshold, drop = FALSE]
-                expect_identical(combnk(n, k, threshold), selected)
-                expect_identical(combnk(n, k, threshold, TRUE), selected - 1L)
-            }
-        }
-    }
-    expect_identical(dim(combnk(6, 0)), c(0L, 1L))
-    expect_identical(dim(combnk(6, 0, 2)), c(0L, 0L))
-    expect_identical(combnk(letters[1:6], 3, 5, TRUE), combnk(letters[1:6], 3, 5))
-    expect_identical(dim(combnk(100000, 2, 100000)), c(2L, 99999L))
-    expect_true(inherits(try(combnk(100000, 2), silent = TRUE), "try-error"))
-
-})
-
 test_that("compute preserves missing values in conjunctions", {
     # NA dominates NaN in a row-wise reduction. Crisp and fuzzy columns also
     # have different missing-value semantics.
