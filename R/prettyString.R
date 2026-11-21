@@ -10,53 +10,30 @@ function(string.vector, string.width = 80, repeat.space = 5, separator = ",", su
         }
     }
     
-    string <- string.vector[1]
-    
-    if (length(string.vector) > 1) {
-        startpoint <- 1
-        for (j in seq(2, length(string.vector) + 1)) {
-            if (j <= length(string.vector)) {
-                
-                if (nchar(encodeString(paste(string.vector[seq(startpoint, j - ifelse(separator == ";", 1, 0))], collapse = paste(ifelse(separator == ";", "", " "), separator, " ", sep = "")))) >= string.width) {
-                    # if (nchar(paste(string.vector[seq(startpoint, j - ifelse(separator == ";", 1, 0))], collapse = paste(ifelse(separator == ";", "", " "), separator, sep=""))) >= string.width) {
-                    #     string <- paste(paste(string, "\n", sep=""), 
-                    #                     paste(rep(" ", repeat.space), collapse=""),
-                    #                     separator, " ", string.vector[j], sep="")
-                    # }
-                    # else {
-                        string <- paste(paste(string, ifelse(separator == ";", "", " "), separator, "\n", sep = ""), 
-                                        paste(rep(" ", repeat.space), collapse=""),
-                                        string.vector[j], sep="")
-                    # }
-                    
-                    startpoint <- j
-                }
-                else {
-                    string <- paste(string, ifelse(separator == ";", "", " "), separator, " ", string.vector[j], sep = "")
-                }
-            }
-            else {
-                if (outcome != "") {
-                    
-                    # j is already bigger than the length of the string.vector
-                    last.part <- paste(paste(string.vector[seq(startpoint, j - 1)], collapse = paste(ifelse(separator == ";", "", " "), separator, " ", sep="")), sep="")
-                    
-                    if (nchar(encodeString(paste(last.part, " ", sufnec, " ", outcome, sep = ""))) >= string.width) {
-                        string <- paste(paste(string, "\n", sep=""),
-                                  paste(rep(" ", repeat.space), collapse=""),
-                                  sufnec, " ", outcome, sep = "")
-                    }
-                    else {
-                        string <- paste(string, " ", sufnec, " ", outcome, sep = "")
-                    }
-                }
-            }
+    if (length(string.vector) <= 1L) {
+        if (outcome == "") return(string.vector[1L])
+        return(paste(string.vector[1L], sufnec, outcome))
+    }
+    prefix <- if (separator == ";") "" else " "
+    delim <- paste0(prefix, separator, " ")
+    indent <- strrep(" ", repeat.space)
+    pieces <- string.vector
+    start <- 1L
+    for (j in 2:length(pieces)) {
+        end <- if (separator == ";") j - 1L else j
+        line <- paste(string.vector[start:end], collapse = delim)
+        if (nchar(encodeString(line)) >= string.width) {
+            pieces[j] <- paste0(prefix, separator, "\n", indent, string.vector[j])
+            start <- j
+        } else {
+            pieces[j] <- paste0(delim, string.vector[j])
         }
     }
-    else {
-        if (outcome != "") {
-            string <- paste(string, " ", sufnec, " ", outcome, sep = "")
-        }
+    suffix <- ""
+    if (outcome != "") {
+        line <- paste(string.vector[start:length(pieces)], collapse = delim)
+        wrap <- nchar(encodeString(paste(line, sufnec, outcome))) >= string.width
+        suffix <- paste0(if (wrap) paste0("\n", indent) else " ", sufnec, " ", outcome)
     }
-    return(string)
+    paste0(paste0(pieces, collapse = ""), suffix)
 }

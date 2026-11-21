@@ -113,69 +113,38 @@ NULL
         }
 
         getPositions <- function(expression, x, y = NULL, protect = NULL) {
-            if (identical(x, "")) {
-                return(NULL)
+            if (!length(x) || identical(x, "")) return(NULL)
+
+            occupied <- logical(nchar(expression[1L]))
+            if (length(protect)) {
+                for (span in protect) occupied[span$start:span$end] <- TRUE
             }
+            positions <- list()
+            for (i in seq_along(x)) {
+                escx <- gsub("([][{}*\\.])", "\\\\\\1", x[i])
+                starts <- as.integer(gregexpr(escx, expression[1L])[[1L]])
+                if (starts[1L] < 0L) next
+                ends <- starts + nchar(x[i]) - 1L
+                if (any(occupied)) {
+                    used <- c(0, cumsum(occupied))
+                    keep <- used[pmin(ends, length(occupied)) + 1L] == used[starts]
+                    starts <- starts[keep]
+                    ends <- ends[keep]
+                }
+                if (!length(starts)) next
 
-            positions <- vector(mode = "list", length = 0)
-            pos <- 0
-
-            for (i in seq(length(x))) {
-                escx <- gsub("([][{}*\\.])", "\\\\\\1", x[i]) # escape [ ] { } * and .
-                locations <- gregexpr(escx, expression)[[1]]
-
-                # temp <- gsub(x[i], paste(rep(y[i], nchar(x[i])), collapse = ""), expression)
-
-                if (any(locations > 0)) {
-                    diffs <- c()
-                    for (l in seq(length(locations))) {
-                        tempd <- seq(locations[l], locations[l] + nchar(x[i]) - 1)
-                        if (
-                            !any(
-                                is.element(
-                                    tempd,
-                                    c(unlist(positions), unlist(protect))
-                                )
-                            )
-                        ) {
-                            diffs <- c(diffs, tempd)
-                        }
-                    }
-
-                    # diffs <- setdiff(diffs, unlist(positions))
-
-                    if (length(diffs) > 0) {
-                        if (length(diffs) == 1) {
-                            pos <- pos + 1
-                            positions[[pos]] <- diffs
-                            names(positions)[pos] <- y[i]
-                        }
-                        else {
-                            # the same condition can be found in multiple locations of the expression
-                            start <- diffs[1]
-                            for (v in seq(2, length(diffs))) {
-                                if ((diffs[v] - diffs[v - 1]) > 1) {
-                                    pos <- pos + 1
-                                    positions[[pos]] <- seq(start, diffs[v - 1])
-                                    if (!is.null(y)) {
-                                        names(positions)[pos] <- y[i]
-                                    }
-                                    start <- diffs[v]
-                                }
-                            }
-
-                            pos <- pos + 1
-                            positions[[pos]] <- seq(start, diffs[length(diffs)])
-                            if (!is.null(y)) {
-                                names(positions)[pos] <- y[i]
-                            }
-                        }
-                    }
+                # Adjacent matches of one target form one replacement span.
+                separate <- starts[-1L] > ends[-length(ends)] + 1L
+                starts <- starts[c(TRUE, separate)]
+                ends <- ends[c(separate, TRUE)]
+                for (j in seq_along(starts)) {
+                    occupied[starts[j]:ends[j]] <- TRUE
+                    positions[[length(positions) + 1L]] <- list(
+                        start = starts[j], end = ends[j], value = y[i]
+                    )
                 }
             }
-
-            return(positions)
-
+            positions
         }
 
         posprotect <- NULL
@@ -202,62 +171,15 @@ NULL
             protect = posprotect
         )
 
-        # positions <- lapply(positions, function(x) range(x))
-
-        covered <- logical(length(positions))
-        pos2 <- positions
-        if (length(positions) > 1) {
-            for (i in seq(length(pos2) - 1)) {
-                if (!covered[i]) {
-                    for (j in seq(i + 1, length(pos2))) {
-                        if (!covered[j]) {
-                            if (all(is.element(seq(pos2[[j]][1], pos2[[j]][length(pos2[[j]])]), seq(pos2[[i]][1], pos2[[i]][length(pos2[[i]])])))) {
-                                covered[j] <- TRUE
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        positions <- positions[!covered]
-
-
-        if (length(positions) > 0) {
-
-            # sort the positions in descending order of the first character location
-            # such that, if replacing from tail to start, the other positions
-            # will still hold
-
-            first <- unlist(lapply(positions, "[[", 1))
-            positions <- positions[order(first, decreasing = TRUE)]
-
-            expression <- unlist(strsplit(expression, split = ""))
-            for (i in seq(length(positions))) {
-
-                if (length(positions[[i]]) == 1) {
-                    expression[positions[[i]]] <- names(positions)[i]
-                }
-                # else is redundant here
-                if (length(positions[[i]] > 1)) {
-                    start <- positions[[i]][1]
-                    stop <- positions[[i]][length(positions[[i]])]
-
-                    if (start == 1) {
-                        expression <- c(names(positions)[i], expression[-seq(start, stop)])
-                    }
-                    else {
-                        if (stop < length(expression)) {
-                            expression <- c(expression[seq(start - 1)], names(positions)[i], expression[seq(stop + 1, length(expression))])
-                        }
-                        else {
-                            expression <- c(expression[seq(start - 1)], names(positions)[i])
-                        }
-                    }
-                }
-            }
-
-            expression <- paste(expression, collapse = "")
+        if (length(positions)) {
+            starts <- vapply(positions, "[[", integer(1), "start")
+            spans <- positions[order(starts)]
+            text <- paste(expression, collapse = "")
+            ends <- vapply(spans, "[[", integer(1), "end")
+            starts <- sort(starts)
+            gaps <- substring(text, c(1L, ends + 1L), c(starts - 1L, nchar(text)))
+            values <- vapply(spans, "[[", character(1), "value")
+            expression <- paste0(c(rbind(gaps[-length(gaps)], values), tail(gaps, 1L)), collapse = "")
         }
 
         return(expression)
