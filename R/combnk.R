@@ -90,13 +90,13 @@ NULL
             n = as.integer(n),
             k = as.integer(k),
             ogte = as.integer(ogte),
-            zerobased = as.integer(zerobased)
+            zerobased = if (lngt1) 0L else as.integer(zerobased)
         ),
         PACKAGE = "admisc"
     )
 
     if (lngt1) {
-        resmat <- matrix(copyn[resmat], nrow = nrow(resmat))
+        resmat <- matrix(copyn[resmat], nrow = nrow(resmat), ncol = ncol(resmat))
     }
 
     return(resmat)

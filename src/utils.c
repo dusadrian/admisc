@@ -15,46 +15,37 @@
 #define MIN_TASKS_PER_THREAD 1024
 
 
-static inline unsigned long long int nchoosek(int n, int k) {
-    if (k > n) return 0;
-    if (k == 0 || k == n) return 1;
+/* R matrix dimensions are ints. Saturate counts beyond the largest rank. */
+#define COUNT_LIMIT ((long long) INT_MAX + 1)
 
-    unsigned long long int result = 1;
-
-    if (k > n - k) {
-        k = n - k;
+static long long choose_count(int n, int k) {
+    if (k < 0 || k > n) return 0;
+    if (k > n - k) k = n - k;
+    long long count = 1;
+    for (int i = 1; i <= k; ++i) {
+        count = count * (n - k + i) / i;
+        if (count >= COUNT_LIMIT) return COUNT_LIMIT;
     }
-
-    for (int i = 0; i < k; i++) {
-        if (result > ULLONG_MAX / (unsigned long long int) (n - i)) {
-            return 0;
-        }
-
-        result *= (unsigned long long int) (n - i);
-
-        if (result % (unsigned long long int) (i + 1) != 0) {
-            return 0;
-        }
-
-        result /= (unsigned long long int) (i + 1);
-    }
-
-    return result;
+    return count;
 }
 
+/* Count k-subsets with at least one member among the largest high values. */
+static long long eligible_count(int n, int k, int high) {
+    if (high >= n || k > n - high) return choose_count(n, k);
+    int limit = k < high ? k : high;
+    long long total = 0;
+    for (int j = 1; j <= limit; ++j) {
+        total += choose_count(high, j) * choose_count(n - high, k - j);
+        if (total >= COUNT_LIMIT) return COUNT_LIMIT;
+    }
+    return total;
+}
 
 typedef struct {
-    int id;
-    int nthreads;
-    int nconds;
-    int k;
-    int nck;
-    int ogte;
-    int zerobased;
+    int n, k, minimum, offset;
+    int start, end;
     int *out;
-    int found;
 } combination_job;
-
 
 static int available_threads(void) {
     long nthreads = 1;
@@ -82,52 +73,39 @@ static int available_threads(void) {
 
 
 static void *generate_combinations(void *data) {
-    combination_job *job = (combination_job *) data;
-    int tempk[job->k > 0 ? job->k : 1];
-
-    job->found = 0;
-
-    for (int task = job->id; task < job->nck; task += job->nthreads) {
-        unsigned long long int combination = (unsigned long long int) task;
-        int x = 0;
-
-        for (int i = 0; i < job->k; i++) {
-            while (1) {
-                unsigned long long int cval = nchoosek(
-                    job->nconds - (x + 1),
-                    job->k - (i + 1)
-                );
-                if (cval == 0 || cval > combination) {
-                    break;
-                }
-                combination -= cval;
-                x++;
-            }
-
-            if (x < 0) {
-                x = 0;
-            }
-            if (x >= job->nconds) {
-                x = job->nconds - 1;
-            }
-
-            tempk[i] = x;
-            x++;
+    combination_job *job = data;
+    int k = job->k, n = job->n;
+    int *column = job->out + (R_xlen_t) job->start * k;
+    long long rank = job->start;
+    int next = 0;
+    /* Unrank only the first column of this contiguous chunk. */
+    for (int i = 0; i < k - 1; ++i) {
+        while (rank > 0) {
+            long long block = eligible_count(n - next - 1, k - i - 1,
+                                              n - job->minimum);
+            if (rank < block) break;
+            rank -= block;
+            ++next;
         }
+        column[i] = next++ + job->offset;
+    }
+    column[k - 1] = (next > job->minimum ? next : job->minimum) +
+                    (int) rank + job->offset;
 
-        int keep = (job->ogte <= 0) || (tempk[job->k - 1] >= job->ogte);
-        if (job->ogte > 0) {
-            job->found += keep;
-        }
-
-        for (int i = 0; i < job->k; i++) {
-            job->out[task * job->k + i] = tempk[i] + 1 - job->zerobased;
+    for (int task = job->start + 1; task < job->end; ++task) {
+        int *previous = column;
+        column += k;
+        int i = k - 1;
+        while (previous[i] - job->offset == n - (k - i)) --i;
+        memcpy(column, previous, (size_t) i * sizeof(int));
+        column[i] = previous[i] + 1;
+        for (int j = i + 1; j < k; ++j) column[j] = column[j - 1] + 1;
+        if (column[k - 1] - job->offset < job->minimum) {
+            column[k - 1] = job->minimum + job->offset;
         }
     }
-
     return NULL;
 }
-
 
 void increment(
     int k,
@@ -173,126 +151,44 @@ void increment(
 
 
 SEXP C_ombnk(SEXP list) {
-    // ogte = at least one value greater than or equal to
-    int nconds, k, ogte, zerobased;
+    int n = asInteger(VECTOR_ELT(list, 0));
+    int k = asInteger(VECTOR_ELT(list, 1));
+    int threshold = asInteger(VECTOR_ELT(list, 2));
+    int zero = asInteger(VECTOR_ELT(list, 3));
+    if (n < 0 || k < 0 || k > n || threshold == NA_INTEGER ||
+        (zero != 0 && zero != 1)) Rf_error("Invalid combination parameters.");
 
-    nconds = INTEGER(VECTOR_ELT(list, 0))[0];
-    k = INTEGER(VECTOR_ELT(list, 1))[0];
-    ogte = INTEGER(VECTOR_ELT(list, 2))[0] - 1;
-    zerobased = INTEGER(VECTOR_ELT(list, 3))[0];
-
-    int nck = 1;
-    for (int i = 1; i <= k; i++) {
-        nck *= nconds - (k - i);
-        nck /=  i;
+    int minimum = threshold > 1 ? threshold - 1 : 0;
+    long long count = k == 0 ? (minimum == 0) :
+        eligible_count(n, k, minimum < n ? n - minimum : 0);
+    if (count > INT_MAX) Rf_error("Too many combinations for an R matrix.");
+    SEXP out = PROTECT(allocMatrix(INTSXP, k, (int) count));
+    if (k == 1) {
+        int *output = INTEGER(out);
+        for (int i = 0; i < count; ++i) output[i] = minimum + i + (1 - zero);
     }
+    else if (k > 0 && count > 0) {
+        int workers = available_threads();
+        int useful = (int) count / MIN_TASKS_PER_THREAD;
+        if (useful < 1) useful = 1;
+        if (workers > useful) workers = useful;
 
-    SEXP out;
-    out = PROTECT(allocMatrix(INTSXP, k, nck));
-    int *p_out = INTEGER(out);
-
-    int found = nck;
-
-    if (ogte > 0) {
-        found = 0;
-    }
-
-    int nthreads = available_threads();
-    int useful_threads = nck / MIN_TASKS_PER_THREAD;
-    if (useful_threads < 1) {
-        useful_threads = 1;
-    }
-    if (nthreads > useful_threads) {
-        nthreads = useful_threads;
-    }
-
-    combination_job *jobs = (combination_job *) calloc(
-        (size_t) nthreads,
-        sizeof(combination_job)
-    );
-    pthread_t *threads = (pthread_t *) calloc(
-        (size_t) nthreads,
-        sizeof(pthread_t)
-    );
-    int *started = (int *) calloc((size_t) nthreads, sizeof(int));
-
-    if (jobs == NULL || threads == NULL || started == NULL) {
-        free(started);
-        free(threads);
-        free(jobs);
-        UNPROTECT(1);
-        Rf_error("Unable to allocate pthread worker data.");
-    }
-
-    for (int i = 0; i < nthreads; i++) {
-        jobs[i].id = i;
-        jobs[i].nthreads = nthreads;
-        jobs[i].nconds = nconds;
-        jobs[i].k = k;
-        jobs[i].nck = nck;
-        jobs[i].ogte = ogte;
-        jobs[i].zerobased = zerobased;
-        jobs[i].out = p_out;
-
-        if (i > 0 && pthread_create(
-            &threads[i],
-            NULL,
-            generate_combinations,
-            &jobs[i]
-        ) == 0) {
-            started[i] = 1;
+        combination_job *jobs = (combination_job *) R_alloc(workers, sizeof(*jobs));
+        pthread_t *threads = (pthread_t *) R_alloc(workers, sizeof(*threads));
+        int *started = (int *) R_alloc(workers, sizeof(*started));
+        int *output = INTEGER(out);
+        for (int i = 0; i < workers; ++i) {
+            jobs[i] = (combination_job) {n, k, minimum, 1 - zero,
+                (int) (count * i / workers), (int) (count * (i + 1) / workers), output};
+            started[i] = i > 0 &&
+                pthread_create(&threads[i], NULL, generate_combinations, &jobs[i]) == 0;
         }
-    }
-
-    generate_combinations(&jobs[0]);
-
-    for (int i = 1; i < nthreads; i++) {
-        if (started[i]) {
-            pthread_join(threads[i], NULL);
+        for (int i = 0; i < workers; ++i) {
+            if (started[i]) pthread_join(threads[i], NULL);
+            else generate_combinations(&jobs[i]);
         }
-        else {
-            generate_combinations(&jobs[i]);
-        }
-
-        if (ogte > 0) {
-            found += jobs[i].found;
-        }
+        R_CheckUserInterrupt();
     }
-
-    if (ogte > 0) {
-        found += jobs[0].found;
-    }
-
-    free(started);
-    free(threads);
-    free(jobs);
-
-    R_CheckUserInterrupt();
-
-    if (ogte > 0 && found < nck) {
-        SEXP copy = PROTECT(duplicate(out));
-        int *p_copy = INTEGER(copy);
-
-        out = PROTECT(allocMatrix(INTSXP, k, found));
-        p_out = INTEGER(out);
-
-        int col = 0;
-        for (int task = 0; task < nck; task++) {
-            if (task > 0 && task % 1024 == 0) {
-                R_CheckUserInterrupt();
-            }
-            int last = p_copy[task * k + k - 1] + zerobased - 1;
-            if (last >= ogte) {
-                memcpy(&p_out[col * k], &p_copy[task * k], (size_t) k * sizeof(int));
-                col++;
-            }
-        }
-
-        UNPROTECT(3);
-        return(out);
-    }
-
     UNPROTECT(1);
-    return(out);
-
+    return out;
 }
