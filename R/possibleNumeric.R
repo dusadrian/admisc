@@ -1,12 +1,11 @@
 #' @export
 `possibleNumeric` <- function(x, each = FALSE) {
 
-    result <- rep(NA, length(x))
     nax <- is.na(x)
 
     if (all(nax)) {
         if (each) {
-            return(result)
+            return(rep(NA, length(x)))
         }
 
         return(FALSE)
@@ -35,6 +34,7 @@
 
     if (is.numeric(x)) {
         if (each) {
+            result <- rep(NA, length(x))
             result[!nax] <- TRUE
             return(result)
         }
@@ -57,6 +57,7 @@
     )
     multibyte <- grepl("[^!-~ ]", x)
 
+    result <- rep(NA, length(x))
     if (any(multibyte)) {
         result[multibyte] <- FALSE
     }

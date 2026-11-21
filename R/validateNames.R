@@ -1,7 +1,7 @@
 #' @export
 #' @noRd
 `validateNames` <-
-function(expression = "", snames = "", data = NULL) {
+function(expression = "", snames = "", data = NULL, .info = getInfo(data)) {
 
     # pof("SR~V + CLP~V + SCRP + SLRP -> ~JSR", data = d.jobsecurity)
     # here, there are no * signs in the expression, and d.jobsecurity
@@ -14,7 +14,7 @@ function(expression = "", snames = "", data = NULL) {
         ppm <- translate(expression = expression, snames = snames, validate = TRUE)
     }
     else {
-        ppm <- translate(expression = expression, data = data, validate = TRUE)
+        ppm <- translate(expression = expression, data = data, validate = TRUE, .info = .info)
     }
     
     return(ppm[, apply(ppm, 2, function(x) any(x >= 0)), drop = FALSE])

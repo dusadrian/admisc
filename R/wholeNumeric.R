@@ -4,7 +4,7 @@
         return(Recall(unclass(x), each = each))
     }
 
-    if (!possibleNumeric(x) & !each) {
+    if (!each && !possibleNumeric(x)) {
         return(FALSE)
     }
 

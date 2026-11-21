@@ -6,6 +6,7 @@
     attrs <- attributes(expression)
     snames <- recreate(substitute(snames))
     dots <- list(...)
+    info <- dots$.info
 
     # print(list(expression, snames, noflevels))
 
@@ -91,7 +92,10 @@
                 stopError("Some <snames> not found in the data column names.")
             }
 
-            data <- data[, snames, drop = FALSE]
+            if (!identical(snames, colnames(data))) {
+                data <- data[, snames, drop = FALSE]
+                info <- NULL
+            }
         }
     }
 
@@ -102,11 +106,12 @@
     coerced2mv <- FALSE
 
     if (!identical(snames, "")) {
+        if (is.null(info) && !is.null(data)) info <- getInfo(data)
         checkValid(
             expression = expression,
             snames = snames,
             data = data,
-            categories = categories
+            categories = categories, .info = info
         )
 
         oldexp <- trimstr(unlist(lapply(expression, strsplit, split = "\\+")))
@@ -120,7 +125,7 @@
                 snames = snames,
                 data = data,
                 categories = categories,
-                translate = TRUE
+                .info = info, translate = TRUE
             )
 
             expression <- mv$expression
@@ -148,6 +153,7 @@
 
             if (!is.null(data)) {
                 colnames(data) <- snamesr[match(colnames(data), snames)]
+                info <- getInfo(data)
                 # positions <- c()
                 # # this code makes sure that column names
                 # # don't get overwritten multiple times
@@ -174,7 +180,7 @@
 
         if (!is.null(data)) {
             # getInfo() not getLevels() because some data might have time information
-            infodata <- getInfo(data)
+            infodata <- info
             noflevels <- infodata$noflevels
         }
     }
@@ -223,13 +229,10 @@
         curly <- any(grepl("[{]", expression))
         expression <- gsub("[*]", "", expression)
         # return(list(expression = expression, snames = snames, noflevels = noflevels, data = data, ... = ...))
-        checkMV(
-            expression,
-            snames = snames,
-            noflevels = noflevels,
-            data = data,
-            ... = ...
-        )
+        dots$.info <- info
+        do.call(checkMV, c(list(expression = expression, snames = snames,
+            noflevels = noflevels, data = data), dots))
+
 
         # parse plus
         pp <- unlist(strsplit(expression, split = "[+]"))

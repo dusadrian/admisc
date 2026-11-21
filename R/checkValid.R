@@ -1,6 +1,6 @@
 #' @export
 `checkValid` <- function(
-    expression = "", snames = "", data = NULL, categories = list()
+    expression = "", snames = "", data = NULL, categories = list(), .info = getInfo(data)
 ) {
 
     if (identical(snames, "")) {
@@ -11,7 +11,7 @@
 
     if (!is.null(data)) {
         allnames <- colnames(data)
-        infodata <- getInfo(data)
+        infodata <- .info
         if (any(infodata$factor)) {
             allnames <- c(allnames, names(unlist(infodata$categories)))
         }

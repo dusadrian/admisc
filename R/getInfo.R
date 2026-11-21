@@ -11,6 +11,9 @@
         if (is.numeric(x) && wholeNumeric(x)) {
             return(x[x < 0])
         }
+        else if (is.double(x) && is.null(attributes(x))) {
+            return(character())
+        }
         else {
             return(as.character(x[is.element(x, c("-", "dc"))]))
         }

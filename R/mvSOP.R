@@ -20,6 +20,7 @@
         snames <- splitstr(snames)
     }
 
+    infodata <- NULL
     noflevels <- NULL
 
     oldc <- newc <- c()
@@ -31,7 +32,7 @@
         }
     }
     else {
-        infodata <- getInfo(data)
+        infodata <- if (is.null(dots$.info)) getInfo(data) else dots$.info
         noflevels <- infodata$noflevels
         categories <- infodata$categories
     }
@@ -40,7 +41,7 @@
         expression = expression,
         snames = snames,
         data = data,
-        categories = categories
+        categories = categories, .info = infodata
     )
 
     if (length(categories) > 0) {
@@ -86,7 +87,7 @@
             noflevels[infodata$hastime] <- noflevels[infodata$hastime] - 1
         }
         
-        rnames <- colnames(validateNames(expression, snames = snames, data = data))
+        rnames <- colnames(validateNames(expression, snames = snames, data = data, .info = infodata))
         noflevels <- noflevels[match(rnames, colnames(data))]
         
         if (any(noflevels > 2)) {

@@ -2,7 +2,15 @@
 `getLevels` <- function(data) {
     data <- as.data.frame(data)
 
-    colnames <- paste("V", ncol(data), sep = ".")
+    # Ordinary numeric columns need no common matrix representation.
+    if (all(vapply(data, function(x) is.numeric(x) && !is.object(x) &&
+            is.null(dim(x)) && length(x) > 0L, logical(1)))) {
+        return(unname(vapply(data, function(x) {
+            if (any(x %% 1 > 0, na.rm = TRUE)) return(2)
+            n <- if (anyNA(x)) length(unique(x)) else max(x) + 1
+            if (n == 1) 2 else as.double(n)
+        }, numeric(1))))
+    }
 
     pN <- sapply(data, possibleNumeric)
 

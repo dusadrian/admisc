@@ -1,6 +1,6 @@
 #' @export
 `checkMV` <- function(
-    expression, snames = "", noflevels = NULL, data = NULL, use.labels = FALSE, categories = list(), ...
+    expression, snames = "", noflevels = NULL, data = NULL, use.labels = FALSE, categories = list(), ..., .info = getInfo(data)
 ) {
     
     curly <- any(grepl("[{]", expression))
@@ -99,7 +99,7 @@
             expression = expression[i],
             snames = "something", # doesn't matter here
             data = data,
-            categories = categories
+            categories = categories, .info = .info
         )
     }
 }

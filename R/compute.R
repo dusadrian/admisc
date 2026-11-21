@@ -83,13 +83,14 @@ function(expression = "", data = NULL, separate = FALSE, ...) { # na.rm = FALSE
 
     multivalue <- grepl("\\{|\\}|\\[|\\]", expression)
 
+    info <- getInfo(data)
     if (!multivalue) {
-        mvsop <- mvSOP(expression, data = data, ... = ...)
-        ppm <- translate(mvsop, data = data, retlist = TRUE)
+        mvsop <- mvSOP(expression, data = data, .info = info, ... = ...)
+        ppm <- translate(mvsop, data = data, .info = info, retlist = TRUE)
         rownames(ppm) <- trimstr(unlist(strsplit(expression, split = "\\+")))
     }
     else {
-        ppm <- translate(expression, data = data, retlist = TRUE)
+        ppm <- translate(expression, data = data, .info = info, retlist = TRUE)
     }
 
     pp <- attr(ppm, "retlist")
@@ -98,70 +99,56 @@ function(expression = "", data = NULL, separate = FALSE, ...) { # na.rm = FALSE
     ppm <- ppm[, retain, drop = FALSE]
     data <- data[, retain, drop = FALSE]
 
-    infodata <- getInfo(data)
+    infodata <- if (all(retain)) info else getInfo(data)
 
     data <- infodata$data
 
     verify(data)
 
-    tempList <- vector("list", length(pp))
+    # min() and max() give NA precedence over NaN when both occur in a row.
+    combine <- function(left, right, fun) {
+        value <- fun(left, right)
+        if (anyNA(value)) {
+            missing <- (is.na(left) & !is.nan(left)) | (is.na(right) & !is.nan(right))
+            value[missing] <- NA_real_
+        }
+        value
+    }
 
-    for (i in seq(length(pp))) {
+    tempList <- if (separate) vector("list", length(pp)) else NULL
+    res <- NULL
 
+    for (i in seq_along(pp)) {
         x <- which(ppm[i, ] >= 0)
         val <- pp[[i]][x]
-
-        temp <- data[, colnames(ppm)[x], drop = FALSE]
-
-        for (j in seq(length(val))) {
-
-            if (!is.numeric(temp[, j]) & possibleNumeric(temp[, j])) {
-                temp[, j] <- asNumeric(temp[, j])
-            }
-
-            nao <- na.omit(temp[, j])
-
-            if (any(abs(nao - round(nao)) >= .Machine$double.eps^0.5)) { # fuzzy
-
-                if (length(val[[j]]) > 1) {
+        term <- NULL
+        for (j in seq_along(val)) {
+            column <- data[[colnames(ppm)[x[j]]]]
+            if (!is.numeric(column) && possibleNumeric(column)) column <- asNumeric(column)
+            nao <- na.omit(column)
+            if (any(abs(nao - round(nao)) >= .Machine$double.eps^0.5)) {
+                if (length(val[[j]]) > 1L) {
                     stopError("Multiple values specified for fuzzy data.")
                 }
-
-                if (val[[j]] == 0) {
-                    temp[, j] <- 1 - temp[, j]
-                }
-
+                if (val[[j]] == 0) column <- 1 - column
+                column <- as.vector(column)
+            } else {
+                column <- as.numeric(is.element(column, val[[j]]))
             }
-            else { # cs or mv
-
-                temp[, j] <- as.numeric(is.element(temp[, j], val[[j]]))
-
-            }
-
+            term <- if (j == 1L) column else combine(term, column, pmin)
         }
-
-        if (ncol(temp) > 1) {
-            # temp <- as.vector(fuzzyand(temp))
-            temp <- apply(temp, 1, min, na.rm = FALSE)
-        }
-
-        tempList[[i]] <- temp
+        if (separate) tempList[[i]] <- term
+        else res <- if (i == 1L) term else combine(res, term, pmax)
     }
-
-    res <- as.data.frame(matrix(unlist(tempList), ncol = length(tempList)))
-    colnames(res) <- rownames(ppm)
-
-    if (ncol(res) > 1) {
-        if (!separate) {
-            # res <- as.vector(fuzzyor(res))
-            res <- apply(res, 1, max, na.rm = FALSE)
+    if (separate) {
+        if (length(pp) == 1L) {
+            res <- tempList[[1L]]
+        } else {
+            res <- as.data.frame(matrix(unlist(tempList), ncol = length(pp)))
+            colnames(res) <- rownames(ppm)
         }
-    }
-    else {
-        res <- as.vector(res[, 1])
     }
 
     if (negated) res <- 1 - res
-
     return(res)
 }
