@@ -1,33 +1,98 @@
 #' Evaluate an expression in a data environment
 #'
-#' A function almost identical to the base function \code{with()}, but allowing
-#' to evaluate the expression in every subset of a split file.
+#' Similar to the base function \code{\link[base]{with}()}, this function
+#' evaluates an expression using the names in the supplied data. It can also
+#' evaluate the same expression separately for each group.
 #'
 #' @name using
 #' @rdname using
 #' @aliases using.data.frame
 #' @rawRd
 #' \usage{
-#' using(data, expr, split.by = NULL, ...)
+#' using(data, expr, split.by = NULL, ..., .simplify = TRUE)
 #' }
 #'
 #' \arguments{
-#'     \item{data}{A data frame.}
-#'     \item{expr}{Expression to evaluate}
-#'     \item{split.by}{A factor variable from the \code{data}, or a \code{declared}/\code{labelled} variable}
-#'     \item{...}{Other internal arguments.}
+#'     \item{data}{A data frame (including a tibble or a \code{data.table}),
+#'         a matrix, a named list, a named atomic vector, or an environment.}
+#'     \item{expr}{An R expression, for instance \code{mean(Age)}.}
+#'     \item{split.by}{One or more grouping variables. For instance, use
+#'         \code{Area} for a single variable, or \code{Area & Gender} for
+#'         both. A character vector of column names also works. A grouping
+#'         variable supplied separately must have one value per row. Use a
+#'         factor for a grouping variable supplied as character values.}
+#'     \item{...}{A single assignment can also be written as a named argument,
+#'         for example \code{using(DF, total = men + women)}.}
+#'     \item{.simplify}{If possible, collect the group results in a matrix.
+#'         Set this to \code{FALSE} to keep a list with one result per group.}
+#' }
+#'
+#' \details{
+#' Given a data frame \code{DF}, the call \code{using(DF, mean(Age))} is
+#' another way to write \code{mean(DF$Age)}. If there is also a variable
+#' called \code{Age} outside the data frame, the column in \code{DF} takes
+#' precedence. The same idea applies to the columns of a matrix and the
+#' elements of a named list or vector. Other names are looked up where
+#' the function was called. Warnings, messages and interrupts are handled
+#' as usual.
+#'
+#' For instance, if \code{counts <- c(men = 12, women = 15)}, the call
+#' \code{using(counts, men + women)} returns 27. If a name occurs more than once,
+#' the first occurrence is used. Elements with empty or missing names are
+#' skipped when looking up a name. An assignment made with \code{<-} is
+#' local to this calculation. To save a change in the vector, use
+#' \code{\link{inside}()}. For an environment, the expression runs directly
+#' in that environment, so assignments made there persist.
+#'
+#' With \code{split.by = Area}, the mean age is calculated separately for
+#' each area. Groups follow the order of the factor levels. Within each group,
+#' the rows keep their original order. Only groups present in the data are
+#' used. Cases with missing values on a grouping variable are excluded,
+#' including values or ranges declared as missing. A list can be split if
+#' its columns have distinct, nonempty names and the same number of rows.
+#' Named atomic vectors and environments are evaluated as a whole.
+#'
+#' When working with a data frame, \code{.data} refers to the whole data
+#' frame, or to the rows of the current group when using \code{split.by}.
+#' For instance, a model can be fitted with \code{data = .data}. This also
+#' works for a list split into groups. If a column is itself called \code{.data},
+#' it can be selected with \code{.data[[".data"]]}.
+#'
+#' For a direct call to \code{lm()} or \code{glm()} with a stored formula,
+#' each model uses the rows of its group. With a formula such as
+#' \code{Age ~ .}, the dot leaves out the grouping variables, which are
+#' constant within the group. A grouping variable can still be included by
+#' name. An explicit \code{data} argument always takes precedence.
 #' }
 #'
 #' \value{
-#' A list of results, or a matrix if each separate result is a vector.
+#' The value of the expression. With \code{split.by}, the result is a matrix
+#' if each group returns a compatible vector of the same length. For example,
+#' \code{mean(Age)} gives one row per group and one column of means. If the
+#' vectors have names, their elements are matched by name.
+#'
+#' Other results, such as frequency tables, fitted models and \code{NULL},
+#' are collected in a list. The grouping values are available in
+#' \code{attr(result, "group.keys")}, with one row per group. Numeric
+#' summaries are rounded for printing.
 #' }
-#'
-#'
 #' \author{
 #' Adrian Dusa
 #' }
 #'
 #' \examples{
+#' # calculate the total for one area
+#' counts <- c(men = 12, women = 15)
+#' using(counts, men + women)
+#'
+#' # same calculation for each row of a matrix
+#' m <- cbind(men = c(12, 9), women = c(15, 11))
+#' using(m, men + women)
+#'
+#' # same with the two counts stored in an environment
+#' e <- list2env(as.list(counts))
+#' using(e, men + women)
+#'
 #' set.seed(123)
 #' DF <- data.frame(
 #'     Area = factor(sample(c("Rural", "Urban"), 123, replace = TRUE)),
@@ -61,6 +126,10 @@
 #' # average number of children by Area
 #' using(DF, mean(Children), split.by = Area)
 #'
+#' # one fitted model per area, using the current group's data
+#' fits <- using(DF, lm(Age ~ Children, data = .data), split.by = "Area")
+#' lapply(fits, coef)
+#'
 #' # frequency tables by Area
 #' using(DF, table(Children), split.by = Area)
 #' }
@@ -69,435 +138,291 @@
 NULL
 
 #' @export
-`using` <- function(data, expr, split.by = NULL, ...) {
+`using` <- function(data, expr, split.by = NULL, ..., .simplify = TRUE) {
     UseMethod("using")
 }
 
-#' @export
-`using.default` <- function(data, expr, ...) {
-    if (missing(expr)) {
-        args <- unlist(lapply(match.call(), deparse)[-1])
-        args <- args[setdiff(names(args), c("data", "expr"))]
-        if (length(args) > 1) {
-            stopError("Missing or ambiguous expression")
-        }
-        expr <- str2lang(paste(names(args), args[[1]], sep = "<-"))
+# A bare wrapper formal can forward an unevaluated expression and its caller.
+# A data column of the same name always wins, as in with().
+usingArgument <- function(code, caller, columns) {
+    while (is.symbol(code) && !as.character(code) %in% columns) {
+        frames <- sys.frames()
+        frame <- which(vapply(frames, identical, logical(1), caller))
+        if (!length(frame)) break
+        frame <- frame[length(frame)]
+        name <- as.character(code)
+        fun <- sys.function(frame)
+        if (!name %in% names(formals(fun))) break
+        actual <- match.call(fun, sys.call(frame), expand.dots = FALSE)
+        if (!name %in% names(actual)) break
+        binding <- eval(call("substitute", code, caller), baseenv())
+        if (!identical(binding, actual[[name]])) break
+        code <- actual[[name]]
+        parent <- sys.parents()[frame]
+        caller <- if (parent) frames[[parent]] else globalenv()
     }
-
-    visible <- TRUE
-    result <- NULL
-
-    test <- tryCatchWEM({
-        tmp <- withVisible(
-            eval(substitute(expr), envir = data, enclos = parent.frame())
-        )
-        visible <- tmp$visible
-        result <- tmp$value
-    })
-
-    if (is.null(test$error)) {
-        if (visible) {
-            return(result)
-        }
-
-        return(invisible(result))
-    }
-
-    stopError(test$error, prenter = FALSE)
+    list(code = code, caller = caller)
 }
 
-#' @export
-`using.matrix` <- function(data, expr, split.by = NULL, ...) {
-    if (missing(expr)) {
-        args <- unlist(lapply(match.call(), deparse)[-1])
-        args <- args[setdiff(names(args), c("data", "expr"))]
-        if (length(args) > 1) {
-            stopError("Missing or ambiguous expression")
-        }
-        expr <- str2lang(paste(names(args), args[[1]], sep = "<-"))
+usingSplit <- function(code, data, caller) {
+    if (is.call(code) && (identical(code[[1L]], quote(c)) || identical(code[[1L]], quote(`&`)))) {
+        parts <- lapply(as.list(code)[-1L], usingSplit, data = data, caller = caller)
+        if (!length(parts) || any(lengths(parts) == 0L)) stopError("Empty split specification.")
+        return(do.call(c, unname(parts)))
     }
-
-    expr <- substitute(expr)
-
-    return( # forward to using.data.frame
-        using(as.data.frame(data), expr, split.by = split.by, ... = ...)
-    )
+    if (is.symbol(code)) {
+        name <- as.character(code)
+        if (name %in% names(data)) return(stats::setNames(list(data[[name]]), name))
+        if (!exists(name, caller, inherits = TRUE)) stopError(paste("Unknown split variable", name))
+        value <- get(name, caller, inherits = TRUE)
+        if (is.null(value)) return(NULL)
+        if (!is.character(value)) {
+            return(stats::setNames(list(value), name))
+        }
+        code <- value
+    }
+    if (!is.character(code) || !length(code) || anyNA(code) || !all(code %in% names(data))) {
+        stopError("Specify split.by as a column name, column names in c(), or grouping variables joined by &.")
+    }
+    as.list(data)[code]
 }
 
-#' @export
-`using.data.frame` <- function(data, expr = expr, split.by = NULL, ...) {
-
-    if (nrow(data) == 0) {
-        stopError("There are no rows in the data.")
+usingFactor <- function(x) {
+    if (inherits(x, "declared") || inherits(x, "haven_labelled")) {
+        labels <- attr(x, "labels", exact = TRUE)
+        missing <- attr(x, "na_values", exact = TRUE)
+        range <- attr(x, "na_range", exact = TRUE)
+        attributes(x) <- NULL
+        exclude <- is.na(x) | x %in% missing
+        if (length(range)) exclude <- exclude | (x >= min(range) & x <= max(range))
+        x[exclude] <- NA
+        values <- sort(unique(x))
+        display <- as.character(values)
+        labelled <- match(values, labels)
+        display[!is.na(labelled)] <- names(labels)[labelled[!is.na(labelled)]]
+        # Different codes can share a display label. Keep their groups distinct.
+        return(factor(x, levels = values, labels = make.unique(display)))
     }
+    as.factor(x)
+}
 
-    ### TODO: see evalq() from within.data.frame
-
-
-    test <- substitute(split.by) # to capture forwarding from using.matrix
-    split.by <- NULL
-    if (!identical(as.character(test), "split.by")) {
-        split.by <- test
+usingMatrix <- function(values, expr) {
+    if (!length(values)) return(NULL)
+    first <- values[[1L]]
+    schema <- names(first)
+    plain <- function(x) {
+        is.atomic(x) && length(x) > 0L &&
+            (is.null(attributes(x)) || identical(names(attributes(x)), "names"))
     }
-
-    sby <- all.vars(split.by)
-    nsby <- all.names(split.by)
-
-    ###------------------------------------------------------------
-    ## The code below allows specifying a quoted split.by argument
-    ## but I am not sure this is a good idea
-    # if (is.character(split.by)) {
-    #     split.by <- gsub("[[:space:]]", "", split.by)
-    #     if (grepl("[&]", split.by)) {
-    #         split.by <- unlist(strsplit(split.by, split = "[&]"))
-    #     }
-    #     else if (grepl("[+]", split.by)) {
-    #         split.by <- unlist(strsplit(split.by, split = "[+]"))
-    #     }
-    #
-    #     sby <- nsby <- split.by
-    # }
-    ###------------------------------------------------------------
-
-    if (missing(expr)) {
-        args <- unlist(lapply(match.call(), deparse)[-1])
-        args <- args[setdiff(names(args), c("data", "expr", "split.by"))]
-        if (length(args) > 1) {
-            stopError("Missing or ambiguous expression")
-        }
-        expr <- str2lang(paste(names(args), args[[1]], sep = "<-"))
-    }
-
-    test <- substitute(expr) # to capture forwarding from using.matrix
-    if (!identical(as.character(test), "expr")) {
-        expr <- test
-    }
-
-    vexpr <- all.vars(expr)
-
-    # capture the use of "all variables" in a formula, for instance lm(y ~ .)
-    if (any(vexpr == ".")) {
-        vexpr <- colnames(data)
-    } else {
-        vexpr <- vexpr[is.element(vexpr, colnames(data))]
-    }
-
-    if (length(sby) == 0) {
-        # ret <- eval(expr = expr, envir = data, enclos = parent.frame())
-        # class(ret) <- c("admisc_fobject", class(ret))
-        # return(ret)
-
-        visible <- TRUE
-        result <- NULL
-
-        test <- tryCatchWEM({
-            tmp <- withVisible(
-                eval(expr, envir = data, enclos = parent.frame())
-            )
-            visible <- tmp$visible
-            result <- tmp$value
-        })
-
-        if (is.null(test$error)) {
-            if (visible) {
-                return(result)
-            }
-
-            return(invisible(result))
-        }
-
-        stopError(gsub("object", "column", test$error), prenter = FALSE)
-    }
-
-    nms <- names(data)
-    existing <- sapply(sby, function(x) {
-        is.element(x, nms) || exists(x, envir = parent.frame(), inherits = TRUE)
-    })
-
-    if (any(!existing)) {
-        stopError("Split by variables do not exist in the data.")
-    }
-
-    sbylist <- lapply(
-        lapply(sby, function(x) {
-            eval(parse(text = x), envir = data, enclos = parent.frame())
-        }),
-        function(x) {
-            if (inherits(x, "declared") || inherits(x, "haven_labelled")) {
-                labels <- attr(x, "labels", exact = TRUE)
-                na_values <- attr(x, "na_values")
-                na_range <- attr(x, "na_range")
-
-                if (!is.null(na_range)) {
-                    if (length(na_range) > 2) {
-                        stopError("Split by variable has a missing range with more than two values.")
-                    }
-
-                    na_values <- sort(union(
-                        na_values,
-                        seq(na_range[1], na_range[2])
-                    ))
-                }
-
-                if (inherits(x, "haven_labelled")) {
-                    x[is.element(x), na_values] <- NA
-                }
-
-                uniques <- sort(
-                    setdiff(
-                        c(undeclareit(x, drop = TRUE), labels),
-                        na_values
-                    )
-                )
-                names(uniques) <- uniques
-                labels <- labels[is.element(labels, uniques)]
-                names(uniques)[match(labels, uniques)] <- names(labels)
-                attributes(x) <- NULL
-                return(factor(x, levels = uniques, labels = names(uniques)))
-            }
-
-            return(as.factor(x))
-        }
-    )
-
-    names(sbylist) <- sby
-
-    test <- table(sapply(sbylist, length))
-
-    if (length(test) > 1 || nrow(data) != as.numeric(names(test))) {
-        stopError("Split variables do not match the number of rows in the data.")
-    }
-
-    # split by (non-missing-declared) levels
-    sl <- lapply(sbylist, function(x) levels(x))
-
-    names(sl) <- sby
-
-    noflevels <- unlist(lapply(sl, length))
-    mbase <- c(rev(cumprod(rev(noflevels))), 1)[-1]
-
-    orep  <- cumprod(
-        rev(
-            c(rev(noflevels)[-1], 1)
-        )
-    )
-
-    retmat <- sapply(seq_len(length(sl)), function(x) {
-        rep.int(
-            rep.int(
-                seq_len(noflevels[x]),
-                rep.int(mbase[x], noflevels[x])
-            ),
-            orep[x]
-        )
-    })
-
-    # slexp <- expand.grid(sl, stringsAsFactors = FALSE)
-
-    slexp <- retmat
-    for (i in seq(length(sl))) {
-        slexp[, i] <- sl[[i]][retmat[, i]]
-    }
-
-
-    ###--------------------------------
-    # mandatory, otherwise subset() below will take a LOT of time
-    data <- data[, vexpr, drop = FALSE]
-    # because it is re-creating all declared variables, all NA indexes etc.
-    ###--------------------------------
-
-    res <- vector(mode = "list", length = nrow(slexp))
-    visible <- TRUE
-
-    block <- as.list(expr)
-    printed_block <- identical(block[[1]], as.name("{")) && any(
-        vapply(
-            block[-1],
-            function(x) is.call(x) && identical(x[[1]], as.name("print")),
-            logical(1)
-        )
-    )
-
-    for (r in seq(nrow(slexp))) {
-        selection <- rep(TRUE, nrow(data))
-
-        for (c in seq(ncol(slexp))) {
-            val <- slexp[r, c]
-            x <- sbylist[[c]] # split variable
-            attrx <- attributes(x)
-
-            if (inherits(x, "declared") | inherits(x, "haven_labelled_spss")) {
-
-                attributes(x) <- NULL
-
-                na_index <- attrx[["na_index"]]
-                if (!is.null(na_index)) {
-                    nms <- names(na_index)
-                    x[na_index] <- nms
-                }
-
-                labels <- attrx[["labels"]]
-                if (!is.null(labels)) {
-                    havelabels <- is.element(x, labels)
-                    x[havelabels] <- names(labels)[match(x[havelabels], labels)]
-                }
-            }
-
-            selection <- selection & (x == val)
-        }
-
-        if (sum(selection, na.rm = TRUE) > 0) {
-            if (printed_block) {
-                split_name <- paste(slexp[r, ], collapse = ", ")
-                cat("\n", split_name, "\n", sep = "")
-                cat(
-                    paste(rep("-", nchar(split_name)), collapse = ""),
-                    "\n",
-                    sep = ""
-                )
-            }
-
-            tmp <- withVisible(
-                eval(
-                    expr = expr,
-                    envir = subset(data, selection),
-                    enclos = parent.frame()
-                )
-            )
-            visible <- tmp$visible
-            res[[r]] <- tmp$value
-
-            if (printed_block && visible) {
-                print(res[[r]])
-            }
-            # res[[r]] <- with(subset(data, selection), eval(expr))
+    if (!plain(first)) return(NULL)
+    for (i in seq_along(values)) {
+        x <- values[[i]]
+        if (!plain(x) || length(x) != length(first)) return(NULL)
+        if (typeof(x) != typeof(first) && !(is.numeric(first) && is.numeric(x) &&
+            !is.complex(first) && !is.complex(x))) return(NULL)
+        if (!identical(names(x), schema)) {
+            if (is.null(schema) || anyNA(schema) || any(!nzchar(schema)) ||
+                anyDuplicated(schema) || !setequal(names(x), schema)) return(NULL)
+            values[[i]] <- x[schema]
         }
     }
-
-    if (printed_block) {
-        cat("\n")
-    }
-
-    empty <- sapply(res, is.null)
-
-    res <- res[!empty]
-
-    any_wtable <- any(
-        sapply(res, function(x) class(x)[1] == "wtable" | class(x)[1] == "w_table")
-    )
-
-    slexp <- slexp[!empty, ]
-
-    if (all(sapply(res, is.atomic)) & !any_wtable) {
-
-        classes <- unique(unlist(lapply(res, class)))
-        classes <- setdiff(classes, c("integer", "double", "character", "numeric", "complex"))
-
-        # all are vectors (e.g. from summary) but lengths can differ
-        # if one subset has NAs and others not
-        lengths <- sapply(res, length)
-        result <- matrix(NA, nrow = length(res), ncol = max(lengths))
-
-        for (i in seq(length(res))) {
-            if (!is.null(res[[i]])) {
-                result[i, seq(length(res[[i]]))] <- res[[i]]
-            }
-        }
-
-        result[] <- coerceMode(round(result, 3))
-        if (is.matrix(slexp)) {
-            rownames(result) <- apply(slexp, 1, function(x) paste(x, collapse = ","))
+    result <- do.call(rbind, unname(values))
+    if (is.null(schema)) {
+        if (length(first) == 1L) {
+            head <- if (is.call(expr)) expr[[1L]] else expr
+            schema <- paste(deparse(head), collapse = " ")
+        } else if (is.call(expr) && identical(expr[[1L]], quote(c)) && length(expr) == length(first) + 1L) {
+            schema <- vapply(as.list(expr)[-1L], function(x) paste(deparse(x), collapse = " "), character(1))
         } else {
-            rownames(result) <- slexp
+            schema <- rep(" ", length(first))
         }
-
-        expr <- as.list(expr)
-
-        if (max(lengths) == 1) {
-            colnames(result) <- as.character(expr[[1]])
-        }
-        else {
-            # something like:
-            # using(aa, c(mean(A), sd(A)), split.by = group)
-            if (as.character(expr[1]) == "c") {
-                expr <- expr[-1]
-            }
-
-            cexpr <- sapply(expr, as.character)
-
-            if (is.matrix(cexpr) && nrow(cexpr) == 2) {
-                if (length(unique(cexpr[1, ])) == 1) {
-                    cexpr <- cexpr[2, ]
-                } else if (length(unique(cexpr[2, ])) == 1) {
-                    cexpr <- cexpr[1, ]
-                }
-            }
-
-            nms <- names(res[[which.max(lengths)]])
-
-            if (is.null(nms)) {
-                if (max(lengths) == length(expr) && !is.element("table", expr)) {
-                    if (max(lengths) == length(cexpr)) {
-                        nms <- cexpr
-                    } else {
-                        nms <- sapply(expr, deparse)
-                    }
-                } else {
-                    nms <- rep(" ", max(lengths))
-                }
-            }
-
-            # something like:
-            # using(aa, c(mean(A), sd(A), summary(A)), split.by = group)
-            if (
-                any(nms == "") &&
-                is.element("summary", cexpr) &&
-                sum(nms == "") == length(expr) - 1
-            ) {
-                nms[nms == ""] <- setdiff(cexpr, "summary")
-            }
-
-            colnames(result) <- nms
-        }
-
-        res <- result
-        class(res) <- c("admisc_fobject", "matrix")
-
     }
-    else {
-        # res is a list
-        attr(res, "split") <- slexp
-        class(res) <- c("admisc_fobject", class(res))
-    }
-
-    if (visible && !printed_block) {
-        return(res)
-    }
-
-    return(invisible(res))
+    colnames(result) <- schema
+    result
 }
 
+# Prepare the delayed assignments once. Evaluate them in a fresh frame for
+# each group, so returned closures always retain their own row indices.
+usingMaskBindings <- function(data) {
+    columns <- names(data)
+    ordinary <- identical(class(data), "data.frame")
+    bindings <- lapply(which(columns != ".data"), function(j) {
+        column <- if (ordinary) .subset2(data, j)
+        slice <- if (ordinary && !is.object(column) && is.null(dim(column))) {
+            substitute(.subset2(data, j)[index], list(j = j))
+        } else {
+            substitute(data[index, field, drop = FALSE][[1L]], list(field = columns[j]))
+        }
+        substitute(delayedAssign(field, value, eval.env = frame, assign.env = mask),
+            list(field = columns[j], value = slice))
+    })
+    as.call(c(list(quote(`{`)), bindings))
+}
+
+usingGroupMask <- function(data, index, caller, bindings) {
+    force(index)
+    frame <- environment()
+    mask <- new.env(parent = caller)
+    delayedAssign(".data", data[index, , drop = FALSE], eval.env = frame, assign.env = mask)
+    eval(bindings, frame)
+    mask
+}
+
+# Supply current observations to direct base regression calls using an external
+# formula. Literal formulas already capture the evaluation environment.
+usingModelCall <- function(expr, data, by, caller) {
+    if (!is.call(expr)) return(expr)
+    head <- expr[[1L]]
+    if (is.symbol(head) && as.character(head) %in% c("lm", "glm")) {
+        name <- as.character(head)
+        if (name %in% names(data) && is.function(data[[name]])) return(expr)
+        fun <- get0(name, envir = caller, mode = "function", inherits = TRUE)
+        if (!identical(fun, getExportedValue("stats", name))) return(expr)
+    } else if (identical(head, quote(stats::lm)) || identical(head, quote(stats::glm))) {
+        fun <- getExportedValue("stats", as.character(head[[3L]]))
+    } else return(expr)
+    if (any(vapply(as.list(expr)[-1L], identical, logical(1), quote(...)))) return(expr)
+    args <- match.call(fun, expr, expand.dots = FALSE)
+    if ("data" %in% names(args) || is.null(args$formula)) return(expr)
+    formula <- args$formula
+    if (is.call(formula) && identical(formula[[1L]], quote(`~`))) {
+        vars <- all.vars(formula)
+        if (!"." %in% vars) return(expr)
+        # A grouping factor is constant within its group. Include it only if
+        # mentioned explicitly in the formula.
+        cols <- setdiff(names(data), setdiff(by, vars))
+        expr$data <- call("[", quote(.data), cols)
+    } else {
+        expr$data <- quote(.data)
+    }
+    expr
+}
 
 #' @export
-`[.admisc_fobject` <- function(x, i, j, drop = FALSE, ...) {
-    class(x) <- setdiff(class(x), "admisc_fobject")
-    if (is.matrix(x)) {
-        dims <- dimnames(x)
-        if (!is.null(dims)) {
-            if (!is.null(dims[[1]]) && !missing(i) && !is.null(i)) {
-                dims[[1]] <- dims[[1]][i]
-            }
-            if (!is.null(dims[[2]]) && !missing(j) && !is.null(j)) {
-                dims[[2]] <- dims[[2]][j]
-            }
+`using.default` <- function(data, expr, split.by = NULL, ..., .simplify = TRUE) {
+    caller <- parent.frame()
+    code <- substitute(expr)
+    dots <- as.list(substitute(list(...)))[-1L]
+    if (missing(expr)) {
+        if (length(dots) != 1L || is.null(names(dots)) || !nzchar(names(dots)[1L])) {
+            stopError("Missing or ambiguous expression.")
         }
-        x <- NextMethod()
-        x <- as.matrix(x)
-        dimnames(x) <- dims
-    } else {
-        x <- NextMethod()
+        code <- call("<-", as.name(names(dots)[1L]), dots[[1L]])
+    } else if (length(dots)) {
+        stopError("Unused arguments to using(). Specify grouping with split.by.")
     }
+    if (is.matrix(data)) {
+        data <- as.data.frame(data, stringsAsFactors = FALSE, optional = !is.null(colnames(data)))
+    }
+    columns <- if (is.environment(data)) ls(data, all.names = TRUE) else names(data)
+    arg <- usingArgument(code, caller, columns)
+    by <- usingArgument(substitute(split.by), caller, columns)
+    vars <- if (!is.null(by$code)) usingSplit(by$code, data, by$caller)
+    if (is.atomic(data) && !is.null(data) && is.null(dim(data))) {
+        if (is.null(columns)) stopError("using() requires names for an atomic vector.")
+        if (!is.null(vars)) stopError("Named atomic vectors do not support split.by.")
+        indices <- which(vectorBindingNames(columns))
+        data <- lapply(indices, function(i) data[[i]])
+        names(data) <- columns[indices]
+    }
+    if (is.null(vars)) {
+        if (is.data.frame(data)) {
+            mask <- as.list(data)
+            mask[[".data"]] <- data
+        } else mask <- data
+        return(eval(arg$code, envir = mask, enclos = arg$caller))
+    }
+    if (!is.logical(.simplify) || length(.simplify) != 1L || is.na(.simplify)) {
+        stopError(".simplify must be TRUE or FALSE.")
+    }
+    if (!is.list(data) || is.null(columns) || anyNA(columns) || any(!nzchar(columns)) ||
+        anyDuplicated(columns)) stopError("Grouped evaluation requires uniquely named columns.")
+    if (!is.data.frame(data)) {
+        sizes <- vapply(data, NROW, integer(1))
+        if (length(unique(sizes)) != 1L) stopError("All grouped list columns must have the same row count.")
+        data <- structure(as.list(data), class = "data.frame", row.names = .set_row_names(sizes[1L]))
+    } else data <- as.data.frame(data)
 
-    class(x) <- c("admisc_fobject", class(x))
-    return(x)
+    if (anyDuplicated(names(vars))) stopError("Duplicate grouping variables.")
+    factors <- lapply(vars, function(x) {
+        if (!is.atomic(x) || !is.null(dim(x)) || length(x) != nrow(data)) {
+            stopError("Each grouping variable must be a vector with one value per row.")
+        }
+        usingFactor(x)
+    })
+    codes <- lapply(factors, function(x) {
+        code <- as.integer(x)
+        if (anyNA(levels(x))) code[is.na(levels(x)[code])] <- NA_integer_
+        code
+    })
+    ordered <- do.call(order, c(unname(codes), list(na.last = NA, method = "radix")))
+    first <- rep(FALSE, length(ordered))
+    if (length(ordered)) {
+        first[1L] <- TRUE
+        for (code in codes) {
+            sorted <- code[ordered]
+            first[-1L] <- first[-1L] | sorted[-1L] != sorted[-length(sorted)]
+        }
+    }
+    rows <- split(ordered, cumsum(first))
+    representatives <- ordered[first]
+    keys <- as.data.frame(lapply(vars, `[`, representatives), optional = TRUE)
+    labels <- matrix("", length(rows), length(vars), dimnames = list(NULL, names(vars)))
+    for (j in seq_along(factors)) labels[, j] <- as.character(factors[[j]][representatives])
+    ids <- if (length(rows)) make.unique(apply(labels, 1L, paste, collapse = ",")) else character()
+    expr <- usingModelCall(arg$code, data, names(vars), arg$caller)
+    printed <- is.call(expr) && identical(expr[[1L]], quote(`{`)) &&
+        any(vapply(as.list(expr)[-1L], function(x) is.call(x) && identical(x[[1L]], quote(print)), logical(1)))
+    values <- vector("list", length(rows))
+    bindings <- usingMaskBindings(data)
+    visible <- TRUE
+    for (i in seq_along(rows)) {
+        mask <- usingGroupMask(data, rows[[i]], arg$caller, bindings)
+        label <- paste(labels[i, ], collapse = ", ")
+        if (printed) cat("\n", label, "\n", strrep("-", nchar(label)), "\n", sep = "")
+        tmp <- tryCatch(withVisible(eval(expr, mask, arg$caller)), error = function(e) {
+            attr(e, "group.keys") <- keys[i, , drop = FALSE]
+            if (identical(class(e)[1L], "simpleError")) {
+                e$parent <- e
+                e$message <- paste0("Group ", label, ": ", conditionMessage(e))
+            }
+            stop(e)
+        })
+        values[i] <- list(tmp$value)
+        visible <- tmp$visible
+        if (printed && visible) print(tmp$value)
+    }
+    if (printed) cat("\n")
+    result <- if (.simplify) usingMatrix(values, expr)
+    if (is.null(result)) {
+        result <- stats::setNames(values, ids)
+    } else rownames(result) <- ids
+    attr(result, "group.keys") <- keys
+    attr(result, "split") <- if (ncol(labels) == 1L) unname(labels[, 1L]) else labels
+    class(result) <- c("admisc_fobject", class(result))
+    if (visible && !printed) result else invisible(result)
+}
+
+#' @export
+using.data.frame <- using.default
+#' @export
+using.matrix <- using.default
+
+#' @export
+`[.admisc_fobject` <- function(x, i, j, ..., drop = FALSE) {
+    keys <- attr(x, "group.keys", exact = TRUE)
+    labels <- attr(x, "split", exact = TRUE)
+    class(x) <- setdiff(class(x), "admisc_fobject")
+    ids <- if (is.matrix(x)) rownames(x) else names(x)
+    positions <- stats::setNames(seq_len(NROW(x)), ids)
+    if (is.matrix(x)) {
+        if (nargs() - as.integer(!missing(drop)) == 2L && !missing(i)) return(x[i])
+        value <- x[i, j, drop = drop]
+        if (!is.matrix(value)) return(value)
+    } else value <- x[i]
+    if (!missing(i)) positions <- positions[i]
+    if (!is.null(keys)) attr(value, "group.keys") <- keys[positions, , drop = FALSE]
+    attr(value, "split") <- if (is.matrix(labels)) labels[positions, , drop = FALSE] else labels[positions]
+    class(value) <- c("admisc_fobject", class(value))
+    value
 }

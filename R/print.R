@@ -206,19 +206,25 @@
 #' @export
 `print.admisc_fobject` <- function(x, startend = TRUE, ...) {
 
+    original <- x
     class(x) <- setdiff(class(x), "admisc_fobject")
-    if (is.list(x)) {
-        split <- attr(x, "split")
-        if (is.matrix(split)) {
-            nms <- apply(attr(x, "split", exact = TRUE), 1, function(x) {
-                paste(x, collapse = ", ")
-            })
-        } else {
-            nms <- split
+    labels <- attr(x, "split", exact = TRUE)
+    attr(x, "split") <- attr(x, "group.keys") <- NULL
+    if (is.list(x) && length(x) && all(vapply(x, inherits, logical(1), "fobject"))) {
+        # Keep declared's weighted vectors intact in the result, and display
+        # compatible weighted summaries together.
+        display <- usingMatrix(lapply(x, unclass), quote(summary))
+        if (!is.null(display)) {
+            rownames(display) <- names(x)
+            x <- display
         }
+    }
+    if (is.list(x)) {
+        nms <- if (is.matrix(labels)) apply(labels, 1L, paste, collapse = ", ") else labels
+        nms[is.na(nms)] <- "<NA>"
 
         cat(ifelse(startend, "\n", ""))
-        for (i in seq(length(x))) {
+        for (i in seq_along(x)) {
             cat(nms[i], "\n")
             cat(paste(c(rep("-", nchar(nms[i])), "\n"), collapse = ""))
 
@@ -226,11 +232,9 @@
                 cat("No data.\n")
             }
             else {
-                if (is.matrix(x[[i]])) {
-                    class(x[[i]]) <- c("admisc_fobject", class(x[[i]]))
-                }
-                class(x[[i]]) <- setdiff(class(x[[i]]), "admisc_fobject")
-                print(x[[i]], startend = FALSE)
+                if (inherits(x[[i]], c("wtable", "w_table"))) {
+                    print(x[[i]], startend = FALSE, ...)
+                } else print(x[[i]], ...)
             }
 
             if (i < length(x)) {
@@ -240,6 +244,11 @@
         cat(ifelse(startend, "\n", ""))
     }
     else {
+        if (!(typeof(x) %in% c("double", "integer")) || !length(x) || any(!is.finite(x))) {
+            print(x, ...)
+            return(invisible(original))
+        }
+        x <- round(x, 3)
         if (is.matrix(x)) {
             # for ex. via using() with split.by
 
@@ -270,8 +279,6 @@
 
         pN <- apply(x, 2, possibleNumeric)
         nms <- colnames(x)
-
-        cx <- x
 
         for (c in seq(ncol(x))) {
             xc <- x[, c]
@@ -316,7 +323,7 @@
             }
         }
 
-        for (i in seq(length(x))) {
+        for (i in seq_along(x)) {
             if (nchar(x[i]) < max.nchars) {
                 x[i] <- padBoth(x[i], max.nchars - nchar(x[i]))
             }
@@ -328,4 +335,5 @@
         print(noquote(x))
         cat(ifelse(startend, "\n", ""))
     }
+    invisible(original)
 }

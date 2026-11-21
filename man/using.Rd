@@ -5,30 +5,95 @@
 \alias{using.data.frame}
 \title{Evaluate an expression in a data environment}
 \description{
-A function almost identical to the base function \code{with()}, but allowing
-to evaluate the expression in every subset of a split file.
+Similar to the base function \code{\link[base]{with}()}, this function
+evaluates an expression using the names in the supplied data. It can also
+evaluate the same expression separately for each group.
 }
 \usage{
-using(data, expr, split.by = NULL, ...)
+using(data, expr, split.by = NULL, ..., .simplify = TRUE)
 }
 
 \arguments{
-    \item{data}{A data frame.}
-    \item{expr}{Expression to evaluate}
-    \item{split.by}{A factor variable from the \code{data}, or a \code{declared}/\code{labelled} variable}
-    \item{...}{Other internal arguments.}
+    \item{data}{A data frame (including a tibble or a \code{data.table}),
+        a matrix, a named list, a named atomic vector, or an environment.}
+    \item{expr}{An R expression, for instance \code{mean(Age)}.}
+    \item{split.by}{One or more grouping variables. For instance, use
+        \code{Area} for a single variable, or \code{Area & Gender} for
+        both. A character vector of column names also works. A grouping
+        variable supplied separately must have one value per row. Use a
+        factor for a grouping variable supplied as character values.}
+    \item{...}{A single assignment can also be written as a named argument,
+        for example \code{using(DF, total = men + women)}.}
+    \item{.simplify}{If possible, collect the group results in a matrix.
+        Set this to \code{FALSE} to keep a list with one result per group.}
+}
+
+\details{
+Given a data frame \code{DF}, the call \code{using(DF, mean(Age))} is
+another way to write \code{mean(DF$Age)}. If there is also a variable
+called \code{Age} outside the data frame, the column in \code{DF} takes
+precedence. The same idea applies to the columns of a matrix and the
+elements of a named list or vector. Other names are looked up where
+the function was called. Warnings, messages and interrupts are handled
+as usual.
+
+For instance, if \code{counts <- c(men = 12, women = 15)}, the call
+\code{using(counts, men + women)} returns 27. If a name occurs more than once,
+the first occurrence is used. Elements with empty or missing names are
+skipped when looking up a name. An assignment made with \code{<-} is
+local to this calculation. To save a change in the vector, use
+\code{\link{inside}()}. For an environment, the expression runs directly
+in that environment, so assignments made there persist.
+
+With \code{split.by = Area}, the mean age is calculated separately for
+each area. Groups follow the order of the factor levels. Within each group,
+the rows keep their original order. Only groups present in the data are
+used. Cases with missing values on a grouping variable are excluded,
+including values or ranges declared as missing. A list can be split if
+its columns have distinct, nonempty names and the same number of rows.
+Named atomic vectors and environments are evaluated as a whole.
+
+When working with a data frame, \code{.data} refers to the whole data
+frame, or to the rows of the current group when using \code{split.by}.
+For instance, a model can be fitted with \code{data = .data}. This also
+works for a list split into groups. If a column is itself called \code{.data},
+it can be selected with \code{.data[[".data"]]}.
+
+For a direct call to \code{lm()} or \code{glm()} with a stored formula,
+each model uses the rows of its group. With a formula such as
+\code{Age ~ .}, the dot leaves out the grouping variables, which are
+constant within the group. A grouping variable can still be included by
+name. An explicit \code{data} argument always takes precedence.
 }
 
 \value{
-A list of results, or a matrix if each separate result is a vector.
+The value of the expression. With \code{split.by}, the result is a matrix
+if each group returns a compatible vector of the same length. For example,
+\code{mean(Age)} gives one row per group and one column of means. If the
+vectors have names, their elements are matched by name.
+
+Other results, such as frequency tables, fitted models and \code{NULL},
+are collected in a list. The grouping values are available in
+\code{attr(result, "group.keys")}, with one row per group. Numeric
+summaries are rounded for printing.
 }
-
-
 \author{
 Adrian Dusa
 }
 
 \examples{
+# calculate the total for one area
+counts <- c(men = 12, women = 15)
+using(counts, men + women)
+
+# same calculation for each row of a matrix
+m <- cbind(men = c(12, 9), women = c(15, 11))
+using(m, men + women)
+
+# same with the two counts stored in an environment
+e <- list2env(as.list(counts))
+using(e, men + women)
+
 set.seed(123)
 DF <- data.frame(
     Area = factor(sample(c("Rural", "Urban"), 123, replace = TRUE)),
@@ -61,6 +126,10 @@ using(DF, mean(Age), split.by = c(Area, Gender))
 
 # average number of children by Area
 using(DF, mean(Children), split.by = Area)
+
+# one fitted model per area, using the current group's data
+fits <- using(DF, lm(Age ~ Children, data = .data), split.by = "Area")
+lapply(fits, coef)
 
 # frequency tables by Area
 using(DF, table(Children), split.by = Area)
