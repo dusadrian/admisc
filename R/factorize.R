@@ -197,52 +197,54 @@ function(input, snames = "", noflevels = NULL, pos = FALSE, ...) {
     }
 
 
-    `getFacts` <- function(mat, snames = "", mv = FALSE, collapse = "*", curly = FALSE) {
+    `getFacts` <- function(mat, snames = "", mv = FALSE, collapse = "*", curly = FALSE,
+        ids = seq_len(nrow(mat)), cache = new.env(parent = emptyenv())) {
 
         cfound <- FALSE
         result <- list()
 
-        for (cc in seq(ncol(mat))) {
+        # A shared projection can use only columns with a repeated literal.
+        shared <- which(vapply(seq_len(ncol(mat)), function(j) {
+            x <- mat[, j]
+            anyDuplicated(x[x >= 0]) > 0L
+        }, logical(1)))
+        for (cc in seq_along(shared)) {
+            allcols <- combnk(length(shared), cc)
+            for (cols in seq_len(ncol(allcols))) {
+                selected <- shared[allcols[, cols]]
+                temp <- mat[, selected, drop = FALSE]
+                valid <- which(rowSums(temp < 0) == 0L)
+                if (length(valid) > 1L) {
+                    # Translated literals are level codes or comma-separated levels.
+                    projected <- as.data.frame(temp[valid, , drop = FALSE], stringsAsFactors = FALSE)
+                    key <- do.call(paste, c(unname(as.list(projected)), sep = "\r"))
+                    groups <- split(valid, match(key, unique(key)))
+                    for (group in groups[lengths(groups) > 1L]) {
+                        rows <- seq_len(nrow(mat)) %in% group
+                        cfound <- TRUE
+                        pasted <- pasteit(mat = mat,
+                            comrows = rows,
+                            cols = selected,
+                            comvals = unname(temp[group[1L], ]),
+                            snames = snames,
+                            mv = mv,
+                            collapse = collapse,
+                            curly = curly)
 
-            allcols <- combnk(ncol(mat), cc)
-
-            for (cols in seq(ncol(allcols))) {
-
-                temp <- mat[, allcols[, cols], drop = FALSE]
-                uniq <- unique(temp)
-                uniq <- uniq[apply(uniq, 1, function(x) all(x >= 0)), , drop = FALSE]
-
-                if (nrow(uniq) > 0) {
-
-                    for (i in seq(nrow(uniq))) {
-
-                        rows <- logical(nrow(mat))
-
-                        comrows <- apply(temp, 1, function(x) { all(x == unname(uniq[i, ])) })
-
-                        if (sum(comrows) > 1) {
-
-                            cfound <- TRUE
-
-                            rows <- rows | comrows
-
-                            pasted <- pasteit(  mat = mat,
-                                                comrows = comrows,
-                                                cols = allcols[, cols],
-                                                comvals = unname(uniq[i, ]),
-                                                snames = snames,
-                                                mv = mv,
-                                                collapse = collapse,
-                                                curly = curly)
-                            
-                            if (sum(rows) < nrow(mat)) {
-                                result[[length(result) + 1]] <- Recall(mat[!rows, , drop = FALSE], snames = snames, mv = mv, collapse = collapse)
-                                names(result)[length(result)] <- pasted
+                        if (length(group) < nrow(mat)) {
+                            remaining <- ids[!rows]
+                            key <- paste(remaining, collapse = ",")
+                            if (is.null(cache[[key]])) {
+                                cache[[key]] <- Recall(mat[!rows, , drop = FALSE],
+                                    snames = snames, mv = mv, collapse = collapse,
+                                    ids = remaining, cache = cache)
                             }
-                            else {
-                                result <- list(NA)
-                                names(result) <- pasted
-                            }
+                            result[[length(result) + 1L]] <- cache[[key]]
+                            names(result)[length(result)] <- pasted
+                        }
+                        else {
+                            result <- list(NA)
+                            names(result) <- pasted
                         }
                     }
                 }

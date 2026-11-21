@@ -389,19 +389,10 @@
             i.list <- vector("list", length = nrow(indexes))
 
             for (j in seq(length(i.list))) {
-                i.list[[j]] <- vector("list", length = prod(dim(indexes)))
-                start.position <- 1
-
-                for (k in seq(ncol.ind)) {
-                    for (l in seq(length(big.list[[i]][[k]][[indexes[j, k]]]))) {
-                        i.list[[j]][[start.position]] <- big.list[[i]][[k]][[indexes[j, k]]][[l]]
-                        start.position <- start.position + 1
-                    }
-                }
-
-                if (start.position <= length(i.list[[j]])) {
-                    i.list[[j]] <- i.list[[j]][- seq(start.position, length(i.list[[j]]))]
-                }
+                selected <- lapply(seq_len(ncol.ind), function(k) {
+                    big.list[[i]][[k]][[indexes[[k]][j]]]
+                })
+                i.list[[j]] <- unname(unlist(lapply(selected, as.list), recursive = FALSE))
             }
 
 

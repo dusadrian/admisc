@@ -293,27 +293,8 @@ NULL
     expressions <- translate(bl, snames = snames, noflevels = noflevels)
     snames <- colnames(expressions)
 
-    redundant <- logical(nrow(expressions))
-
     if (nrow(expressions) > 1) {
-        for (i in seq(nrow(expressions) - 1)) {
-            if (!redundant[i]) {
-                for (j in seq(i + 1, nrow(expressions))) {
-                    if (!redundant[j]) {
-                        subsetrow <- checkSubset(
-                            expressions[c(i, j), , drop = FALSE],
-                            implicants = FALSE
-                        )
-
-                        if (!is.null(subsetrow)) {
-                            redundant[c(i, j)[subsetrow]] <- TRUE
-                        }
-                    }
-                }
-            }
-        }
-
-        expressions <- expressions[!redundant, , drop = FALSE]
+        expressions <- removeRedundantTerms(expressions, -1)
         if (possibleNumeric(expressions)) {
 
             mat <- matrix(asNumeric(expressions) + 1, nrow = nrow(expressions))

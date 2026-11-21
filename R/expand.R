@@ -24,34 +24,6 @@
             noflevels <- splitstr(noflevels)
         }
     }
-    # there is a dedicated function removeRedundants() in package QCA
-    # written in C, just too much circular dependency
-    `remred` <- function(x) {
-        # function to remove redundant terms
-
-        if (nrow(x) > 1) {
-
-            redundant <- logical(nrow(x))
-
-            for (i in seq(nrow(x) - 1)) {
-                if (!redundant[i]) {
-                    for (j in seq(i + 1, nrow(x))) {
-                        if (!redundant[j]) {
-                            subsetrow <- checkSubset(x[c(i, j), , drop = FALSE])
-                            if (!is.null(subsetrow)) {
-                                redundant[c(i, j)[subsetrow]] <- TRUE
-                            }
-                        }
-                    }
-                }
-            }
-
-            x <- x[!redundant, , drop = FALSE]
-        }
-
-        return(x)
-    }
-
     `dnf` <- function(x, noflevels = NULL, partial = FALSE) {
         if (is.null(noflevels)) {
             noflevels <- rep(2, ncol(x))
@@ -66,7 +38,7 @@
         }
 
 
-        result <- matrix(nrow = 0, ncol = ncol(x))
+        blocks <- vector("list", nrow(x))
         rmin <- min(apply(x, 1, function(x) sum(x == 0)))
 
         for (i in seq(nrow(x))) {
@@ -77,26 +49,29 @@
                 wxi <- which(xi == 0)
                 if (partial) {
                     combs <- combnk(rxi, rxi - rmin)
+                    parts <- vector("list", ncol(combs))
                     for (col in seq(ncol(combs))) {
                         wxic <- wxi[combs[, col]]
                         rest <- getMatrix(noflevels[wxic]) + 1
                         basemat <- matrix(rep(xi[-wxic], nrow(rest)), nrow = nrow(rest), byrow = TRUE)
                         resmat <- cbind(basemat, rest)[, order(c(seq(ncol(x))[-wxic], wxic)), drop = FALSE]
-                        result <- rbind(result, resmat)
+                        parts[[col]] <- resmat
                     }
+                    blocks[[i]] <- do.call(rbind, parts)
                 }
                 else {
                     rest <- getMatrix(noflevels[wxi]) + 1
                     basemat <- matrix(rep(xi[-wxi], nrow(rest)), nrow = nrow(rest), byrow = TRUE)
                     resmat <- cbind(basemat, rest)[, order(c(seq(ncol(x))[-wxi], wxi)), drop = FALSE]
-                    result <- rbind(result, resmat)
+                    blocks[[i]] <- resmat
                 }
             }
             else {
-                result <- rbind(result, xi)
+                blocks[[i]] <- x[i, , drop = FALSE]
             }
         }
 
+        result <- do.call(rbind, blocks)
         colnames(result) <- colnames(x)
         if (length(zeroc) > 0 & partial) {
             for (i in zeroc) {
@@ -183,14 +158,11 @@
             return(classify("", "admisc_simplify"))
         }
 
-        expression <- matrix(nrow = 0, ncol = ncol(bl))
+        blocks <- lapply(seq_len(nrow(bl)), function(i) {
+            as.matrix(expand.grid(lapply(bl[i, ], function(x) asNumeric(splitstr(x)) + 1)))
+        })
+        expression <- do.call(rbind, blocks)
         colnames(expression) <- colnames(bl)
-
-        for (i in seq(nrow(bl))) {
-            expression <- rbind(expression, as.matrix(expand.grid(lapply(bl[i, ], function(x) {
-                asNumeric(splitstr(x)) + 1
-            }))))
-        }
 
     }
     else if (!is.matrix(expression)) {
@@ -200,7 +172,7 @@
     if (is.null(noflevels)) noflevels <- rep(2, ncol(expression))
 
     # return(list(x = remred(expression), noflevels = noflevels, partial = partial))
-    expression <- dnf(remred(expression), noflevels = noflevels, partial = partial)
+    expression <- dnf(removeRedundantTerms(expression, 0), noflevels = noflevels, partial = partial)
 
     if (implicants) {
         for (i in seq(ncol(expression), 1)) {

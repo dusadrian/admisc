@@ -211,24 +211,21 @@ NULL
         arglist$noflevels <- noflevels
     }
     
-    if (requireNamespace("QCA", quietly = TRUE)) {
-        combs <- QCA::createMatrix(unlist(lapply(dots, length)))
-    } else {
-        combs <- getMatrix(unlist(lapply(dots, length)))
-    }
-
-
-    expressions <- result <- character(nrow(combs))
-    
+    sizes <- lengths(dots)
+    choices <- rep(1L, length(dots))
+    expressions <- result <- character(prod(sizes))
     conj <- ifelse(sl, "", "*")
-    
-    for (i in seq(nrow(combs))) {
-        x <- combs[i, ] + 1
-        expression <- c()
-        for (j in seq(length(x))) {
-            expression <- c(expression, dots[[j]][x[j]])
+
+    for (i in seq_along(result)) {
+        expression <- vapply(seq_along(dots), function(j) dots[[j]][choices[j]], character(1))
+        for (j in rev(seq_along(choices))) {
+            if (choices[j] < sizes[j]) {
+                choices[j] <- choices[j] + 1L
+                break
+            }
+            choices[j] <- 1L
         }
-        
+
         disj <- grepl("[+]", expression)
         if (any(disj)) {
             expression[disj] <- paste("(", expression[disj], ")", sep = "")
