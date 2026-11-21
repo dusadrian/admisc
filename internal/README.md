@@ -14,6 +14,15 @@ To keep the results in R, use `results <- source("internal/check-release.R")$val
 
 The default checkouts are `../declared` and `../QCA`. To supply other paths, source `internal/test-downstream.R` and call `run_release_checks(declared_path = "/path/to/declared", qca_path = "/path/to/QCA")`.
 
+On this Mac, the personal `~/.R/Makevars` selects Homebrew Clang 20, which warns about `-Wfixed-enum-extension` in the R 4.6.1 header `R_ext/Boolean.h`. To reproduce the release check with R's default Apple Clang, use a temporary empty user Makevars for this invocation.
+
+```r
+local({
+    makevars <- withr::local_tempfile(lines = character())
+    withr::with_envvar(c(R_MAKEVARS_USER = makevars), source("internal/check-release.R"))
+})
+```
+
 ## admisc tests
 
 To run only the package tests against the current checkout, use
