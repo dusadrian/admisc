@@ -3,9 +3,16 @@
 \name{inside}
 \alias{inside}
 \alias{inside.list}
-\title{Evaluate an Expression in a Data Environment}
+\alias{inside.data.frame}
+\alias{inside.data.table}
+\alias{inside.matrix}
+\alias{inside.environment}
+\alias{inside.default}
+\title{Modify variables by name}
 \description{
-Evaluate an R expression in an environment constructed from data.
+Similar to the base function \code{\link[base]{within}()}, this function
+lets you refer to variables by name and saves your changes in the
+supplied object.
 }
 \usage{
 inside(data, expr, ...)
@@ -14,34 +21,55 @@ inside(data, expr, ...)
 }
 
 \arguments{
-    \item{data}{Data to use for constructing an environment a \code{data frame}
-        or a \code{list}.}
-    \item{expr}{Expression to evaluate, often a \dQuote{compound} expression,
-        i.e., of the form \preformatted{
-            {
-                a <- somefun()
-                b <- otherfun()
-                .....
-                rm(unused1, temp)
-            }
-        }}
-
-    \item{keepAttrs}{For the \code{\link{list}} method of \code{inside()},
-        a \code{\link{logical}} specifying if the resulting list should keep
-        the \code{\link{attributes}} from \code{data} and have its
-        \code{\link{names}} in the same order.  Often this is unneeded as
-        the result is a \emph{named} list anyway, and then \code{keepAttrs =
-        FALSE} is more efficient.}
-    \item{...}{Arguments to be passed to (future) methods.}
+    \item{data}{A data frame (including a tibble or a \code{data.table}),
+        a matrix with named columns, a named list, a named atomic vector,
+        or an environment.}
+    \item{expr}{An R expression, or several expressions enclosed in braces.}
+    \item{keepAttrs}{For a list, keep its attributes and the original order
+        of its elements. If these are unimportant, \code{keepAttrs = FALSE}
+        is more efficient.}
+    \item{...}{A single assignment can also be written as a named argument,
+        for example \code{inside(DF, total = men + women)}.}
 }
 
 \details{
-This is a modified version of the base R function \code{within()}, with exactly
-the same arguments and functionality but only one fundamental difference:
-instead of returning a modified copy of the input data, this function alters the
-data directly.
+For a data frame \code{DF}, writing \code{inside(DF, total <- men + women)}
+adds the column \code{total} to \code{DF}. It can also be used to change
+an existing column, or to remove one with \code{rm()}. The data frame can
+itself be part of another object, for instance \code{inside(obj$DF, rm(total))}.
+To calculate a result for use elsewhere, see \code{\link{using}()}.
+
+The same syntax works for a tibble. Even if the tibble is grouped, an
+expression such as \code{mean(Age)} gives the mean for the whole column.
+For a \code{data.table}, the function updates a copy and assigns it back to
+the supplied name. A key or secondary index is kept if its columns still
+contain the same values in the same order.
+
+For a matrix, the column names can be used just as in a data frame. A new
+column can have one value for each row, or a single value for all rows.
+The result is still a matrix, with the same row names, even with only
+one column left or with no columns at all. Adding a character column
+to a numeric matrix makes the whole matrix character.
+
+For a named vector, each name refers to one value. An assignment can
+change that value or add a new element at the end. Both \code{rm(x)} and
+\code{x <- NULL} remove the element called \code{x}. The other elements
+keep their order. If a name occurs more than once, the first occurrence is used.
+Elements with empty or missing names are kept. The usual R rules for
+replacement apply, including those for factor levels.
+
+For an environment, the expression is evaluated directly there. R looks
+for names in that environment and then in its parents. An assignment such
+as \code{x <- NULL} gives \code{x} the value \code{NULL}. To remove
+\code{x} altogether, use \code{rm(x)}. Changes are visible through any
+other name for the same environment, including changes already made if a
+later expression gives an error.
 }
 
+\value{
+The updated object, returned invisibly. For an environment, this is the
+supplied environment itself.
+}
 \author{
 Adrian Dusa
 }
@@ -53,6 +81,31 @@ inside(mt, hwratio <- hp/wt)
 dim(mtcars)
 
 dim(mt)
+
+# add a total for each row of a matrix
+m <- cbind(men = c(12, 9), women = c(15, 11))
+inside(m, total <- men + women)
+m
+
+# same calculation for a single area, this time using a named vector
+counts <- c(men = 12, women = 15)
+inside(counts, total <- men + women)
+counts
+
+# keep just the total
+inside(counts, rm(men, women))
+counts
+
+# two names for the same environment
+e <- new.env()
+other <- e
+inside(e, {
+    men <- 12
+    women <- 15
+    total <- men + women
+    rm(men, women)
+})
+other$total
 }
 
 \keyword{functions}
