@@ -1,2 +1,2 @@
-PKG_CFLAGS = -pthread $(if $(findstring clang,$(CC)),-Wno-unknown-warning-option)
+PKG_CFLAGS = -pthread
 PKG_LIBS = -pthread
