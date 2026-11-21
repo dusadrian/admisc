@@ -1,6 +1,10 @@
 Version 0.42
     o New function addCases() appends data frames with selectable variables
       and missing-value padding
+    o Functions inside() and using() now accept named atomic vectors. Function
+      inside() also works with matrices with named columns and environments,
+      handles keys and indices in data.table objects, and preserves empty or
+      duplicated column names in tibbles
 
 Version 0.41
     o Functions using() and stopError() now work better together
