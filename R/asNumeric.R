@@ -96,13 +96,21 @@ NULL
 
 #' @export
 `asNumeric.declared` <- function(x, ..., na_values = TRUE) {
-    na_index <- attr(x, "na_index")
+    na_index <- attr(x, "na_index", exact = TRUE)
     attributes(x) <- NULL
 
-    if (isTRUE(na_values)) {
-        if (!is.null(na_index)) {
-            # if the names are not numeric that is not a problem, NA is fine
-            x[na_index] <- as.numeric(names(na_index))
+    if (isTRUE(na_values) && length(na_index)) {
+        codes <- names(na_index)
+        attributes(na_index) <- NULL
+
+        # A single stale position makes the whole map unreliable.
+        if (
+            !is.null(codes) && is.numeric(na_index) &&
+            !anyNA(na_index) && all(na_index >= 1 & na_index <= length(x)) &&
+            (is.integer(na_index) || all(na_index == trunc(na_index))) &&
+            all(is.na(x[na_index]))
+        ) {
+            x[na_index] <- suppressWarnings(as.numeric(codes))
         }
     }
 
