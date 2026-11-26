@@ -6,16 +6,29 @@
 #' @rdname recreate
 #' @rawRd
 #' \usage{
-#' recreate(x, snames = NULL, ...)
+#' recreate(x, snames = NULL, ..., mode = "expression", envir = parent.frame())
 #' }
 #'
 #' \arguments{
 #'   \item{x}{A substituted input.}
-#'   \item{snames}{A character string containing set names.}
+#'   \item{snames}{A character vector of set or column names.}
 #'   \item{...}{Other arguments, mainly for internal use.}
+#'   \item{mode}{Use \code{"expression"} for the usual recovery of expressions,
+#'         or \code{"columns"} to resolve column names.}
+#'   \item{envir}{In column mode, the environment in which to evaluate the
+#'         input after resolving names. Defaults to the caller of \code{recreate}.
+#'         A wrapper that captures a user argument with \code{substitute()}
+#'         can pass its own \code{parent.frame()} here.}
 #' }
 #'
 #' \details{
+#' In column mode, a bare name matching an entry in \code{snames} stands for
+#' that exact name, including spaces or punctuation. The same rule applies
+#' to the arguments of \code{c()}, including nested calls to \code{c()}.
+#' Other expressions, such as a subscript on a stored character vector, are
+#' evaluated as written in \code{envir}. Unknown variables raise the usual
+#' R evaluation error.
+#'
 #' This function is especially useful when users have to provide lots of quoted
 #' inputs, such as the name of the columns from a data frame to be considered
 #' for a particular function.
@@ -37,7 +50,8 @@
 #' }
 #'
 #' \value{
-#' A quoted, equivalent expression or a substituted object.
+#' In expression mode, a quoted, equivalent expression or a substituted object.
+#' In column mode, the evaluated value, usually a character vector of names.
 #' }
 #'
 #' \author{
@@ -65,6 +79,13 @@
 #' recreate(substitute(C), colnames(df))
 #' # "C"
 #'
+#' select <- function(x) {
+#'     recreate(substitute(x), colnames(df), mode = "columns", envir = parent.frame())
+#' }
+#' stored <- c("B", "C")
+#' select(c(A, stored[2]))
+#' # c("A", "C")
+#'
 #' # necessity well recognized
 #' recreate(substitute(A <- B))
 #'
@@ -78,7 +99,26 @@
 #' \keyword{functions}
 NULL
 #' @export
-`recreate` <- function(x, snames = NULL, ...) {
+`recreate` <- function(x, snames = NULL, ..., mode = "expression", envir = parent.frame()) {
+
+    if (identical(mode, "columns")) {
+        columnNames <- function(expr) {
+            if (is.symbol(expr) && is.element(as.character(expr), snames)) {
+                return(as.character(expr))
+            }
+            if (is.call(expr) && identical(expr[[1L]], quote(c))) {
+                args <- as.list(expr)
+                args[-1L] <- lapply(args[-1L], columnNames)
+                return(as.call(args))
+            }
+            return(expr)
+        }
+
+        return(eval(columnNames(x), envir))
+    }
+    if (!identical(mode, "expression")) {
+        stopError("Choose expression or columns for <mode>.")
+    }
 
     ## srcref is planned to arrive via three dots ... (see pof())
     ## TODO: how to make use of it, still unclear

@@ -1,3 +1,6 @@
+Version 0.43
+    o Function recreate() now accepts a column-name mode
+
 Version 0.42
     o New function addCases() appends data frames with selectable variables
       and missing-value padding
